@@ -1,0 +1,51 @@
+/** Managed-storage URLs of generated imagery used by marketing, theme previews and seed data. */
+export const IMG = {
+  marketing: {
+    smartwatch: "/manus-storage/async-images/t8DIq02qm9SLCLfUjMI9q9/image-1.webp",
+    fashionBanner: "/manus-storage/async-images/t8DIq02qm9SLCLfUjMI9q9/image-2.webp",
+    avatars: "/manus-storage/async-images/t8DIq02qm9SLCLfUjMI9q9/image-3.webp",
+    shirts: "/manus-storage/async-images/t8DIq02qm9SLCLfUjMI9q9/image-4.webp",
+  },
+  themeHero: {
+    nokshi: "/manus-storage/async-images/t8DIq02qm9SLCLfUjMI9q9/image-5.webp",
+    bazar: "/manus-storage/async-images/NJkiT6UHSi3Cp0M4OdlBOa/image-1.webp",
+    studio: "/manus-storage/async-images/NJkiT6UHSi3Cp0M4OdlBOa/image-2.webp",
+    kantha: "/manus-storage/async-images/NJkiT6UHSi3Cp0M4OdlBOa/image-3.webp",
+    dokan: "/manus-storage/async-images/NJkiT6UHSi3Cp0M4OdlBOa/image-4.webp",
+    rong: "/manus-storage/async-images/NJkiT6UHSi3Cp0M4OdlBOa/image-5.webp",
+    prestige: "/manus-storage/async-images/4rXDRwSFNvmU56BKfEiYmB/image-1.webp",
+  },
+  products: {
+    nokshi: {
+      saree: "/manus-storage/async-images/4rXDRwSFNvmU56BKfEiYmB/image-2.webp",
+      panjabi: "/manus-storage/async-images/4rXDRwSFNvmU56BKfEiYmB/image-3.webp",
+      kurti: "/manus-storage/async-images/4rXDRwSFNvmU56BKfEiYmB/image-4.webp",
+      threepiece: "/manus-storage/async-images/4rXDRwSFNvmU56BKfEiYmB/image-5.webp",
+      shawl: "/manus-storage/async-images/HUrQP0UJTkR7jgb6Nfj0S7/image-1.webp",
+      fatua: "/manus-storage/async-images/HUrQP0UJTkR7jgb6Nfj0S7/image-2.webp",
+      jewelry: "/manus-storage/async-images/HUrQP0UJTkR7jgb6Nfj0S7/image-3.webp",
+      dupatta: "/manus-storage/async-images/HUrQP0UJTkR7jgb6Nfj0S7/image-4.webp",
+    },
+    bazar: {
+      rice: "/manus-storage/async-images/HUrQP0UJTkR7jgb6Nfj0S7/image-5.webp",
+      dal: "/manus-storage/async-images/G1yXaKkFpKNFKl68smqJmQ/image-1.webp",
+      oil: "/manus-storage/async-images/G1yXaKkFpKNFKl68smqJmQ/image-2.webp",
+      hilsa: "/manus-storage/async-images/G1yXaKkFpKNFKl68smqJmQ/image-3.webp",
+      eggs: "/manus-storage/async-images/G1yXaKkFpKNFKl68smqJmQ/image-4.webp",
+      veg: "/manus-storage/async-images/G1yXaKkFpKNFKl68smqJmQ/image-5.webp",
+      mango: "/manus-storage/async-images/3XjybLAMDbDFTvfkAxWExb/image-1.webp",
+      turmeric: "/manus-storage/async-images/3XjybLAMDbDFTvfkAxWExb/image-2.webp",
+      tea: "/manus-storage/async-images/3XjybLAMDbDFTvfkAxWExb/image-3.webp",
+    },
+    studio: {
+      earbuds: "/manus-storage/async-images/3XjybLAMDbDFTvfkAxWExb/image-4.webp",
+      watch: "/manus-storage/async-images/3XjybLAMDbDFTvfkAxWExb/image-5.webp",
+      powerbank: "/manus-storage/async-images/ixUwd0kQP4MbCRWelTeptp/image-1.webp",
+      speaker: "/manus-storage/async-images/ixUwd0kQP4MbCRWelTeptp/image-2.webp",
+      serum: "/manus-storage/async-images/ixUwd0kQP4MbCRWelTeptp/image-3.webp",
+      lipstick: "/manus-storage/async-images/ixUwd0kQP4MbCRWelTeptp/image-4.webp",
+      keyboard: "/manus-storage/async-images/ixUwd0kQP4MbCRWelTeptp/image-5.webp",
+      phonecase: "/manus-storage/async-images/yZIK81snKeBrYbQRidlNrE/image-1.webp",
+    },
+  },
+} as const;
