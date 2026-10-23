@@ -51,11 +51,14 @@ export const env = {
     get apiKey() {
       return optional("SMS_API_KEY");
     },
+    get apiUrl() {
+      return optional("SMS_API_URL");
+    },
     get senderId() {
       return optional("SMS_SENDER_ID", "ATLaS");
     },
     get configured() {
-      return Boolean(optional("SMS_PROVIDER"));
+      return Boolean(optional("SMS_PROVIDER") && optional("SMS_API_KEY") && optional("SMS_API_URL"));
     },
   },
   email: {
@@ -65,11 +68,14 @@ export const env = {
     get apiKey() {
       return optional("EMAIL_API_KEY");
     },
+    get apiUrl() {
+      return optional("EMAIL_API_URL");
+    },
     get from() {
       return optional("EMAIL_FROM", "no-reply@atlas.example");
     },
     get configured() {
-      return Boolean(optional("EMAIL_PROVIDER"));
+      return Boolean(optional("EMAIL_PROVIDER") && optional("EMAIL_API_KEY") && optional("EMAIL_API_URL"));
     },
   },
   gateways: {
@@ -97,6 +103,9 @@ export const env = {
   },
   get secretsKey() {
     return optional("SECRETS_KEY", "dev-only-32-char-secret-manager-key");
+  },
+  get cronSecret() {
+    return required("CRON_SECRET");
   },
 };
 

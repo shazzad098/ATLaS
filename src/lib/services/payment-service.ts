@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { AppError, NotFoundError } from "@/lib/errors";
+import { AppError, isAppError, NotFoundError } from "@/lib/errors";
 import { createHash } from "node:crypto";
 import { compareMoney, fromPaisa, toPaisa } from "@/lib/money";
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
@@ -8,6 +8,7 @@ import { getPaymentAdapter } from "@/lib/payments";
 import type { PaymentProviderName } from "@/lib/payments";
 import { applyTransition } from "@/lib/services/order-service";
 import { applyAllOrderFees, reverseFeesForOrder } from "@/lib/services/fee-service";
+import { finalizeCouponRedemption, releaseCouponReservation } from "@/lib/services/coupon-service";
 import type { ActorContext } from "@/lib/rbac";
 import { assertPermission } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
@@ -41,41 +42,25 @@ export async function handlePaymentWebhook(
   const callback = await adapter.parseCallback(request, rawBody);
   const payloadHash = createHash("sha256").update(rawBody || "").digest("hex");
 
-  // Idempotency guard. The unique index is the source of truth, so a concurrent
-  // duplicate cannot be processed twice.
-  const existing = await prisma.paymentWebhookEvent.findUnique({
-    where: { provider_eventKey: { provider, eventKey: callback.eventKey } },
+  // Claim the event before any payment/order side effects. A conditional update
+  // prevents two gateway retries from processing the same event concurrently.
+  const claim = await claimWebhookEvent({
+    provider,
+    eventKey: callback.eventKey,
+    signatureValid: callback.signatureValid,
+    payloadHash,
+    payload: callback.raw,
   });
-
-  if (existing?.processedAt) {
+  if (claim.duplicate) {
     return {
       received: true,
       duplicate: true,
-      signatureValid: existing.signatureValid,
-      status: existing.status,
+      signatureValid: claim.event.signatureValid,
+      status: claim.event.status,
       message: "Already processed",
     };
   }
-
-  const event = existing
-    ? await prisma.paymentWebhookEvent.update({
-        where: { id: existing.id },
-        data: {
-          signatureValid: callback.signatureValid,
-          payloadHash,
-          payloadJson: callback.raw as never,
-        },
-      })
-    : await prisma.paymentWebhookEvent.create({
-        data: {
-          provider,
-          eventKey: callback.eventKey,
-          signatureValid: callback.signatureValid,
-          payloadHash,
-          payloadJson: callback.raw as never,
-          status: "RECEIVED",
-        },
-      });
+  const event = claim.event;
 
   if (!callback.signatureValid) {
     await prisma.paymentWebhookEvent.update({
@@ -145,6 +130,7 @@ export async function handlePaymentWebhook(
         items: order.items,
         storeId: order.storeId,
       });
+      await finalizeCouponRedemption(order.id);
     } else {
       await applyAllOrderFees(order.id);
     }
@@ -165,6 +151,7 @@ export async function handlePaymentWebhook(
 
   if (callback.status === "FAILED") {
     await markPaymentFailure(callback.providerTxnId, callback.failureReason ?? "Gateway declined");
+    await cancelPendingPaymentOrder(order, callback.failureReason ?? "Gateway declined");
     await prisma.paymentWebhookEvent.update({
       where: { id: event.id },
       data: { status: "FAILED", processedAt: new Date(), error: callback.failureReason },
@@ -207,6 +194,76 @@ export async function handlePaymentWebhook(
   };
 }
 
+async function claimWebhookEvent(input: {
+  provider: PaymentProviderName;
+  eventKey: string;
+  signatureValid: boolean;
+  payloadHash: string;
+  payload: Record<string, unknown>;
+}) {
+  const existing = await prisma.paymentWebhookEvent.findUnique({
+    where: { provider_eventKey: { provider: input.provider, eventKey: input.eventKey } },
+  });
+  if (existing?.processedAt) return { event: existing, duplicate: true } as const;
+
+  const staleBefore = new Date(Date.now() - 10 * 60_000);
+  if (existing) {
+    const claimed = await prisma.paymentWebhookEvent.updateMany({
+      where: {
+        id: existing.id,
+        processedAt: null,
+        OR: [{ status: { not: "PROCESSING" } }, { updatedAt: { lt: staleBefore } }],
+      },
+      data: {
+        status: "PROCESSING",
+        signatureValid: input.signatureValid,
+        payloadHash: input.payloadHash,
+        payloadJson: input.payload as never,
+      },
+    });
+    if (claimed.count === 0) return { event: existing, duplicate: true } as const;
+    return {
+      event: await prisma.paymentWebhookEvent.findUniqueOrThrow({ where: { id: existing.id } }),
+      duplicate: false,
+    } as const;
+  }
+
+  try {
+    const event = await prisma.paymentWebhookEvent.create({
+      data: {
+        provider: input.provider,
+        eventKey: input.eventKey,
+        signatureValid: input.signatureValid,
+        payloadHash: input.payloadHash,
+        payloadJson: input.payload as never,
+        status: "PROCESSING",
+      },
+    });
+    return { event, duplicate: false } as const;
+  } catch (error) {
+    // Another request may have won the unique insert race. Re-read and claim it
+    // through the same conditional path instead of surfacing a 500 to the gateway.
+    const raced = await prisma.paymentWebhookEvent.findUnique({
+      where: { provider_eventKey: { provider: input.provider, eventKey: input.eventKey } },
+    });
+    if (!raced) throw error;
+    if (raced.processedAt) return { event: raced, duplicate: true } as const;
+    const claimed = await prisma.paymentWebhookEvent.updateMany({
+      where: { id: raced.id, processedAt: null, status: { not: "PROCESSING" } },
+      data: {
+        status: "PROCESSING",
+        signatureValid: input.signatureValid,
+        payloadHash: input.payloadHash,
+        payloadJson: input.payload as never,
+      },
+    });
+    return {
+      event: raced,
+      duplicate: claimed.count === 0,
+    } as const;
+  }
+}
+
 async function findOrderForCallback(orderNo: string | null, providerTxnId: string | null) {
   if (orderNo) {
     const byNo = await prisma.order.findFirst({
@@ -231,6 +288,30 @@ async function markPaymentFailure(providerTxnId: string | null, reason: string) 
     where: { providerTxnId, status: { in: ["INITIATED", "PENDING"] } },
     data: { status: "FAILED", failureReason: reason.slice(0, 300) },
   });
+}
+
+async function cancelPendingPaymentOrder(
+  order: { id: string; status: string; storeId: string; items: Array<{ variantId: string | null; quantity: number }> },
+  note: string,
+) {
+  if (order.status !== "PENDING_PAYMENT") return;
+  try {
+    await applyTransition({
+      orderId: order.id,
+      from: "PENDING_PAYMENT",
+      to: "CANCELLED",
+      actorType: "SYSTEM",
+      note,
+      items: order.items,
+      storeId: order.storeId,
+    });
+  } catch (error) {
+    if (!isAppError(error) || error.code !== "CONFLICT") throw error;
+    const current = await prisma.order.findUnique({ where: { id: order.id }, select: { status: true } });
+    if (current?.status !== "CANCELLED") return;
+  } finally {
+    await releaseCouponReservation(order.id);
+  }
 }
 
 /**
@@ -259,6 +340,30 @@ export async function reconcilePayments(storeId?: string, olderThanMinutes = 30)
   }));
 }
 
+/** Cancel expired online checkouts, release stock and return coupon capacity. */
+export async function expirePendingPayments(now = new Date(), limit = 200) {
+  const orders = await prisma.order.findMany({
+    where: {
+      status: "PENDING_PAYMENT",
+      paymentProvider: { not: "COD" },
+      paymentExpiresAt: { lte: now },
+    },
+    include: { items: true },
+    orderBy: { paymentExpiresAt: "asc" },
+    take: limit,
+  });
+  let expired = 0;
+  for (const order of orders) {
+    await cancelPendingPaymentOrder(order, "Payment window expired");
+    await prisma.payment.updateMany({
+      where: { orderId: order.id, status: { in: ["INITIATED", "PENDING"] } },
+      data: { status: "EXPIRED", failureReason: "Payment window expired" },
+    });
+    expired += 1;
+  }
+  return { expired };
+}
+
 /** Staff-recorded COD collection (COD is a first-class method, FR-05). */
 export async function recordCodCollection(
   actor: ActorContext,
@@ -285,6 +390,7 @@ export async function recordCodCollection(
   if (order.paymentStatus !== "PAID") {
     await prisma.order.update({ where: { id: orderId }, data: { paymentStatus: "PAID" } });
   }
+  await finalizeCouponRedemption(orderId);
   await applyAllOrderFees(orderId);
 
   await recordAudit({

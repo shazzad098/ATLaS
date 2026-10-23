@@ -32,7 +32,7 @@ export const GET = route(async (request: NextRequest, context: StoreRouteContext
   const actor = await resolveApiActor(request, user);
   assertPermission(actor, "catalog:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`products:list:${actor.tenantId}`, 240);
+  await rateLimit(`products:list:${actor.tenantId}`, 240);
 
   const pagination = parsePagination(request.nextUrl.searchParams);
   const query = listQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
@@ -54,7 +54,7 @@ export const POST = route(async (request: NextRequest, context: StoreRouteContex
   assertCsrf(request);
   const user = await authenticateRequest(request);
   const actor = await resolveApiActor(request, user);
-  rateLimit(`products:create:${actor.tenantId}`, 60);
+  await rateLimit(`products:create:${actor.tenantId}`, 60);
 
   const input = await parseBody(request, productInputSchema);
   const product = await createProduct(actor, storeId, input, { ip: clientIp(request) });

@@ -9,8 +9,8 @@
  * 🟢 You can import this file directly.
  */
 import type * as runtime from "@prisma/client/runtime/client"
-import type * as $Enums from "../enums"
-import type * as Prisma from "../internal/prismaNamespace"
+import type * as $Enums from "../enums.ts"
+import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model PaymentWebhookEvent
@@ -34,6 +34,7 @@ export type PaymentWebhookEventMinAggregateOutputType = {
   status: string | null
   error: string | null
   createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type PaymentWebhookEventMaxAggregateOutputType = {
@@ -46,6 +47,7 @@ export type PaymentWebhookEventMaxAggregateOutputType = {
   status: string | null
   error: string | null
   createdAt: Date | null
+  updatedAt: Date | null
 }
 
 export type PaymentWebhookEventCountAggregateOutputType = {
@@ -59,6 +61,7 @@ export type PaymentWebhookEventCountAggregateOutputType = {
   status: number
   error: number
   createdAt: number
+  updatedAt: number
   _all: number
 }
 
@@ -73,6 +76,7 @@ export type PaymentWebhookEventMinAggregateInputType = {
   status?: true
   error?: true
   createdAt?: true
+  updatedAt?: true
 }
 
 export type PaymentWebhookEventMaxAggregateInputType = {
@@ -85,6 +89,7 @@ export type PaymentWebhookEventMaxAggregateInputType = {
   status?: true
   error?: true
   createdAt?: true
+  updatedAt?: true
 }
 
 export type PaymentWebhookEventCountAggregateInputType = {
@@ -98,6 +103,7 @@ export type PaymentWebhookEventCountAggregateInputType = {
   status?: true
   error?: true
   createdAt?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -184,6 +190,7 @@ export type PaymentWebhookEventGroupByOutputType = {
   status: string
   error: string | null
   createdAt: Date
+  updatedAt: Date
   _count: PaymentWebhookEventCountAggregateOutputType | null
   _min: PaymentWebhookEventMinAggregateOutputType | null
   _max: PaymentWebhookEventMaxAggregateOutputType | null
@@ -218,6 +225,7 @@ export type PaymentWebhookEventWhereInput = {
   status?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
   error?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentWebhookEvent"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"PaymentWebhookEvent"> | Date | string
 }
 
 export type PaymentWebhookEventOrderByWithRelationInput = {
@@ -231,6 +239,7 @@ export type PaymentWebhookEventOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type PaymentWebhookEventWhereUniqueInput = Prisma.AtLeast<{
@@ -248,6 +257,7 @@ export type PaymentWebhookEventWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
   error?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentWebhookEvent"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"PaymentWebhookEvent"> | Date | string
 }, "id" | "provider_eventKey">
 
 export type PaymentWebhookEventOrderByWithAggregationInput = {
@@ -261,6 +271,7 @@ export type PaymentWebhookEventOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.PaymentWebhookEventCountOrderByAggregateInput
   _max?: Prisma.PaymentWebhookEventMaxOrderByAggregateInput
   _min?: Prisma.PaymentWebhookEventMinOrderByAggregateInput
@@ -280,6 +291,7 @@ export type PaymentWebhookEventScalarWhereWithAggregatesInput = {
   status?: Prisma.StringWithAggregatesFilter<"PaymentWebhookEvent"> | string
   error?: Prisma.StringNullableWithAggregatesFilter<"PaymentWebhookEvent"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PaymentWebhookEvent"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PaymentWebhookEvent"> | Date | string
 }
 
 export type PaymentWebhookEventCreateInput = {
@@ -293,6 +305,7 @@ export type PaymentWebhookEventCreateInput = {
   status?: string
   error?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type PaymentWebhookEventUncheckedCreateInput = {
@@ -306,6 +319,7 @@ export type PaymentWebhookEventUncheckedCreateInput = {
   status?: string
   error?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type PaymentWebhookEventUpdateInput = {
@@ -319,6 +333,7 @@ export type PaymentWebhookEventUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PaymentWebhookEventUncheckedUpdateInput = {
@@ -332,6 +347,7 @@ export type PaymentWebhookEventUncheckedUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PaymentWebhookEventCreateManyInput = {
@@ -345,6 +361,7 @@ export type PaymentWebhookEventCreateManyInput = {
   status?: string
   error?: string | null
   createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type PaymentWebhookEventUpdateManyMutationInput = {
@@ -358,6 +375,7 @@ export type PaymentWebhookEventUpdateManyMutationInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PaymentWebhookEventUncheckedUpdateManyInput = {
@@ -371,6 +389,7 @@ export type PaymentWebhookEventUncheckedUpdateManyInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PaymentWebhookEventProviderEventKeyCompoundUniqueInput = {
@@ -389,6 +408,7 @@ export type PaymentWebhookEventCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   error?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type PaymentWebhookEventMaxOrderByAggregateInput = {
@@ -401,6 +421,7 @@ export type PaymentWebhookEventMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   error?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type PaymentWebhookEventMinOrderByAggregateInput = {
@@ -413,6 +434,7 @@ export type PaymentWebhookEventMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   error?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 
@@ -428,6 +450,7 @@ export type PaymentWebhookEventSelect<ExtArgs extends runtime.Types.Extensions.I
   status?: boolean
   error?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["paymentWebhookEvent"]>
 
 export type PaymentWebhookEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -441,6 +464,7 @@ export type PaymentWebhookEventSelectCreateManyAndReturn<ExtArgs extends runtime
   status?: boolean
   error?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["paymentWebhookEvent"]>
 
 export type PaymentWebhookEventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -454,6 +478,7 @@ export type PaymentWebhookEventSelectUpdateManyAndReturn<ExtArgs extends runtime
   status?: boolean
   error?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["paymentWebhookEvent"]>
 
 export type PaymentWebhookEventSelectScalar = {
@@ -467,9 +492,10 @@ export type PaymentWebhookEventSelectScalar = {
   status?: boolean
   error?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
 }
 
-export type PaymentWebhookEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "eventKey" | "signatureValid" | "payloadHash" | "payloadJson" | "processedAt" | "status" | "error" | "createdAt", ExtArgs["result"]["paymentWebhookEvent"]>
+export type PaymentWebhookEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "eventKey" | "signatureValid" | "payloadHash" | "payloadJson" | "processedAt" | "status" | "error" | "createdAt" | "updatedAt", ExtArgs["result"]["paymentWebhookEvent"]>
 
 export type $PaymentWebhookEventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PaymentWebhookEvent"
@@ -485,6 +511,7 @@ export type $PaymentWebhookEventPayload<ExtArgs extends runtime.Types.Extensions
     status: string
     error: string | null
     createdAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["paymentWebhookEvent"]>
   composites: {}
 }
@@ -918,6 +945,7 @@ export interface PaymentWebhookEventFieldRefs {
   readonly status: Prisma.FieldRef<"PaymentWebhookEvent", 'String'>
   readonly error: Prisma.FieldRef<"PaymentWebhookEvent", 'String'>
   readonly createdAt: Prisma.FieldRef<"PaymentWebhookEvent", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"PaymentWebhookEvent", 'DateTime'>
 }
     
 

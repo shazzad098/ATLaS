@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const GET = route(async (request: Request) => {
-  rateLimit(`me:${clientIp(request)}`, 120);
+  await rateLimit(`me:${clientIp(request)}`, 120);
 
   const user = await authenticateRequest(request);
   const actor = await resolveApiActor(request, user);

@@ -21,6 +21,7 @@ export const dynamic = "force-dynamic";
 
 export default function DemoSmsPage() {
   const messages = listSandboxSms();
+  const now = new Date().getTime();
 
   return (
     <div className="mx-auto max-w-2xl space-y-5 px-4 py-10">
@@ -53,7 +54,7 @@ export default function DemoSmsPage() {
           />
           <CardBody className="space-y-3">
             {messages.map((message) => {
-              const expired = message.expiresAt.getTime() < Date.now();
+              const expired = message.expiresAt.getTime() < now;
               return (
                 <div
                   key={`${message.phone}-${message.sentAt.getTime()}`}

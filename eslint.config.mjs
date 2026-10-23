@@ -11,6 +11,7 @@ const eslintConfig = defineConfig([
       // renders raw <img> tags instead of routing every thumbnail through the
       // Next image optimiser (which would need sharp + a fetch per variant).
       "@next/next/no-img-element": "off",
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
   globalIgnores([
@@ -20,6 +21,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Prisma generates this on every `prisma generate`.
     "src/generated/**",
+    // Legacy Create-App scaffold is not part of the current Next.js runtime.
+    "client/**",
+    "server/**",
   ]),
 ]);
 

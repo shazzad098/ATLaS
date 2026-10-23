@@ -17,8 +17,8 @@
 
 import * as runtime from "@prisma/client/runtime/index-browser"
 
-export type * from '../models'
-export type * from './prismaNamespace'
+export type * from '../models.ts'
+export type * from './prismaNamespace.ts'
 
 export const Decimal = runtime.Decimal
 
@@ -57,6 +57,7 @@ export const ModelName = {
   Role: 'Role',
   Session: 'Session',
   OtpChallenge: 'OtpChallenge',
+  RateLimitBucket: 'RateLimitBucket',
   Store: 'Store',
   StoreSettings: 'StoreSettings',
   Theme: 'Theme',
@@ -196,6 +197,17 @@ export const OtpChallengeScalarFieldEnum = {
 } as const
 
 export type OtpChallengeScalarFieldEnum = (typeof OtpChallengeScalarFieldEnum)[keyof typeof OtpChallengeScalarFieldEnum]
+
+
+export const RateLimitBucketScalarFieldEnum = {
+  id: 'id',
+  count: 'count',
+  windowStart: 'windowStart',
+  expiresAt: 'expiresAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RateLimitBucketScalarFieldEnum = (typeof RateLimitBucketScalarFieldEnum)[keyof typeof RateLimitBucketScalarFieldEnum]
 
 
 export const StoreScalarFieldEnum = {
@@ -468,6 +480,9 @@ export const OrderScalarFieldEnum = {
   grandTotal: 'grandTotal',
   currency: 'currency',
   couponCode: 'couponCode',
+  couponRedeemedAt: 'couponRedeemedAt',
+  couponReleasedAt: 'couponReleasedAt',
+  paymentExpiresAt: 'paymentExpiresAt',
   addressSnapshotJson: 'addressSnapshotJson',
   notes: 'notes',
   idempotencyKey: 'idempotencyKey',
@@ -569,7 +584,8 @@ export const PaymentWebhookEventScalarFieldEnum = {
   processedAt: 'processedAt',
   status: 'status',
   error: 'error',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type PaymentWebhookEventScalarFieldEnum = (typeof PaymentWebhookEventScalarFieldEnum)[keyof typeof PaymentWebhookEventScalarFieldEnum]
@@ -679,6 +695,7 @@ export const CouponScalarFieldEnum = {
   minOrder: 'minOrder',
   usageLimit: 'usageLimit',
   usedCount: 'usedCount',
+  reservedCount: 'reservedCount',
   startsAt: 'startsAt',
   endsAt: 'endsAt',
   status: 'status',

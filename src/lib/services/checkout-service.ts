@@ -8,6 +8,11 @@ import { getOrCreateOpenCart, loadCart, priceCart } from "@/lib/services/cart-se
 import { applyTransition } from "@/lib/services/order-service";
 import { reserveStock } from "@/lib/services/inventory-service";
 import { applyAllOrderFees } from "@/lib/services/fee-service";
+import {
+  finalizeCouponRedemption,
+  releaseCouponReservation,
+  reserveCoupon,
+} from "@/lib/services/coupon-service";
 import { getPaymentAdapter } from "@/lib/payments";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
 
@@ -150,6 +155,8 @@ export async function placeOrder(input: {
       }
     }
 
+    if (pricing.coupon) await reserveCoupon(tx, pricing.coupon.id);
+
     const customer = await tx.customer.upsert({
       where: { storeId_phone: { storeId: store.id, phone: input.payload.customerPhone } },
       create: {
@@ -187,6 +194,8 @@ export async function placeOrder(input: {
         shippingTotal: pricing.shippingTotal as never,
         grandTotal: pricing.grandTotal as never,
         couponCode: pricing.coupon?.code ?? null,
+        paymentExpiresAt:
+          input.payload.paymentProvider === "COD" ? null : new Date(Date.now() + 30 * 60_000),
         addressSnapshotJson: addressSnapshot as never,
         notes: input.payload.notes || null,
         idempotencyKey: input.idempotencyKey,
@@ -233,13 +242,6 @@ export async function placeOrder(input: {
       },
     });
 
-    if (pricing.coupon) {
-      await tx.coupon.updateMany({
-        where: { storeId: store.id, code: pricing.coupon.code },
-        data: { usedCount: { increment: 1 } },
-      });
-    }
-
     await tx.cart.update({
       where: { id: cart.id },
       data: { status: "CONVERTED", customerId: customer.id },
@@ -263,30 +265,42 @@ export async function placeOrder(input: {
         items: pricing.lines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
         storeId: store.id,
       });
+      await finalizeCouponRedemption(order.id);
       paymentStatus = "PENDING_COLLECTION";
     } else {
       await applyAllOrderFees(order.id);
     }
   } else {
     const adapter = getPaymentAdapter(input.payload.paymentProvider);
-    const initiation = await adapter.initiate({
-      orderId: order.id,
-      orderNo: order.orderNo,
-      amount: pricing.grandTotal,
-      currency: "BDT",
-      customerName: input.payload.customerName,
-      customerPhone: input.payload.customerPhone,
-      callbackUrl: `${input.baseUrl}/api/v1/webhooks/payments/${input.payload.paymentProvider.toLowerCase()}`,
-      successUrl: `${input.baseUrl}/store/${store.slug}/order/${order.orderNo}`,
-      failureUrl: `${input.baseUrl}/store/${store.slug}/checkout?error=payment_failed`,
-    });
+    let initiation;
+    try {
+      initiation = await adapter.initiate({
+        orderId: order.id,
+        orderNo: order.orderNo,
+        amount: pricing.grandTotal,
+        currency: "BDT",
+        customerName: input.payload.customerName,
+        customerPhone: input.payload.customerPhone,
+        callbackUrl: `${input.baseUrl}/api/v1/webhooks/payments/${input.payload.paymentProvider.toLowerCase()}`,
+        successUrl: `${input.baseUrl}/store/${store.slug}/order/${order.orderNo}`,
+        failureUrl: `${input.baseUrl}/store/${store.slug}/checkout?error=payment_failed`,
+      });
+    } catch (error) {
+      await cancelPendingCheckout(order.id, store.id, pricing.lines, "Payment initiation failed");
+      throw error;
+    }
 
     await prisma.payment.updateMany({
       where: { orderId: order.id, status: "INITIATED" },
       data: {
         providerTxnId: initiation.providerTxnId,
         rawReference: initiation.rawReference,
-        status: initiation.status === "SUCCEEDED" ? "SUCCEEDED" : "PENDING",
+        status:
+          initiation.status === "SUCCEEDED"
+            ? "SUCCEEDED"
+            : initiation.status === "FAILED"
+              ? "FAILED"
+              : "PENDING",
       },
     });
 
@@ -303,6 +317,10 @@ export async function placeOrder(input: {
         items: pricing.lines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
         storeId: store.id,
       });
+      await finalizeCouponRedemption(order.id);
+    } else if (initiation.status === "FAILED") {
+      await cancelPendingCheckout(order.id, store.id, pricing.lines, "Payment initiation returned failed");
+      throw new CheckoutError("পেমেন্ট গেটওয়ে পেমেন্ট গ্রহণ করেনি। আবার চেষ্টা করুন।");
     }
   }
 
@@ -325,6 +343,27 @@ export async function placeOrder(input: {
       redirectUrl,
     },
   };
+}
+
+async function cancelPendingCheckout(
+  orderId: string,
+  storeId: string,
+  items: Array<{ variantId: string | null; quantity: number }>,
+  note: string,
+) {
+  try {
+    await applyTransition({
+      orderId,
+      from: "PENDING_PAYMENT",
+      to: "CANCELLED",
+      actorType: "SYSTEM",
+      note,
+      items,
+      storeId,
+    });
+  } finally {
+    await releaseCouponReservation(orderId);
+  }
 }
 
 /** Storefront cart helper used by server actions. */

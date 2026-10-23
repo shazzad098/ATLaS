@@ -14,7 +14,7 @@ type ProductRouteContext = { params: Promise<{ slug: string; productSlug: string
 
 export const GET = route(async (request: NextRequest, context: ProductRouteContext) => {
   const { slug, productSlug } = await context.params;
-  rateLimit(`public:product:${clientIp(request)}`, 240);
+  await rateLimit(`public:product:${clientIp(request)}`, 240);
 
   const store = await loadStorefront(slug);
   if (!store) throw new NotFoundError("Store");

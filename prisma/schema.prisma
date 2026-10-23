@@ -325,6 +325,18 @@ model OtpChallenge {
   @@index([expiresAt])
 }
 
+/// Shared fixed-window limiter state; unlike a process-local Map this works
+/// across multiple Next.js instances and survives horizontal scaling.
+model RateLimitBucket {
+  id          String   @id
+  count       Int      @default(0)
+  windowStart DateTime
+  expiresAt   DateTime
+  updatedAt   DateTime @updatedAt
+
+  @@index([expiresAt])
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Store and theme (PRD §10.2)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -666,6 +678,9 @@ model Order {
   grandTotal          Decimal           @db.Decimal(14, 2)
   currency            String            @default("BDT")
   couponCode          String?
+  couponRedeemedAt    DateTime?
+  couponReleasedAt    DateTime?
+  paymentExpiresAt    DateTime?
   addressSnapshotJson Json              @default("{}")
   notes               String?
   idempotencyKey      String?           @unique
@@ -790,6 +805,7 @@ model PaymentWebhookEvent {
   status         String          @default("RECEIVED")
   error          String?
   createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   // Idempotency guard: a provider event is processed at most once (PRD §10.7).
   @@unique([provider, eventKey])
@@ -912,6 +928,7 @@ model Coupon {
   minOrder   Decimal       @default(0) @db.Decimal(14, 2)
   usageLimit Int?
   usedCount  Int           @default(0)
+  reservedCount Int        @default(0)
   startsAt   DateTime?
   endsAt     DateTime?
   status     CatalogStatus @default(ACTIVE)

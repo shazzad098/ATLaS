@@ -27,7 +27,7 @@ const querySchema = z.object({
 
 export const GET = route(async (request: NextRequest, context: SlugRouteContext) => {
   const { slug } = await context.params;
-  rateLimit(`public:products:${clientIp(request)}`, 240);
+  await rateLimit(`public:products:${clientIp(request)}`, 240);
 
   const store = await loadStorefront(slug);
   if (!store) throw new NotFoundError("Store");

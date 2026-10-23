@@ -16,7 +16,7 @@ export const runtime = "nodejs";
 export const GET = route(async (request: Request) => {
   const user = await authenticateRequest(request);
   const actor = await resolveApiActor(request, user);
-  rateLimit(`stores:list:${actor.tenantId}`, 120);
+  await rateLimit(`stores:list:${actor.tenantId}`, 120);
 
   const stores = await listStores(actor.tenantId);
   return ok(stores);
@@ -26,7 +26,7 @@ export const POST = route(async (request: Request) => {
   assertCsrf(request);
   const user = await authenticateRequest(request);
   const actor = await resolveApiActor(request, user);
-  rateLimit(`stores:create:${actor.tenantId}`, 20);
+  await rateLimit(`stores:create:${actor.tenantId}`, 20);
 
   const input = await parseBody(request, storeInputSchema);
   const store = await createStore(actor, input);

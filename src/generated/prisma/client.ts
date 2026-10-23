@@ -14,12 +14,12 @@ import * as process from 'node:process'
 import * as path from 'node:path'
 
 import * as runtime from "@prisma/client/runtime/client"
-import * as $Enums from "./enums"
-import * as $Class from "./internal/class"
-import * as Prisma from "./internal/prismaNamespace"
+import * as $Enums from "./enums.ts"
+import * as $Class from "./internal/class.ts"
+import * as Prisma from "./internal/prismaNamespace.ts"
 
-export * as $Enums from './enums'
-export * from "./enums"
+export * as $Enums from './enums.ts'
+export * from "./enums.ts"
 /**
  * ## Prisma Client
  * 
@@ -70,6 +70,12 @@ export type Session = Prisma.SessionModel
  * Codes are stored hashed and are single-use with attempt + expiry limits.
  */
 export type OtpChallenge = Prisma.OtpChallengeModel
+/**
+ * Model RateLimitBucket
+ * Shared fixed-window limiter state; unlike a process-local Map this works
+ * across multiple Next.js instances and survives horizontal scaling.
+ */
+export type RateLimitBucket = Prisma.RateLimitBucketModel
 /**
  * Model Store
  * 

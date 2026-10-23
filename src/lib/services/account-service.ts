@@ -4,7 +4,7 @@ import { PERMISSIONS, ROLE_CODES, SYSTEM_ROLES, type ActorContext, type RoleCode
 import { checkPasswordStrength, hashPassword, verifyPassword } from "@/lib/auth/password";
 import { normalizePhone } from "@/lib/auth/otp";
 import { recordAudit } from "@/lib/audit";
-import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
+import { notify } from "@/lib/notifications";
 import { ensureSubscription } from "@/lib/services/billing-service";
 import { invalidateEntitlements } from "@/lib/entitlements";
 import { ensureThemeCatalog } from "@/lib/services/theme-service";

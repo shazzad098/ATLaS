@@ -27,7 +27,7 @@ type SlugRouteContext = { params: Promise<{ slug: string }> };
 
 export const POST = route(async (request: NextRequest, context: SlugRouteContext) => {
   const { slug } = await context.params;
-  rateLimit(`checkout:${clientIp(request)}`, 30);
+  await rateLimit(`checkout:${clientIp(request)}`, 30);
 
   const idempotencyKey = requireIdempotencyKey(request);
   const payload = await parseBody(request, checkoutInputSchema);

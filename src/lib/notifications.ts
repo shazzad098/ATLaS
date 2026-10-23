@@ -70,8 +70,23 @@ export async function sendEmail(input: { to: string; subject: string; text: stri
     console.info(`[email:sandbox] to=${input.to} subject=${input.subject}`);
     return;
   }
-  console.info(`[email] via ${env.email.provider} to=${input.to} subject=${input.subject}`);
-  // Provider integration point (Resend/SES/etc).
+  const response = await fetch(env.email.apiUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${env.email.apiKey}`,
+    },
+    body: JSON.stringify({
+      provider: env.email.provider,
+      from: env.email.from,
+      to: input.to,
+      subject: input.subject,
+      text: input.text,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`Email provider returned HTTP ${response.status}`);
+  }
 }
 
 export async function sendSms(input: { to: string; text: string }): Promise<void> {
@@ -79,7 +94,22 @@ export async function sendSms(input: { to: string; text: string }): Promise<void
     console.info(`[sms:sandbox] to=${input.to} text=${input.text}`);
     return;
   }
-  console.info(`[sms] via ${env.sms.provider} to=${input.to}`);
+  const response = await fetch(env.sms.apiUrl, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${env.sms.apiKey}`,
+    },
+    body: JSON.stringify({
+      provider: env.sms.provider,
+      senderId: env.sms.senderId,
+      to: input.to,
+      text: input.text,
+    }),
+  });
+  if (!response.ok) {
+    throw new Error(`SMS provider returned HTTP ${response.status}`);
+  }
 }
 
 export async function listNotifications(userId: string, limit = 30) {

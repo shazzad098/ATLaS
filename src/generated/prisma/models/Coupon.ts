@@ -9,8 +9,8 @@
  * 🟢 You can import this file directly.
  */
 import type * as runtime from "@prisma/client/runtime/client"
-import type * as $Enums from "../enums"
-import type * as Prisma from "../internal/prismaNamespace"
+import type * as $Enums from "../enums.ts"
+import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model Coupon
@@ -31,6 +31,7 @@ export type CouponAvgAggregateOutputType = {
   minOrder: runtime.Decimal | null
   usageLimit: number | null
   usedCount: number | null
+  reservedCount: number | null
 }
 
 export type CouponSumAggregateOutputType = {
@@ -38,6 +39,7 @@ export type CouponSumAggregateOutputType = {
   minOrder: runtime.Decimal | null
   usageLimit: number | null
   usedCount: number | null
+  reservedCount: number | null
 }
 
 export type CouponMinAggregateOutputType = {
@@ -49,6 +51,7 @@ export type CouponMinAggregateOutputType = {
   minOrder: runtime.Decimal | null
   usageLimit: number | null
   usedCount: number | null
+  reservedCount: number | null
   startsAt: Date | null
   endsAt: Date | null
   status: $Enums.CatalogStatus | null
@@ -65,6 +68,7 @@ export type CouponMaxAggregateOutputType = {
   minOrder: runtime.Decimal | null
   usageLimit: number | null
   usedCount: number | null
+  reservedCount: number | null
   startsAt: Date | null
   endsAt: Date | null
   status: $Enums.CatalogStatus | null
@@ -81,6 +85,7 @@ export type CouponCountAggregateOutputType = {
   minOrder: number
   usageLimit: number
   usedCount: number
+  reservedCount: number
   startsAt: number
   endsAt: number
   status: number
@@ -95,6 +100,7 @@ export type CouponAvgAggregateInputType = {
   minOrder?: true
   usageLimit?: true
   usedCount?: true
+  reservedCount?: true
 }
 
 export type CouponSumAggregateInputType = {
@@ -102,6 +108,7 @@ export type CouponSumAggregateInputType = {
   minOrder?: true
   usageLimit?: true
   usedCount?: true
+  reservedCount?: true
 }
 
 export type CouponMinAggregateInputType = {
@@ -113,6 +120,7 @@ export type CouponMinAggregateInputType = {
   minOrder?: true
   usageLimit?: true
   usedCount?: true
+  reservedCount?: true
   startsAt?: true
   endsAt?: true
   status?: true
@@ -129,6 +137,7 @@ export type CouponMaxAggregateInputType = {
   minOrder?: true
   usageLimit?: true
   usedCount?: true
+  reservedCount?: true
   startsAt?: true
   endsAt?: true
   status?: true
@@ -145,6 +154,7 @@ export type CouponCountAggregateInputType = {
   minOrder?: true
   usageLimit?: true
   usedCount?: true
+  reservedCount?: true
   startsAt?: true
   endsAt?: true
   status?: true
@@ -248,6 +258,7 @@ export type CouponGroupByOutputType = {
   minOrder: runtime.Decimal
   usageLimit: number | null
   usedCount: number
+  reservedCount: number
   startsAt: Date | null
   endsAt: Date | null
   status: $Enums.CatalogStatus
@@ -287,6 +298,7 @@ export type CouponWhereInput = {
   minOrder?: Prisma.DecimalFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.IntNullableFilter<"Coupon"> | number | null
   usedCount?: Prisma.IntFilter<"Coupon"> | number
+  reservedCount?: Prisma.IntFilter<"Coupon"> | number
   startsAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   endsAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   status?: Prisma.EnumCatalogStatusFilter<"Coupon"> | $Enums.CatalogStatus
@@ -304,6 +316,7 @@ export type CouponOrderByWithRelationInput = {
   minOrder?: Prisma.SortOrder
   usageLimit?: Prisma.SortOrderInput | Prisma.SortOrder
   usedCount?: Prisma.SortOrder
+  reservedCount?: Prisma.SortOrder
   startsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -325,6 +338,7 @@ export type CouponWhereUniqueInput = Prisma.AtLeast<{
   minOrder?: Prisma.DecimalFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.IntNullableFilter<"Coupon"> | number | null
   usedCount?: Prisma.IntFilter<"Coupon"> | number
+  reservedCount?: Prisma.IntFilter<"Coupon"> | number
   startsAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   endsAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   status?: Prisma.EnumCatalogStatusFilter<"Coupon"> | $Enums.CatalogStatus
@@ -342,6 +356,7 @@ export type CouponOrderByWithAggregationInput = {
   minOrder?: Prisma.SortOrder
   usageLimit?: Prisma.SortOrderInput | Prisma.SortOrder
   usedCount?: Prisma.SortOrder
+  reservedCount?: Prisma.SortOrder
   startsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -366,6 +381,7 @@ export type CouponScalarWhereWithAggregatesInput = {
   minOrder?: Prisma.DecimalWithAggregatesFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.IntNullableWithAggregatesFilter<"Coupon"> | number | null
   usedCount?: Prisma.IntWithAggregatesFilter<"Coupon"> | number
+  reservedCount?: Prisma.IntWithAggregatesFilter<"Coupon"> | number
   startsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Coupon"> | Date | string | null
   endsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Coupon"> | Date | string | null
   status?: Prisma.EnumCatalogStatusWithAggregatesFilter<"Coupon"> | $Enums.CatalogStatus
@@ -381,6 +397,7 @@ export type CouponCreateInput = {
   minOrder?: runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: number | null
   usedCount?: number
+  reservedCount?: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
   status?: $Enums.CatalogStatus
@@ -398,6 +415,7 @@ export type CouponUncheckedCreateInput = {
   minOrder?: runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: number | null
   usedCount?: number
+  reservedCount?: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
   status?: $Enums.CatalogStatus
@@ -413,6 +431,7 @@ export type CouponUpdateInput = {
   minOrder?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   usedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedCount?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumCatalogStatusFieldUpdateOperationsInput | $Enums.CatalogStatus
@@ -430,6 +449,7 @@ export type CouponUncheckedUpdateInput = {
   minOrder?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   usedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedCount?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumCatalogStatusFieldUpdateOperationsInput | $Enums.CatalogStatus
@@ -446,6 +466,7 @@ export type CouponCreateManyInput = {
   minOrder?: runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: number | null
   usedCount?: number
+  reservedCount?: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
   status?: $Enums.CatalogStatus
@@ -461,6 +482,7 @@ export type CouponUpdateManyMutationInput = {
   minOrder?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   usedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedCount?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumCatalogStatusFieldUpdateOperationsInput | $Enums.CatalogStatus
@@ -477,6 +499,7 @@ export type CouponUncheckedUpdateManyInput = {
   minOrder?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   usedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedCount?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumCatalogStatusFieldUpdateOperationsInput | $Enums.CatalogStatus
@@ -508,6 +531,7 @@ export type CouponCountOrderByAggregateInput = {
   minOrder?: Prisma.SortOrder
   usageLimit?: Prisma.SortOrder
   usedCount?: Prisma.SortOrder
+  reservedCount?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -520,6 +544,7 @@ export type CouponAvgOrderByAggregateInput = {
   minOrder?: Prisma.SortOrder
   usageLimit?: Prisma.SortOrder
   usedCount?: Prisma.SortOrder
+  reservedCount?: Prisma.SortOrder
 }
 
 export type CouponMaxOrderByAggregateInput = {
@@ -531,6 +556,7 @@ export type CouponMaxOrderByAggregateInput = {
   minOrder?: Prisma.SortOrder
   usageLimit?: Prisma.SortOrder
   usedCount?: Prisma.SortOrder
+  reservedCount?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -547,6 +573,7 @@ export type CouponMinOrderByAggregateInput = {
   minOrder?: Prisma.SortOrder
   usageLimit?: Prisma.SortOrder
   usedCount?: Prisma.SortOrder
+  reservedCount?: Prisma.SortOrder
   startsAt?: Prisma.SortOrder
   endsAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -559,6 +586,7 @@ export type CouponSumOrderByAggregateInput = {
   minOrder?: Prisma.SortOrder
   usageLimit?: Prisma.SortOrder
   usedCount?: Prisma.SortOrder
+  reservedCount?: Prisma.SortOrder
 }
 
 export type CouponCreateNestedManyWithoutStoreInput = {
@@ -615,6 +643,7 @@ export type CouponCreateWithoutStoreInput = {
   minOrder?: runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: number | null
   usedCount?: number
+  reservedCount?: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
   status?: $Enums.CatalogStatus
@@ -630,6 +659,7 @@ export type CouponUncheckedCreateWithoutStoreInput = {
   minOrder?: runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: number | null
   usedCount?: number
+  reservedCount?: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
   status?: $Enums.CatalogStatus
@@ -675,6 +705,7 @@ export type CouponScalarWhereInput = {
   minOrder?: Prisma.DecimalFilter<"Coupon"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.IntNullableFilter<"Coupon"> | number | null
   usedCount?: Prisma.IntFilter<"Coupon"> | number
+  reservedCount?: Prisma.IntFilter<"Coupon"> | number
   startsAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   endsAt?: Prisma.DateTimeNullableFilter<"Coupon"> | Date | string | null
   status?: Prisma.EnumCatalogStatusFilter<"Coupon"> | $Enums.CatalogStatus
@@ -690,6 +721,7 @@ export type CouponCreateManyStoreInput = {
   minOrder?: runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: number | null
   usedCount?: number
+  reservedCount?: number
   startsAt?: Date | string | null
   endsAt?: Date | string | null
   status?: $Enums.CatalogStatus
@@ -705,6 +737,7 @@ export type CouponUpdateWithoutStoreInput = {
   minOrder?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   usedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedCount?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumCatalogStatusFieldUpdateOperationsInput | $Enums.CatalogStatus
@@ -720,6 +753,7 @@ export type CouponUncheckedUpdateWithoutStoreInput = {
   minOrder?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   usedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedCount?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumCatalogStatusFieldUpdateOperationsInput | $Enums.CatalogStatus
@@ -735,6 +769,7 @@ export type CouponUncheckedUpdateManyWithoutStoreInput = {
   minOrder?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   usageLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   usedCount?: Prisma.IntFieldUpdateOperationsInput | number
+  reservedCount?: Prisma.IntFieldUpdateOperationsInput | number
   startsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   status?: Prisma.EnumCatalogStatusFieldUpdateOperationsInput | $Enums.CatalogStatus
@@ -753,6 +788,7 @@ export type CouponSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   minOrder?: boolean
   usageLimit?: boolean
   usedCount?: boolean
+  reservedCount?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -770,6 +806,7 @@ export type CouponSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   minOrder?: boolean
   usageLimit?: boolean
   usedCount?: boolean
+  reservedCount?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -787,6 +824,7 @@ export type CouponSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   minOrder?: boolean
   usageLimit?: boolean
   usedCount?: boolean
+  reservedCount?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -804,6 +842,7 @@ export type CouponSelectScalar = {
   minOrder?: boolean
   usageLimit?: boolean
   usedCount?: boolean
+  reservedCount?: boolean
   startsAt?: boolean
   endsAt?: boolean
   status?: boolean
@@ -811,7 +850,7 @@ export type CouponSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "code" | "type" | "value" | "minOrder" | "usageLimit" | "usedCount" | "startsAt" | "endsAt" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["coupon"]>
+export type CouponOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "code" | "type" | "value" | "minOrder" | "usageLimit" | "usedCount" | "reservedCount" | "startsAt" | "endsAt" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["coupon"]>
 export type CouponInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>
 }
@@ -836,6 +875,7 @@ export type $CouponPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     minOrder: runtime.Decimal
     usageLimit: number | null
     usedCount: number
+    reservedCount: number
     startsAt: Date | null
     endsAt: Date | null
     status: $Enums.CatalogStatus
@@ -1273,6 +1313,7 @@ export interface CouponFieldRefs {
   readonly minOrder: Prisma.FieldRef<"Coupon", 'Decimal'>
   readonly usageLimit: Prisma.FieldRef<"Coupon", 'Int'>
   readonly usedCount: Prisma.FieldRef<"Coupon", 'Int'>
+  readonly reservedCount: Prisma.FieldRef<"Coupon", 'Int'>
   readonly startsAt: Prisma.FieldRef<"Coupon", 'DateTime'>
   readonly endsAt: Prisma.FieldRef<"Coupon", 'DateTime'>
   readonly status: Prisma.FieldRef<"Coupon", 'CatalogStatus'>

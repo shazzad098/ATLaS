@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
+import { createHash } from "node:crypto";
 import { AppError, isAppError, ValidationError } from "@/lib/errors";
+import { prisma } from "@/lib/db";
 
 /**
  * REST envelope + pagination conventions (PRD §11 "API rules"):
@@ -85,11 +87,23 @@ export function route<Args extends unknown[]>(
   return async (...args: Args): Promise<NextResponse> => {
     const requestId = newRequestId();
     try {
-      return await handler(...args);
+      const response = await handler(...args);
+      applyResponseHeaders(response.headers, requestId);
+      return response;
     } catch (error) {
-      return fail(error, requestId);
+      const response = fail(error, requestId);
+      applyResponseHeaders(response.headers, requestId);
+      return response;
     }
   };
+}
+
+function applyResponseHeaders(headers: Headers, requestId: string) {
+  headers.set("x-request-id", requestId);
+  headers.set("x-content-type-options", "nosniff");
+  headers.set("referrer-policy", "strict-origin-when-cross-origin");
+  headers.set("x-frame-options", "DENY");
+  headers.set("permissions-policy", "camera=(), microphone=(), geolocation=()");
 }
 
 export async function parseBody<T>(request: Request, schema: ZodType<T>): Promise<T> {
@@ -152,24 +166,33 @@ export function clientIp(request: Request): string {
   return request.headers.get("x-real-ip") ?? "unknown";
 }
 
-/**
- * In-memory fixed-window rate limiter. The MVP runs a single app instance with
- * Redis available later; the interface is the same either way.
- */
-const buckets = new Map<string, { count: number; resetAt: number }>();
-
-export function rateLimit(key: string, perMinute: number): void {
-  const now = Date.now();
-  const bucket = buckets.get(key);
-  if (!bucket || bucket.resetAt < now) {
-    buckets.set(key, { count: 1, resetAt: now + 60_000 });
-    return;
-  }
-  bucket.count += 1;
-  if (bucket.count > perMinute) {
+/** Shared PostgreSQL fixed-window limiter; safe across horizontally scaled app instances. */
+export async function rateLimit(key: string, perMinute: number): Promise<void> {
+  const now = new Date();
+  const windowStart = new Date(Math.floor(now.getTime() / 60_000) * 60_000);
+  const expiresAt = new Date(windowStart.getTime() + 60_000);
+  const bucketId = createHash("sha256").update(key).digest("hex");
+  await prisma.$executeRaw`
+    INSERT INTO "RateLimitBucket" ("id", "count", "windowStart", "expiresAt", "updatedAt")
+    VALUES (${bucketId}, 1, ${windowStart}, ${expiresAt}, ${now})
+    ON CONFLICT ("id") DO UPDATE SET
+      "count" = CASE WHEN "RateLimitBucket"."windowStart" = ${windowStart}
+        THEN "RateLimitBucket"."count" + 1 ELSE 1 END,
+      "windowStart" = ${windowStart},
+      "expiresAt" = ${expiresAt},
+      "updatedAt" = ${now}
+  `;
+  const rows = await prisma.$queryRaw<Array<{ count: number }>>`
+    SELECT "count" FROM "RateLimitBucket" WHERE "id" = ${bucketId}
+  `;
+  const count = Number(rows[0]?.count ?? 0);
+  if (count > perMinute) {
     throw new AppError("RATE_LIMITED", "খুব বেশি request পাঠানো হয়েছে। এক মিনিট পরে চেষ্টা করুন।", 429, {
       limit: perMinute,
-      retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000),
+      retryAfterSeconds: Math.ceil((expiresAt.getTime() - now.getTime()) / 1000),
     });
+  }
+  if (Math.random() < 0.01) {
+    await prisma.rateLimitBucket.deleteMany({ where: { expiresAt: { lt: now } } });
   }
 }

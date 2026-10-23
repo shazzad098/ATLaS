@@ -8,6 +8,7 @@ import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import { recordAudit } from "@/lib/audit";
 import { attachPendingFeesToInvoice, feeSummary } from "@/lib/services/fee-service";
 import type { ActorContext } from "@/lib/rbac";
+import type { Tx } from "@/lib/services/fee-service";
 
 /**
  * Subscription + billing lifecycle (PRD §5.2).
@@ -260,6 +261,11 @@ export async function changePlan(
     },
   });
 
+  await prisma.store.updateMany({
+    where: { tenantId: actor.tenantId, status: "SUSPENDED" },
+    data: { status: "PUBLISHED", publishedAt: new Date() },
+  });
+
   invalidateEntitlements(actor.tenantId);
   await recordAudit({
     action: "subscription.plan_changed",
@@ -306,8 +312,11 @@ export async function cancelSubscription(
 
 // ── Invoices ────────────────────────────────────────────────────────────────
 
-async function nextInvoiceNumber(): Promise<string> {
-  const count = await prisma.invoice.count();
+async function nextInvoiceNumber(tx: Tx): Promise<string> {
+  // Serialize allocation across concurrent billing workers. The unique
+  // constraint remains the final safety net, but count+1 must not race.
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(87123456)`;
+  const count = await tx.invoice.count();
   return buildInvoiceNumber(count + 1);
 }
 
@@ -345,7 +354,7 @@ export async function generateInvoice(
       data: {
         tenantId,
         subscriptionId: subscription.id,
-        number: await nextInvoiceNumber(),
+        number: await nextInvoiceNumber(tx),
         currency: "BDT",
         status: "OPEN",
         dueAt: addDays(new Date(), 7),
@@ -392,27 +401,44 @@ export async function markInvoicePaid(actor: ActorContext, invoiceId: string) {
   });
   if (!invoice) throw new NotFoundError("Invoice");
 
-  const paid = await prisma.invoice.update({
-    where: { id: invoiceId },
-    data: { status: "PAID", paidAt: new Date() },
-  });
-
-  const subscription = await prisma.subscription.findUnique({ where: { tenantId: actor.tenantId } });
-  if (subscription) {
-    await prisma.subscription.update({
-      where: { tenantId: actor.tenantId },
-      data: {
-        status: "ACTIVE",
-        currentPeriodStart: new Date(),
-        currentPeriodEnd: nextPeriodEnd(
-          new Date(),
-          subscription.billingPeriod === "YEARLY" ? 12 : 1,
-        ),
-        graceEndsAt: null,
-        lastPaymentFailedAt: null,
-      },
+  if (invoice.status !== "OPEN") {
+    throw new AppError("CONFLICT", "শুধু OPEN invoice-ই পরিশোধিত করা যাবে।", 409, {
+      invoiceId,
+      status: invoice.status,
     });
   }
+
+  const now = new Date();
+  const paid = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.invoice.updateMany({
+      where: { id: invoiceId, tenantId: actor.tenantId, status: "OPEN" },
+      data: { status: "PAID", paidAt: now },
+    });
+    if (claimed.count !== 1) {
+      throw new AppError("CONFLICT", "Invoiceটি ইতিমধ্যে অন্য request দ্বারা পরিবর্তিত হয়েছে।", 409);
+    }
+    const subscription = await tx.subscription.findUnique({ where: { tenantId: actor.tenantId } });
+    if (subscription) {
+      await tx.subscription.update({
+        where: { tenantId: actor.tenantId },
+        data: {
+          status: "ACTIVE",
+          currentPeriodStart: now,
+          currentPeriodEnd: nextPeriodEnd(
+            now,
+            subscription.billingPeriod === "YEARLY" ? 12 : 1,
+          ),
+          graceEndsAt: null,
+          lastPaymentFailedAt: null,
+        },
+      });
+    }
+    await tx.store.updateMany({
+      where: { tenantId: actor.tenantId, status: "SUSPENDED" },
+      data: { status: "PUBLISHED", publishedAt: now },
+    });
+    return tx.invoice.findUniqueOrThrow({ where: { id: invoiceId } });
+  });
 
   invalidateEntitlements(actor.tenantId);
   await recordAudit({
@@ -521,8 +547,9 @@ export async function runBillingSweep(now = new Date()): Promise<SweepResult> {
       await prisma.subscription.update({
         where: { id: subscription.id },
         data: {
-          status: subscription.cancelAtPeriodEnd ? "CANCELLED" : "PAST_DUE",
+          status: subscription.cancelAtPeriodEnd ? "CANCELLED" : "GRACE_PERIOD",
           lastPaymentFailedAt: now,
+          graceEndsAt: subscription.cancelAtPeriodEnd ? null : addDays(now, GRACE_DAYS),
           cancelledAt: subscription.cancelAtPeriodEnd ? now : null,
         },
       });
@@ -538,7 +565,10 @@ export async function runBillingSweep(now = new Date()): Promise<SweepResult> {
     }
 
     // 4. Failed-payment retries on day 1, 3 and 5, then grace → read-only.
-    if (subscription.status === "PAST_DUE" && subscription.lastPaymentFailedAt) {
+    if (
+      (subscription.status === "PAST_DUE" || subscription.status === "GRACE_PERIOD") &&
+      subscription.lastPaymentFailedAt
+    ) {
       const elapsed = Math.floor(
         (now.getTime() - subscription.lastPaymentFailedAt.getTime()) / 86_400_000,
       );
@@ -576,7 +606,7 @@ export async function runBillingSweep(now = new Date()): Promise<SweepResult> {
         data: { status: "SUSPENDED" },
       });
       await prisma.store.updateMany({
-        where: { tenantId: subscription.tenantId },
+        where: { tenantId: subscription.tenantId, status: "PUBLISHED" },
         data: { status: "SUSPENDED" },
       });
       invalidateEntitlements(subscription.tenantId);

@@ -222,7 +222,7 @@ export type CartPricing = {
   discountTotal: string;
   shippingTotal: string;
   grandTotal: string;
-  coupon: { code: string; amount: string; type: string } | null;
+  coupon: { id: string; code: string; amount: string; type: string } | null;
   couponError: string | null;
   zone: { id: string; name: string; charge: string } | null;
   currency: string;
@@ -266,7 +266,7 @@ export async function priceCart(
           : String(check.coupon.value);
       const capped = toPaisa(amount) > subtotal ? subtotal : toPaisa(amount);
       discountTotal = capped;
-      coupon = { code: check.coupon.code, amount: fromPaisa(capped), type: check.coupon.type };
+      coupon = { id: check.coupon.id, code: check.coupon.code, amount: fromPaisa(capped), type: check.coupon.type };
     } else {
       couponError = check.reason;
     }

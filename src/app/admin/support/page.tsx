@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { LifeBuoy } from "lucide-react";
 import { requireActiveStorePage } from "@/lib/tenant";
 import { listTenantTickets, ticketCounts, ticketStatusLabel } from "@/lib/services/support-service";

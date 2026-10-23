@@ -66,7 +66,6 @@ export async function changePasswordAction(_prev: AdminState, formData: FormData
 
 export async function revokeSessionAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
   try {
-    const userId = await currentUserId();
     const sessionId = text(formData, "sessionId");
     const session = await readSession();
 

@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 
 export const POST = route(async (request: Request) => {
   assertCsrf(request);
-  rateLimit(`auth:refresh:${clientIp(request)}`, 60);
+  await rateLimit(`auth:refresh:${clientIp(request)}`, 60);
 
   const rotated = await rotateSession();
   if (!rotated) {

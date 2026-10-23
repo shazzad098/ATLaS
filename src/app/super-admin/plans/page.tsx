@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { pricingMatrix, PLAN_EDITABLE_LIMITS } from "@/lib/services/billing-service";
 import { formatBdt } from "@/lib/money";

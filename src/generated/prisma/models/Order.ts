@@ -9,8 +9,8 @@
  * 🟢 You can import this file directly.
  */
 import type * as runtime from "@prisma/client/runtime/client"
-import type * as $Enums from "../enums"
-import type * as Prisma from "../internal/prismaNamespace"
+import type * as $Enums from "../enums.ts"
+import type * as Prisma from "../internal/prismaNamespace.ts"
 
 /**
  * Model Order
@@ -60,6 +60,9 @@ export type OrderMinAggregateOutputType = {
   grandTotal: runtime.Decimal | null
   currency: string | null
   couponCode: string | null
+  couponRedeemedAt: Date | null
+  couponReleasedAt: Date | null
+  paymentExpiresAt: Date | null
   notes: string | null
   idempotencyKey: string | null
   placedAt: Date | null
@@ -89,6 +92,9 @@ export type OrderMaxAggregateOutputType = {
   grandTotal: runtime.Decimal | null
   currency: string | null
   couponCode: string | null
+  couponRedeemedAt: Date | null
+  couponReleasedAt: Date | null
+  paymentExpiresAt: Date | null
   notes: string | null
   idempotencyKey: string | null
   placedAt: Date | null
@@ -118,6 +124,9 @@ export type OrderCountAggregateOutputType = {
   grandTotal: number
   currency: number
   couponCode: number
+  couponRedeemedAt: number
+  couponReleasedAt: number
+  paymentExpiresAt: number
   addressSnapshotJson: number
   notes: number
   idempotencyKey: number
@@ -166,6 +175,9 @@ export type OrderMinAggregateInputType = {
   grandTotal?: true
   currency?: true
   couponCode?: true
+  couponRedeemedAt?: true
+  couponReleasedAt?: true
+  paymentExpiresAt?: true
   notes?: true
   idempotencyKey?: true
   placedAt?: true
@@ -195,6 +207,9 @@ export type OrderMaxAggregateInputType = {
   grandTotal?: true
   currency?: true
   couponCode?: true
+  couponRedeemedAt?: true
+  couponReleasedAt?: true
+  paymentExpiresAt?: true
   notes?: true
   idempotencyKey?: true
   placedAt?: true
@@ -224,6 +239,9 @@ export type OrderCountAggregateInputType = {
   grandTotal?: true
   currency?: true
   couponCode?: true
+  couponRedeemedAt?: true
+  couponReleasedAt?: true
+  paymentExpiresAt?: true
   addressSnapshotJson?: true
   notes?: true
   idempotencyKey?: true
@@ -341,6 +359,9 @@ export type OrderGroupByOutputType = {
   grandTotal: runtime.Decimal
   currency: string
   couponCode: string | null
+  couponRedeemedAt: Date | null
+  couponReleasedAt: Date | null
+  paymentExpiresAt: Date | null
   addressSnapshotJson: runtime.JsonValue
   notes: string | null
   idempotencyKey: string | null
@@ -394,6 +415,9 @@ export type OrderWhereInput = {
   grandTotal?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"Order"> | string
   couponCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  couponRedeemedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  couponReleasedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   addressSnapshotJson?: Prisma.JsonFilter<"Order">
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
   idempotencyKey?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -431,6 +455,9 @@ export type OrderOrderByWithRelationInput = {
   grandTotal?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   couponCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  couponRedeemedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  couponReleasedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   addressSnapshotJson?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -473,6 +500,9 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   grandTotal?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"Order"> | string
   couponCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  couponRedeemedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  couponReleasedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   addressSnapshotJson?: Prisma.JsonFilter<"Order">
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
   placedAt?: Prisma.DateTimeFilter<"Order"> | Date | string
@@ -509,6 +539,9 @@ export type OrderOrderByWithAggregationInput = {
   grandTotal?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   couponCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  couponRedeemedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  couponReleasedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   addressSnapshotJson?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -547,6 +580,9 @@ export type OrderScalarWhereWithAggregatesInput = {
   grandTotal?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringWithAggregatesFilter<"Order"> | string
   couponCode?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  couponRedeemedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  couponReleasedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   addressSnapshotJson?: Prisma.JsonWithAggregatesFilter<"Order">
   notes?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   idempotencyKey?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
@@ -575,6 +611,9 @@ export type OrderCreateInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -612,6 +651,9 @@ export type OrderUncheckedCreateInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -645,6 +687,9 @@ export type OrderUpdateInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -682,6 +727,9 @@ export type OrderUncheckedUpdateInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -717,6 +765,9 @@ export type OrderCreateManyInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -745,6 +796,9 @@ export type OrderUpdateManyMutationInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -775,6 +829,9 @@ export type OrderUncheckedUpdateManyInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -820,6 +877,9 @@ export type OrderCountOrderByAggregateInput = {
   grandTotal?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   couponCode?: Prisma.SortOrder
+  couponRedeemedAt?: Prisma.SortOrder
+  couponReleasedAt?: Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrder
   addressSnapshotJson?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
@@ -858,6 +918,9 @@ export type OrderMaxOrderByAggregateInput = {
   grandTotal?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   couponCode?: Prisma.SortOrder
+  couponRedeemedAt?: Prisma.SortOrder
+  couponReleasedAt?: Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
   placedAt?: Prisma.SortOrder
@@ -887,6 +950,9 @@ export type OrderMinOrderByAggregateInput = {
   grandTotal?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   couponCode?: Prisma.SortOrder
+  couponRedeemedAt?: Prisma.SortOrder
+  couponReleasedAt?: Prisma.SortOrder
+  paymentExpiresAt?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   idempotencyKey?: Prisma.SortOrder
   placedAt?: Prisma.SortOrder
@@ -1104,6 +1170,9 @@ export type OrderCreateWithoutStoreInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1139,6 +1208,9 @@ export type OrderUncheckedCreateWithoutStoreInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1203,6 +1275,9 @@ export type OrderScalarWhereInput = {
   grandTotal?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"Order"> | string
   couponCode?: Prisma.StringNullableFilter<"Order"> | string | null
+  couponRedeemedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  couponReleasedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  paymentExpiresAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   addressSnapshotJson?: Prisma.JsonFilter<"Order">
   notes?: Prisma.StringNullableFilter<"Order"> | string | null
   idempotencyKey?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -1231,6 +1306,9 @@ export type OrderCreateWithoutCustomerInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1266,6 +1344,9 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1325,6 +1406,9 @@ export type OrderCreateWithoutItemsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1361,6 +1445,9 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1409,6 +1496,9 @@ export type OrderUpdateWithoutItemsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1445,6 +1535,9 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1477,6 +1570,9 @@ export type OrderCreateWithoutEventsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1513,6 +1609,9 @@ export type OrderUncheckedCreateWithoutEventsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1561,6 +1660,9 @@ export type OrderUpdateWithoutEventsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1597,6 +1699,9 @@ export type OrderUncheckedUpdateWithoutEventsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1629,6 +1734,9 @@ export type OrderCreateWithoutReturnsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1665,6 +1773,9 @@ export type OrderUncheckedCreateWithoutReturnsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1713,6 +1824,9 @@ export type OrderUpdateWithoutReturnsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1749,6 +1863,9 @@ export type OrderUncheckedUpdateWithoutReturnsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1781,6 +1898,9 @@ export type OrderCreateWithoutPaymentsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1817,6 +1937,9 @@ export type OrderUncheckedCreateWithoutPaymentsInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1865,6 +1988,9 @@ export type OrderUpdateWithoutPaymentsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1901,6 +2027,9 @@ export type OrderUncheckedUpdateWithoutPaymentsInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1933,6 +2062,9 @@ export type OrderCreateWithoutFeeLedgerInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -1969,6 +2101,9 @@ export type OrderUncheckedCreateWithoutFeeLedgerInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -2017,6 +2152,9 @@ export type OrderUpdateWithoutFeeLedgerInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2053,6 +2191,9 @@ export type OrderUncheckedUpdateWithoutFeeLedgerInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2086,6 +2227,9 @@ export type OrderCreateManyStoreInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -2114,6 +2258,9 @@ export type OrderUpdateWithoutStoreInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2149,6 +2296,9 @@ export type OrderUncheckedUpdateWithoutStoreInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2183,6 +2333,9 @@ export type OrderUncheckedUpdateManyWithoutStoreInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2212,6 +2365,9 @@ export type OrderCreateManyCustomerInput = {
   grandTotal: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: string
   couponCode?: string | null
+  couponRedeemedAt?: Date | string | null
+  couponReleasedAt?: Date | string | null
+  paymentExpiresAt?: Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: string | null
   idempotencyKey?: string | null
@@ -2240,6 +2396,9 @@ export type OrderUpdateWithoutCustomerInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2275,6 +2434,9 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2309,6 +2471,9 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   grandTotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   couponCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  couponRedeemedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  couponReleasedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   addressSnapshotJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2406,6 +2571,9 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   grandTotal?: boolean
   currency?: boolean
   couponCode?: boolean
+  couponRedeemedAt?: boolean
+  couponReleasedAt?: boolean
+  paymentExpiresAt?: boolean
   addressSnapshotJson?: boolean
   notes?: boolean
   idempotencyKey?: boolean
@@ -2444,6 +2612,9 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   grandTotal?: boolean
   currency?: boolean
   couponCode?: boolean
+  couponRedeemedAt?: boolean
+  couponReleasedAt?: boolean
+  paymentExpiresAt?: boolean
   addressSnapshotJson?: boolean
   notes?: boolean
   idempotencyKey?: boolean
@@ -2476,6 +2647,9 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   grandTotal?: boolean
   currency?: boolean
   couponCode?: boolean
+  couponRedeemedAt?: boolean
+  couponReleasedAt?: boolean
+  paymentExpiresAt?: boolean
   addressSnapshotJson?: boolean
   notes?: boolean
   idempotencyKey?: boolean
@@ -2508,6 +2682,9 @@ export type OrderSelectScalar = {
   grandTotal?: boolean
   currency?: boolean
   couponCode?: boolean
+  couponRedeemedAt?: boolean
+  couponReleasedAt?: boolean
+  paymentExpiresAt?: boolean
   addressSnapshotJson?: boolean
   notes?: boolean
   idempotencyKey?: boolean
@@ -2520,7 +2697,7 @@ export type OrderSelectScalar = {
   deletedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "orderNo" | "customerId" | "customerName" | "customerPhone" | "status" | "paymentStatus" | "fulfillmentStatus" | "paymentProvider" | "subtotal" | "discountTotal" | "shippingTotal" | "taxTotal" | "grandTotal" | "currency" | "couponCode" | "addressSnapshotJson" | "notes" | "idempotencyKey" | "placedAt" | "confirmedAt" | "deliveredAt" | "cancelledAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "orderNo" | "customerId" | "customerName" | "customerPhone" | "status" | "paymentStatus" | "fulfillmentStatus" | "paymentProvider" | "subtotal" | "discountTotal" | "shippingTotal" | "taxTotal" | "grandTotal" | "currency" | "couponCode" | "couponRedeemedAt" | "couponReleasedAt" | "paymentExpiresAt" | "addressSnapshotJson" | "notes" | "idempotencyKey" | "placedAt" | "confirmedAt" | "deliveredAt" | "cancelledAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>
   customer?: boolean | Prisma.Order$customerArgs<ExtArgs>
@@ -2569,6 +2746,9 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     grandTotal: runtime.Decimal
     currency: string
     couponCode: string | null
+    couponRedeemedAt: Date | null
+    couponReleasedAt: Date | null
+    paymentExpiresAt: Date | null
     addressSnapshotJson: runtime.JsonValue
     notes: string | null
     idempotencyKey: string | null
@@ -3026,6 +3206,9 @@ export interface OrderFieldRefs {
   readonly grandTotal: Prisma.FieldRef<"Order", 'Decimal'>
   readonly currency: Prisma.FieldRef<"Order", 'String'>
   readonly couponCode: Prisma.FieldRef<"Order", 'String'>
+  readonly couponRedeemedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly couponReleasedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly paymentExpiresAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly addressSnapshotJson: Prisma.FieldRef<"Order", 'Json'>
   readonly notes: Prisma.FieldRef<"Order", 'String'>
   readonly idempotencyKey: Prisma.FieldRef<"Order", 'String'>

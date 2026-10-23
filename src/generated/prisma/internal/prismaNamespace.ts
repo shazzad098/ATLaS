@@ -16,10 +16,10 @@
  */
 
 import * as runtime from "@prisma/client/runtime/client"
-import type * as Prisma from "../models"
-import { type PrismaClient } from "./class"
+import type * as Prisma from "../models.ts"
+import { type PrismaClient } from "./class.ts"
 
-export type * from '../models'
+export type * from '../models.ts'
 
 export type DMMF = typeof runtime.DMMF
 
@@ -403,6 +403,7 @@ export const ModelName = {
   Role: 'Role',
   Session: 'Session',
   OtpChallenge: 'OtpChallenge',
+  RateLimitBucket: 'RateLimitBucket',
   Store: 'Store',
   StoreSettings: 'StoreSettings',
   Theme: 'Theme',
@@ -452,7 +453,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "tenant" | "membership" | "role" | "session" | "otpChallenge" | "store" | "storeSettings" | "theme" | "themeVersion" | "storeTheme" | "contentPage" | "domain" | "category" | "product" | "productVariant" | "productImage" | "inventoryMovement" | "asset" | "customer" | "cart" | "cartItem" | "order" | "orderItem" | "orderEvent" | "return" | "paymentMethod" | "payment" | "paymentWebhookEvent" | "plan" | "subscription" | "invoice" | "usageCounter" | "feeLedger" | "coupon" | "deliveryZone" | "auditLog" | "notification" | "supportTicket" | "webhookDelivery"
+    modelProps: "user" | "tenant" | "membership" | "role" | "session" | "otpChallenge" | "rateLimitBucket" | "store" | "storeSettings" | "theme" | "themeVersion" | "storeTheme" | "contentPage" | "domain" | "category" | "product" | "productVariant" | "productImage" | "inventoryMovement" | "asset" | "customer" | "cart" | "cartItem" | "order" | "orderItem" | "orderEvent" | "return" | "paymentMethod" | "payment" | "paymentWebhookEvent" | "plan" | "subscription" | "invoice" | "usageCounter" | "feeLedger" | "coupon" | "deliveryZone" | "auditLog" | "notification" | "supportTicket" | "webhookDelivery"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -897,6 +898,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.OtpChallengeCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.OtpChallengeCountAggregateOutputType> | number
+        }
+      }
+    }
+    RateLimitBucket: {
+      payload: Prisma.$RateLimitBucketPayload<ExtArgs>
+      fields: Prisma.RateLimitBucketFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RateLimitBucketFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RateLimitBucketFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>
+        }
+        findFirst: {
+          args: Prisma.RateLimitBucketFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RateLimitBucketFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>
+        }
+        findMany: {
+          args: Prisma.RateLimitBucketFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>[]
+        }
+        create: {
+          args: Prisma.RateLimitBucketCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>
+        }
+        createMany: {
+          args: Prisma.RateLimitBucketCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RateLimitBucketCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>[]
+        }
+        delete: {
+          args: Prisma.RateLimitBucketDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>
+        }
+        update: {
+          args: Prisma.RateLimitBucketUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>
+        }
+        deleteMany: {
+          args: Prisma.RateLimitBucketDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RateLimitBucketUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RateLimitBucketUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>[]
+        }
+        upsert: {
+          args: Prisma.RateLimitBucketUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RateLimitBucketPayload>
+        }
+        aggregate: {
+          args: Prisma.RateLimitBucketAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRateLimitBucket>
+        }
+        groupBy: {
+          args: Prisma.RateLimitBucketGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RateLimitBucketGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RateLimitBucketCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RateLimitBucketCountAggregateOutputType> | number
         }
       }
     }
@@ -3544,6 +3619,17 @@ export const OtpChallengeScalarFieldEnum = {
 export type OtpChallengeScalarFieldEnum = (typeof OtpChallengeScalarFieldEnum)[keyof typeof OtpChallengeScalarFieldEnum]
 
 
+export const RateLimitBucketScalarFieldEnum = {
+  id: 'id',
+  count: 'count',
+  windowStart: 'windowStart',
+  expiresAt: 'expiresAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RateLimitBucketScalarFieldEnum = (typeof RateLimitBucketScalarFieldEnum)[keyof typeof RateLimitBucketScalarFieldEnum]
+
+
 export const StoreScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3814,6 +3900,9 @@ export const OrderScalarFieldEnum = {
   grandTotal: 'grandTotal',
   currency: 'currency',
   couponCode: 'couponCode',
+  couponRedeemedAt: 'couponRedeemedAt',
+  couponReleasedAt: 'couponReleasedAt',
+  paymentExpiresAt: 'paymentExpiresAt',
   addressSnapshotJson: 'addressSnapshotJson',
   notes: 'notes',
   idempotencyKey: 'idempotencyKey',
@@ -3915,7 +4004,8 @@ export const PaymentWebhookEventScalarFieldEnum = {
   processedAt: 'processedAt',
   status: 'status',
   error: 'error',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type PaymentWebhookEventScalarFieldEnum = (typeof PaymentWebhookEventScalarFieldEnum)[keyof typeof PaymentWebhookEventScalarFieldEnum]
@@ -4025,6 +4115,7 @@ export const CouponScalarFieldEnum = {
   minOrder: 'minOrder',
   usageLimit: 'usageLimit',
   usedCount: 'usedCount',
+  reservedCount: 'reservedCount',
   startsAt: 'startsAt',
   endsAt: 'endsAt',
   status: 'status',
@@ -4758,6 +4849,7 @@ export type GlobalOmitConfig = {
   role?: Prisma.RoleOmit
   session?: Prisma.SessionOmit
   otpChallenge?: Prisma.OtpChallengeOmit
+  rateLimitBucket?: Prisma.RateLimitBucketOmit
   store?: Prisma.StoreOmit
   storeSettings?: Prisma.StoreSettingsOmit
   theme?: Prisma.ThemeOmit

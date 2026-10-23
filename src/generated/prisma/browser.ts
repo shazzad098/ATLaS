@@ -13,10 +13,10 @@
  * 🟢 You can import this file directly.
  */
 
-import * as Prisma from './internal/prismaNamespaceBrowser'
+import * as Prisma from './internal/prismaNamespaceBrowser.ts'
 export { Prisma }
-export * as $Enums from './enums'
-export * from './enums';
+export * as $Enums from './enums.ts'
+export * from './enums.ts';
 /**
  * Model User
  * 
@@ -48,6 +48,12 @@ export type Session = Prisma.SessionModel
  * Codes are stored hashed and are single-use with attempt + expiry limits.
  */
 export type OtpChallenge = Prisma.OtpChallengeModel
+/**
+ * Model RateLimitBucket
+ * Shared fixed-window limiter state; unlike a process-local Map this works
+ * across multiple Next.js instances and survives horizontal scaling.
+ */
+export type RateLimitBucket = Prisma.RateLimitBucketModel
 /**
  * Model Store
  * 

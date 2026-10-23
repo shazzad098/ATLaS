@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { KeyRound, ShieldAlert, ShieldCheck } from "lucide-react";
 import { prisma } from "@/lib/db";
@@ -24,7 +23,7 @@ export default async function AuditPage({
   searchParams: Promise<{ action?: string; tenantId?: string }>;
 }) {
   const query = await searchParams;
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const since = new Date(new Date().getTime() - 24 * 60 * 60 * 1000);
 
   const [logs, sessions, otp, topActions, impersonations, failedWebhooks] = await Promise.all([
     listAuditLogs({ action: query.action, tenantId: query.tenantId, limit: 120 }),

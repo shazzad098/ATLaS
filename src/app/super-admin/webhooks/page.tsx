@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { AlertTriangle, CheckCircle2, Webhook } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { listWebhookEvents, webhookHealth } from "@/lib/services/payment-service";
@@ -34,7 +33,7 @@ export default async function WebhooksPage() {
     webhookHealth(),
     listWebhookEvents(undefined, 40),
     listWebhookDeliveries(30),
-    prisma.payment.count({ where: { status: { in: ["INITIATED", "PENDING"] }, createdAt: { lt: new Date(Date.now() - 30 * 60 * 1000) } } }),
+    prisma.payment.count({ where: { status: { in: ["INITIATED", "PENDING"] }, createdAt: { lt: new Date(new Date().getTime() - 30 * 60 * 1000) } } }),
     prisma.auditLog.findMany({
       where: { action: { startsWith: "payment." } },
       orderBy: { createdAt: "desc" },

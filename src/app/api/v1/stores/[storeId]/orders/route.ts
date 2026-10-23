@@ -43,7 +43,7 @@ export const GET = route(async (request: NextRequest, context: StoreRouteContext
   const actor = await resolveApiActor(request, user);
   assertPermission(actor, "orders:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`orders:list:${actor.tenantId}`, 240);
+  await rateLimit(`orders:list:${actor.tenantId}`, 240);
 
   const pagination = parsePagination(request.nextUrl.searchParams);
   const query = listQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));

@@ -5,6 +5,7 @@ import { assertPermission, type ActorContext } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
 import { toDecimalString } from "@/lib/money";
 import { recordAudit } from "@/lib/audit";
+import type { Tx } from "@/lib/services/fee-service";
 
 /**
  * Discount codes (FR-08).
@@ -111,4 +112,61 @@ export async function archiveCoupon(actor: ActorContext, storeId: string, coupon
     data: { status: "ARCHIVED" },
   });
   if (removed.count === 0) throw new NotFoundError("Coupon");
+}
+
+/** Reserve one finite coupon slot while the order/payment is pending. */
+export async function reserveCoupon(tx: Tx, couponId: string): Promise<void> {
+  const affected = await tx.$executeRaw`
+    UPDATE "Coupon"
+       SET "reservedCount" = "reservedCount" + 1
+     WHERE "id" = ${couponId}
+       AND "status" = 'ACTIVE'
+       AND ("usageLimit" IS NULL OR "usedCount" + "reservedCount" < "usageLimit")
+  `;
+  if (affected === 0) throw new ConflictError("এই কুপনের ব্যবহার সীমা শেষ হয়ে গেছে।");
+}
+
+/** Finalize a pending reservation exactly once for a successful order. */
+export async function finalizeCouponRedemption(orderId: string): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: { storeId: true, couponCode: true, couponRedeemedAt: true, couponReleasedAt: true },
+    });
+    if (!order?.couponCode || order.couponRedeemedAt || order.couponReleasedAt) return false;
+    const claimed = await tx.order.updateMany({
+      where: { id: orderId, couponRedeemedAt: null, couponReleasedAt: null },
+      data: { couponRedeemedAt: new Date() },
+    });
+    if (claimed.count === 0) return false;
+    await tx.$executeRaw`
+      UPDATE "Coupon"
+         SET "reservedCount" = GREATEST("reservedCount" - 1, 0),
+             "usedCount" = "usedCount" + 1
+       WHERE "storeId" = ${order.storeId} AND "code" = ${order.couponCode}
+    `;
+    return true;
+  });
+}
+
+/** Release a pending reservation exactly once for a failed/cancelled order. */
+export async function releaseCouponReservation(orderId: string): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: { storeId: true, couponCode: true, couponRedeemedAt: true, couponReleasedAt: true },
+    });
+    if (!order?.couponCode || order.couponRedeemedAt || order.couponReleasedAt) return false;
+    const claimed = await tx.order.updateMany({
+      where: { id: orderId, couponRedeemedAt: null, couponReleasedAt: null },
+      data: { couponReleasedAt: new Date() },
+    });
+    if (claimed.count === 0) return false;
+    await tx.$executeRaw`
+      UPDATE "Coupon"
+         SET "reservedCount" = GREATEST("reservedCount" - 1, 0)
+       WHERE "storeId" = ${order.storeId} AND "code" = ${order.couponCode}
+    `;
+    return true;
+  });
 }

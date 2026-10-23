@@ -18,7 +18,7 @@ type SlugRouteContext = { params: Promise<{ slug: string }> };
 
 export const GET = route(async (request: NextRequest, context: SlugRouteContext) => {
   const { slug } = await context.params;
-  rateLimit(`public:store:${clientIp(request)}`, 240);
+  await rateLimit(`public:store:${clientIp(request)}`, 240);
 
   const store = await loadStorefront(slug);
   if (!store) throw new NotFoundError("Store");

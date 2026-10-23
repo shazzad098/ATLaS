@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { AppError, NotFoundError } from "@/lib/errors";
+import { AppError, ConflictError, NotFoundError } from "@/lib/errors";
 import { addMoney, formatBdt, fromPaisa, toPaisa, type MoneyInput } from "@/lib/money";
 import type { ActorContext } from "@/lib/rbac";
 import { assertPermission } from "@/lib/rbac";
@@ -12,6 +12,7 @@ import {
   restockVariant,
 } from "@/lib/services/inventory-service";
 import { applyAllOrderFees, reverseFeesForOrder } from "@/lib/services/fee-service";
+import { releaseCouponReservation } from "@/lib/services/coupon-service";
 
 /**
  * Orders (FR-04).
@@ -221,8 +222,8 @@ export async function applyTransition(params: {
   const { orderId, from, to, items } = params;
 
   await prisma.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: orderId },
+    const changed = await tx.order.updateMany({
+      where: { id: orderId, status: from },
       data: {
         status: to,
         ...(to === "PAID" ? { paymentStatus: "PAID" } : {}),
@@ -237,6 +238,13 @@ export async function applyTransition(params: {
         ...(to === "PROCESSING" || to === "SHIPPED" ? { fulfillmentStatus: "PARTIAL" } : {}),
       },
     });
+    if (changed.count !== 1) {
+      throw new ConflictError("অর্ডারটি অন্য একটি request দ্বারা পরিবর্তিত হয়েছে।", {
+        orderId,
+        expectedStatus: from,
+        requestedStatus: to,
+      });
+    }
 
     await tx.orderEvent.create({
       data: {
@@ -289,6 +297,7 @@ export async function applyTransition(params: {
   } else {
     await applyAllOrderFees(orderId);
   }
+  if (to === "CANCELLED") await releaseCouponReservation(orderId);
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },

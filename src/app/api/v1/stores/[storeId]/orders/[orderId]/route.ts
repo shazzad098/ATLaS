@@ -28,7 +28,7 @@ export const GET = route(async (request: NextRequest, context: OrderRouteContext
   const actor = await resolveApiActor(request, user);
   assertPermission(actor, "orders:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`orders:get:${actor.tenantId}`, 240);
+  await rateLimit(`orders:get:${actor.tenantId}`, 240);
 
   const order = await getOrderDetail(storeId, orderId);
   return ok(order);
@@ -40,7 +40,7 @@ export const PATCH = route(async (request: NextRequest, context: OrderRouteConte
   assertCsrf(request);
   const user = await authenticateRequest(request);
   const actor = await resolveApiActor(request, user);
-  rateLimit(`orders:update:${actor.tenantId}`, 120);
+  await rateLimit(`orders:update:${actor.tenantId}`, 120);
 
   const input = await parseBody(request, patchSchema);
   const order = await updateOrderStatus(actor, storeId, orderId, {
