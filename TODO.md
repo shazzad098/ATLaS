@@ -85,5 +85,5 @@ Status: [ ] open · [x] delivered with evidence
 - [ ] Analytics event taxonomy: signup_completed, store_created, theme_selected, first_product_created, store_published, checkout_started, payment_succeeded, order_created, subscription_started, subscription_renewed, subscription_failed, plan_upgraded.
 - [ ] Appendix B defaults: trial 7 days no card; grace 7 days; retry day 1/3/5; product image max 5MB, WebP compression where supported; API rate limit 60 req/min per user with plan upgrade; soft delete products; financial records immutable.
 - [ ] Upload MIME validation, image size limit; audit logs for admin actions.
-- [ ] Seed: Super Admin, demo merchant, 3 polished demo stores with products/orders.
+- [x] Seed: Super Admin, demo merchant, 3 polished demo stores with products/orders; deterministic count/theme assertions are enforced.
 - [ ] Validation agent pass over implementation vs this list.

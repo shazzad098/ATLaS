@@ -376,3 +376,9 @@ Notification type names event taxonomy-এর মতো দেখালেও PR
 - `src/lib/order-status.test.ts` — status-policy regression coverage
 
 Phase 1 validation: `npm run typecheck`, `npm run lint` এবং `npm test` সফল; test suite-এ ৭টি test pass করেছে। Refund adjustment, partial-refund ledger semantics এবং end-to-end database concurrency tests পরবর্তী phase-এর scope।
+
+## 10. Post-audit Phase 2 — Seed and demo-data completeness
+
+PRD-এর seed requirement অনুযায়ী তৃতীয় polished demo store যোগ করা হয়েছে: `studio-tech` / Studio theme। এতে চারটি category, ১০টি product, variants, coupon, sandbox payment methods, ১২টি order এবং published storefront তৈরি হয়। বিদ্যমান `nokshi-demo` ও `dhaka-bazar` data অপরিবর্তিত রেখে reset list-এ তৃতীয় slug যুক্ত করা হয়েছে।
+
+Seed এখন explicit assertions চালায়: তিনটি store উপস্থিত, প্রতিটি published, selected theme সঠিক, এবং expected product/order count মিলে কি না। Temporary Prisma PostgreSQL-এ `npm run db:migrate` সফলভাবে সব ৪টি migration apply করেছে; `npm run db:seed` প্রথমবার এবং reset-এর পর দ্বিতীয়বারও সফল হয়েছে। দ্বিতীয় run-এ ৩টি existing demo tenant remove হয়ে পুনরায় তৈরি হয়েছে, তাই seed idempotency verified।

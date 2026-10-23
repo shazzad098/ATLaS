@@ -31,7 +31,7 @@ import { recordCodCollection } from "@/lib/services/payment-service";
 /**
  * ATLaS demo seed (PRD §12 "seed data").
  *
- * Idempotent: re-running deletes and rebuilds the two demo tenants, while users,
+ * Idempotent: re-running deletes and rebuilds the three demo tenants, while users,
  * plans and the theme catalog are reconciled in place. Orders are created through
  * the real checkout path so inventory, fees, notifications and the audit trail
  * are all consistent with what a merchant would see in production.
@@ -40,9 +40,10 @@ import { recordCodCollection } from "@/lib/services/payment-service";
  *   Tenant B — Dhaka Bazar      (free)   16 products, 76 orders → ~65 eligible,
  *                                        which crosses the 50-order Free quota
  *                                        and generates PRD US-03 overage fees.
+ *   Tenant C — Studio Tech      (free)   10 products, 12 orders
  */
 
-const DEMO_STORE_SLUGS = ["nokshi-demo", "dhaka-bazar"];
+const DEMO_STORE_SLUGS = ["nokshi-demo", "dhaka-bazar", "studio-tech"];
 
 const SEED_PASSWORD = "Atlas#2017";
 
@@ -182,6 +183,26 @@ const BAZAR_PRODUCTS: SeedProduct[] = [
   { name: "চিনি (কেজি)", category: "mudi", sku: "DB-GR-004", variants: [{ stock: 180, price: 125, comparePrice: 140 }], tags: ["মুদি"], description: "পরিশোধিত চিনি।" },
   { name: "দুধ (লিটার প্যাকেট)", category: "dudh", sku: "DB-DY-001", variants: [{ stock: 120, price: 90, comparePrice: 100 }], tags: ["দুধ"], description: "প্যাকেটজাত তরল দুধ, ফ্রিজে রাখুন।" },
   { name: "ডিম (ডজন)", category: "dudh", sku: "DB-DY-002", variants: [{ stock: 100, price: 130, comparePrice: 145 }], tags: ["ডিম"], description: "দেশি মুরগির ডিম, ডজন হিসেবে।" },
+];
+
+const STUDIO_CATEGORIES = [
+  { name: "অডিও", slug: "audio" },
+  { name: "মোবাইল অ্যাক্সেসরিজ", slug: "mobile-accessories" },
+  { name: "স্মার্ট হোম", slug: "smart-home" },
+  { name: "ক্যামেরা", slug: "camera" },
+];
+
+const STUDIO_PRODUCTS: SeedProduct[] = [
+  { name: "AirBeat Pro Wireless Headphones", category: "audio", sku: "ST-AU-001", variants: [{ size: "Black", stock: 18, price: 4290, comparePrice: 4990 }, { size: "White", stock: 12, price: 4290, comparePrice: 4990 }], tags: ["wireless", "audio"], description: "Active noise cancellation এবং ৩০ ঘণ্টা battery backup-সহ premium wireless headphones।" },
+  { name: "PocketSound Mini Speaker", category: "audio", sku: "ST-AU-002", variants: [{ size: "Blue", stock: 24, price: 1890, comparePrice: 2290 }], tags: ["speaker", "portable"], description: "ছোট আকারের waterproof Bluetooth speaker, ভ্রমণের জন্য উপযোগী।" },
+  { name: "USB-C Fast Charger 33W", category: "mobile-accessories", sku: "ST-MA-001", variants: [{ size: "White", stock: 45, price: 990, comparePrice: 1250 }], tags: ["charger", "usb-c"], description: "PD supported 33W fast charger, ফোন ও tablet দুটির জন্যই।" },
+  { name: "Braided USB-C Cable", category: "mobile-accessories", sku: "ST-MA-002", variants: [{ size: "1m", stock: 60, price: 450, comparePrice: 550 }, { size: "2m", stock: 45, price: 650, comparePrice: 800 }], tags: ["cable", "durable"], description: "Nylon braided fast-charge cable, দৈনন্দিন ব্যবহারে টেকসই।" },
+  { name: "MagSafe Desk Stand", category: "mobile-accessories", sku: "ST-MA-003", variants: [{ size: "Silver", stock: 20, price: 1490, comparePrice: 1790 }], tags: ["stand", "desk"], description: "Minimal aluminium desk stand, compatible with MagSafe devices।" },
+  { name: "Smart Glow Table Lamp", category: "smart-home", sku: "ST-SH-001", variants: [{ size: "Warm White", stock: 16, price: 2490, comparePrice: 2990 }], tags: ["lamp", "smart-home"], description: "App-controlled dimmable lamp, work desk এবং bedside-এর জন্য।" },
+  { name: "Wi-Fi Smart Plug", category: "smart-home", sku: "ST-SH-002", variants: [{ size: "10A", stock: 35, price: 1190, comparePrice: 1490 }], tags: ["smart-home", "wifi"], description: "Timer ও remote control সহ compact Wi-Fi smart plug।" },
+  { name: "1080p Creator Webcam", category: "camera", sku: "ST-CA-001", variants: [{ size: "Black", stock: 14, price: 3290, comparePrice: 3890 }], tags: ["webcam", "creator"], description: "1080p autofocus webcam, online class, meeting ও streaming-এর জন্য।" },
+  { name: "Foldable Phone Tripod", category: "camera", sku: "ST-CA-002", variants: [{ size: "Universal", stock: 28, price: 1290, comparePrice: 1590 }], tags: ["tripod", "mobile"], description: "Adjustable foldable tripod, phone এবং compact camera support করে।" },
+  { name: "Creator Desk Mat", category: "smart-home", sku: "ST-SH-003", variants: [{ size: "900mm", stock: 22, price: 890, comparePrice: 1090 }], tags: ["desk", "workspace"], description: "Water-resistant extended desk mat, clean workspace setup-এর জন্য।" },
 ];
 
 const CONTENT_PAGES: Record<string, { title: string; body: string }> = {
@@ -625,6 +646,44 @@ async function seedOrders(
   }
 }
 
+async function assertDemoSeedCompleteness() {
+  const expected = [
+    { slug: "nokshi-demo", themeCode: "nokshi", products: NOKSHI_PRODUCTS.length, orders: 6 },
+    { slug: "dhaka-bazar", themeCode: "bazar", products: BAZAR_PRODUCTS.length, orders: 76 },
+    { slug: "studio-tech", themeCode: "studio", products: STUDIO_PRODUCTS.length, orders: 12 },
+  ];
+  const stores = await prisma.store.findMany({
+    where: { slug: { in: expected.map((item) => item.slug) }, deletedAt: null },
+    include: {
+      themes: {
+        where: { isSelected: true },
+        include: { themeVersion: { include: { theme: true } } },
+      },
+      _count: { select: { categories: true, products: true, orders: true, coupons: true } },
+    },
+  });
+  if (stores.length !== expected.length) {
+    throw new Error(`Seed assertion failed: expected ${expected.length} demo stores, found ${stores.length}`);
+  }
+  for (const item of expected) {
+    const store = stores.find((row) => row.slug === item.slug);
+    const themeCode = store?.themes[0]?.themeVersion.theme.code;
+    if (!store || store.status !== "PUBLISHED") {
+      throw new Error(`Seed assertion failed: ${item.slug} is missing or not published`);
+    }
+    if (themeCode !== item.themeCode) {
+      throw new Error(`Seed assertion failed: ${item.slug} expected theme ${item.themeCode}, found ${themeCode ?? "none"}`);
+    }
+    if (store._count.products !== item.products || store._count.orders !== item.orders) {
+      throw new Error(
+        `Seed assertion failed: ${item.slug} expected ${item.products} products/${item.orders} orders, ` +
+          `found ${store._count.products} products/${store._count.orders} orders`,
+      );
+    }
+  }
+  console.log(`   Seed assertions: ${stores.length} published stores, catalog/theme/order counts verified`);
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -688,6 +747,28 @@ async function main() {
   await seedOrders(bazar, 76, 2002);
   console.log(`   ${BAZAR_PRODUCTS.length} products, 76 orders`);
 
+  console.log("• Tenant C — Studio Tech");
+  const studio = await buildTenant(
+    {
+      tenantName: "Studio Tech",
+      storeName: "স্টুডিও টেক",
+      slug: "studio-tech",
+      description: "স্মার্ট workspace, audio gear ও creator essentials — curated tech collection।",
+      themeCode: "studio",
+      contact: { phone: "01733333333", email: "hello@studiotech.example", whatsapp: "01733333333" },
+      address: { line1: "২৭, টেক পার্ক রোড", area: "বনানী", city: "ঢাকা", district: "ঢাকা", postcode: "1213" },
+      categories: STUDIO_CATEGORIES,
+      products: STUDIO_PRODUCTS,
+      coupons: [{ code: "TECH10", type: "PERCENTAGE", value: 10, minOrder: 1000, usageLimit: 100 }],
+      sandboxGateways: ["BKASH", "NAGAD", "SSLCOMMERZ"],
+      orderCount: 12,
+      seed: 47,
+    },
+    merchant.id,
+  );
+  await seedOrders(studio, 12, 3003);
+  console.log(`   ${STUDIO_PRODUCTS.length} products, 12 orders`);
+
   const summary = await prisma.order.groupBy({
     by: ["storeId", "status"],
     _count: { _all: true },
@@ -698,17 +779,18 @@ async function main() {
     _count: { _all: true },
     where: { reversedAt: null },
   });
+  await assertDemoSeedCompleteness();
 
   console.log("\n✔ Seed complete");
   console.log(`   Super Admin : ${SUPER_ADMIN.phone} / ${SEED_PASSWORD}  (id ${superAdmin.id.slice(0, 8)}…)`);
-  console.log(`   Merchant    : ${MERCHANT.phone} / ${SEED_PASSWORD}  (owner of both stores)`);
-  console.log(`   Storefronts : ${env.appUrl}/store/nokshi-demo , ${env.appUrl}/store/dhaka-bazar`);
+  console.log(`   Merchant    : ${MERCHANT.phone} / ${SEED_PASSWORD}  (owner of all demo stores)`);
+  console.log(`   Storefronts : ${env.appUrl}/store/nokshi-demo , ${env.appUrl}/store/dhaka-bazar , ${env.appUrl}/store/studio-tech`);
   console.log(`   Orders      : ${summary.reduce((acc, row) => acc + row._count._all, 0)}`);
   if (fees.length === 0) {
     console.log("   Fee ledger  : no billable fees");
   }
   for (const row of fees) {
-    const tenantName = row.tenantId === bazar.tenant.id ? "Dhaka Bazar" : "Nokshi";
+    const tenantName = row.tenantId === bazar.tenant.id ? "Dhaka Bazar" : row.tenantId === studio.tenant.id ? "Studio Tech" : "Nokshi";
     console.log(
       `   Fee ledger  : ${tenantName} ${row.feeType} (${row.status}) ×${row._count._all} = ৳${row._sum.feeAmount}`,
     );
