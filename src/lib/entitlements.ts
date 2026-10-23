@@ -7,6 +7,7 @@ import {
   type PlanFeatures,
   type PlanLimits,
 } from "@/lib/plans";
+import { SUCCESSFUL_ORDER_STATUSES } from "@/lib/order-status";
 
 /**
  * Entitlement service (PRD §5.3).
@@ -105,7 +106,7 @@ export async function loadEntitlementSnapshot(
         store: { tenantId },
         deletedAt: null,
         placedAt: { gte: periodStart, lte: periodEnd },
-        status: { notIn: ["CANCELLED"] },
+        status: { in: [...SUCCESSFUL_ORDER_STATUSES] },
       },
     }),
     prisma.membership.count({ where: { tenantId, status: { in: ["ACTIVE", "INVITED"] } } }),

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/dates";
 import { formatBdt } from "@/lib/money";
 import { toPaisa, fromPaisa } from "@/lib/money";
+import { isSuccessfulSaleStatus } from "@/lib/order-status";
 import { Badge, Card, EmptyState, Table, Td, Th } from "@/components/ui/shell";
 
 /** Customer directory with lifetime value (FR-09). */
@@ -94,7 +95,7 @@ export default async function CustomersPage({
             </thead>
             <tbody>
               {customers.map((customer) => {
-                const valid = customer.orders.filter((order) => order.status !== "CANCELLED");
+                const valid = customer.orders.filter((order) => isSuccessfulSaleStatus(order.status));
                 const spend = valid.reduce((sum, order) => sum + toPaisa(order.grandTotal), 0n);
                 const last = valid
                   .map((order) => order.placedAt)

@@ -357,4 +357,22 @@ Notification type names event taxonomy-এর মতো দেখালেও PR
 - **Production payment/commercial readiness:** এখনো নয়
 - **Safe next step:** প্রথমে P0/P1 fixes + tests; তারপর staging-এ real gateway/scheduler/notification integration পরীক্ষা
 
-এই audit-এ কোনো code পরিবর্তন করা হয়নি; report ও evidence file-ই তৈরি করা হয়েছে।
+এই report-এর মূল audit snapshot-এ কোনো code পরিবর্তন করা হয়নি; পরবর্তী phase-গুলোর implementation আলাদা commit-এ রাখা হয়েছে।
+
+---
+
+## 9. Post-audit Phase 1 — Financial consistency
+
+প্রথম remediation phase-এ canonical successful-sale policy যোগ করা হয়েছে। এখন `PAID`, `CONFIRMED`, `PROCESSING`, `SHIPPED` এবং `DELIVERED` status-ই quota, fee, GMV, tenant metrics, customer lifetime spend এবং merchant revenue report-এ successful sale হিসেবে গণ্য হয়। `PENDING_PAYMENT`, `CANCELLED`, `REFUNDED`, `RETURN_REQUESTED` এবং `RETURNED` order আর এই গণনাগুলোতে ঢোকে না।
+
+পরিবর্তিত প্রধান surface:
+
+- `src/lib/order-status.ts` — canonical predicate ও status list
+- `src/lib/entitlements.ts` — monthly order quota usage
+- `src/lib/services/fee-service.ts` — fee eligibility-এর shared policy
+- `src/lib/services/platform-service.ts` — platform GMV এবং tenant GMV/order metrics
+- `src/lib/services/order-service.ts` — revenue, daily revenue এবং average order value
+- `src/app/admin/customers/page.tsx` — customer lifetime spend
+- `src/lib/order-status.test.ts` — status-policy regression coverage
+
+Phase 1 validation: `npm run typecheck`, `npm run lint` এবং `npm test` সফল; test suite-এ ৭টি test pass করেছে। Refund adjustment, partial-refund ledger semantics এবং end-to-end database concurrency tests পরবর্তী phase-এর scope।

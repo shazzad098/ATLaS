@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { fromPaisa, toPaisa } from "@/lib/money";
 import { recordAudit } from "@/lib/audit";
 import { NotFoundError } from "@/lib/errors";
+import { SUCCESSFUL_ORDER_STATUSES } from "@/lib/order-status";
 
 /**
  * Super Admin platform reads (PRD §4.5, §8).
@@ -24,7 +25,8 @@ export async function platformOverview(): Promise<PlatformOverview> {
     publishedStoreCount,
     productCount,
     customerCount,
-    orderAgg,
+    orderCount,
+    gmvAgg,
     paidAgg,
     cancelledCount,
   ] = await Promise.all([
@@ -33,9 +35,18 @@ export async function platformOverview(): Promise<PlatformOverview> {
     prisma.store.count({ where: { deletedAt: null, status: "PUBLISHED" } }),
     prisma.product.count({ where: { deletedAt: null } }),
     prisma.customer.count(),
-    prisma.order.aggregate({ where: { deletedAt: null }, _count: { _all: true }, _sum: { grandTotal: true } }),
+    prisma.order.count({ where: { deletedAt: null } }),
     prisma.order.aggregate({
-      where: { deletedAt: null, paymentStatus: "PAID" },
+      where: { deletedAt: null, status: { in: [...SUCCESSFUL_ORDER_STATUSES] } },
+      _count: { _all: true },
+      _sum: { grandTotal: true },
+    }),
+    prisma.order.aggregate({
+      where: {
+        deletedAt: null,
+        status: { in: [...SUCCESSFUL_ORDER_STATUSES] },
+        paymentStatus: "PAID",
+      },
       _sum: { grandTotal: true },
     }),
     prisma.order.count({ where: { deletedAt: null, status: { in: ["CANCELLED", "REFUNDED"] } } }),
@@ -54,9 +65,9 @@ export async function platformOverview(): Promise<PlatformOverview> {
     stores: { total: storeCount, published: publishedStoreCount },
     catalog: { products: productCount, customers: customerCount },
     orders: {
-      total: orderAgg._count._all,
+      total: orderCount,
       cancelledOrRefunded: cancelledCount,
-      gmv: fromPaisa(toPaisa(orderAgg._sum.grandTotal ?? 0)),
+      gmv: fromPaisa(toPaisa(gmvAgg._sum.grandTotal ?? 0)),
       paidGmv: fromPaisa(toPaisa(paidAgg._sum.grandTotal ?? 0)),
     },
   };
@@ -97,7 +108,7 @@ export async function listTenantsForAdmin(): Promise<TenantRow[]> {
     }),
     prisma.order.groupBy({
       by: ["storeId"],
-      where: { deletedAt: null },
+      where: { deletedAt: null, status: { in: [...SUCCESSFUL_ORDER_STATUSES] } },
       _count: { _all: true },
       _sum: { grandTotal: true },
     }),

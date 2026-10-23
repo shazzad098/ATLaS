@@ -13,6 +13,7 @@ import {
 } from "@/lib/services/inventory-service";
 import { applyAllOrderFees, reverseFeesForOrder } from "@/lib/services/fee-service";
 import { releaseCouponReservation } from "@/lib/services/coupon-service";
+import { isSuccessfulSaleStatus } from "@/lib/order-status";
 
 /**
  * Orders (FR-04).
@@ -460,8 +461,8 @@ export async function orderMetrics(storeId: string, range: { from: Date; to: Dat
     },
   });
 
-  const revenueStatuses = new Set(["PAID", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"]);
   let revenue = 0n;
+  let revenueOrderCount = 0;
   let refunded = 0n;
   const byStatus = new Map<string, number>();
   const byProvider = new Map<string, number>();
@@ -472,16 +473,16 @@ export async function orderMetrics(storeId: string, range: { from: Date; to: Dat
     byStatus.set(order.status, (byStatus.get(order.status) ?? 0) + 1);
     byProvider.set(order.paymentProvider, (byProvider.get(order.paymentProvider) ?? 0) + 1);
 
-    const day = order.placedAt.toISOString().slice(0, 10);
-    byDay.set(day, (byDay.get(day) ?? 0n) + toPaisa(order.grandTotal));
-
     if (order.status === "REFUNDED") {
       refunded += toPaisa(order.grandTotal);
       continue;
     }
-    if (!revenueStatuses.has(order.status)) continue;
+    if (!isSuccessfulSaleStatus(order.status)) continue;
 
+    revenueOrderCount += 1;
     revenue += toPaisa(order.grandTotal);
+    const day = order.placedAt.toISOString().slice(0, 10);
+    byDay.set(day, (byDay.get(day) ?? 0n) + toPaisa(order.grandTotal));
     for (const item of order.items) {
       const bucket = byProduct.get(item.nameSnapshot) ?? { qty: 0, revenue: 0n };
       byProduct.set(item.nameSnapshot, {
@@ -495,7 +496,7 @@ export async function orderMetrics(storeId: string, range: { from: Date; to: Dat
     orderCount: orders.length,
     revenue: fromPaisa(revenue),
     refunded: fromPaisa(refunded),
-    averageOrderValue: orders.length > 0 ? fromPaisa(revenue / BigInt(orders.length)) : "0.00",
+    averageOrderValue: revenueOrderCount > 0 ? fromPaisa(revenue / BigInt(revenueOrderCount)) : "0.00",
     byStatus: [...byStatus.entries()].map(([status, count]) => ({ status, count })),
     byProvider: [...byProvider.entries()].map(([provider, count]) => ({ provider, count })),
     topProducts: [...byProduct.entries()]

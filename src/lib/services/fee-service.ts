@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { feeBase as feeBaseOf, fromPaisa, rateOf, toPaisa, type MoneyInput } from "@/lib/money";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
+import { isSuccessfulSaleStatus, SUCCESSFUL_ORDER_STATUSES } from "@/lib/order-status";
 
 /**
  * Platform fee ledger (PRD §5.1 "Important fee semantics", US-03).
@@ -24,19 +25,13 @@ export type Tx = Omit<
 >;
 
 /** Statuses that count as a completed sale for fee purposes. */
-export const FEE_ELIGIBLE_STATUSES = [
-  "PAID",
-  "CONFIRMED",
-  "PROCESSING",
-  "SHIPPED",
-  "DELIVERED",
-] as const;
+export const FEE_ELIGIBLE_STATUSES = SUCCESSFUL_ORDER_STATUSES;
 
 /** Third-party courier payment charge (PRD §5.1). */
 export const COURIER_FEE_RATE = 0.005;
 
 function isFeeEligible(status: string): boolean {
-  return (FEE_ELIGIBLE_STATUSES as readonly string[]).includes(status);
+  return isSuccessfulSaleStatus(status);
 }
 
 /**
