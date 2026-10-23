@@ -15,6 +15,20 @@ const document = {
     "/health": {
       get: { security: [], responses: { "200": { description: "Service health" } } },
     },
+    "/auth/request-otp": {
+      post: {
+        security: [],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/OtpRequest" } } } },
+        responses: { "200": { description: "OTP requested" }, "409": { description: "Account already exists" }, "429": { description: "Rate limited" } },
+      },
+    },
+    "/auth/verify-otp": {
+      post: {
+        security: [],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/OtpVerification" } } } },
+        responses: { "200": { description: "OTP verified and session created/reset completed" }, "401": { description: "Account not found" }, "422": { description: "Invalid OTP" } },
+      },
+    },
     "/me": {
       get: { responses: { "200": { description: "Current authenticated user" }, "401": { description: "Unauthenticated" } } },
     },
@@ -56,6 +70,27 @@ const document = {
         responses: { "200": { description: "Recorded webhook outcome" } },
       },
     },
+    "/stores/{storeId}/orders/{orderId}/returns": {
+      post: {
+        parameters: [
+          { name: "storeId", in: "path", required: true, schema: { type: "string" } },
+          { name: "orderId", in: "path", required: true, schema: { type: "string" } },
+        ],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/ReturnRequest" } } } },
+        responses: { "201": { description: "Return request created" }, "409": { description: "Duplicate active request" }, "422": { description: "Order is not returnable" } },
+      },
+    },
+    "/stores/{storeId}/orders/{orderId}/returns/{returnId}": {
+      patch: {
+        parameters: [
+          { name: "storeId", in: "path", required: true, schema: { type: "string" } },
+          { name: "orderId", in: "path", required: true, schema: { type: "string" } },
+          { name: "returnId", in: "path", required: true, schema: { type: "string" } },
+        ],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/ReturnResolution" } } } },
+        responses: { "200": { description: "Return request resolved" }, "404": { description: "Return request not found" } },
+      },
+    },
   },
   components: {
     securitySchemes: { bearerAuth: { type: "http", scheme: "bearer" } },
@@ -64,6 +99,26 @@ const document = {
         type: "object",
         required: ["name", "slug"],
         properties: { name: { type: "string" }, slug: { type: "string" }, description: { type: "string" } },
+      },
+      OtpRequest: {
+        type: "object",
+        required: ["phone"],
+        properties: { phone: { type: "string" }, purpose: { type: "string", enum: ["LOGIN", "SIGNUP", "PASSWORD_RESET"] } },
+      },
+      OtpVerification: {
+        type: "object",
+        required: ["phone", "code"],
+        properties: { phone: { type: "string" }, code: { type: "string", pattern: "^[0-9]{6}$" }, purpose: { type: "string" }, name: { type: "string" }, password: { type: "string", format: "password" }, newPassword: { type: "string", format: "password" } },
+      },
+      ReturnRequest: {
+        type: "object",
+        required: ["reason"],
+        properties: { reason: { type: "string", minLength: 5, maxLength: 500 } },
+      },
+      ReturnResolution: {
+        type: "object",
+        required: ["status"],
+        properties: { status: { type: "string", enum: ["APPROVED", "REJECTED", "RECEIVED", "REFUNDED"] }, resolution: { type: "string", maxLength: 500 } },
       },
     },
   },

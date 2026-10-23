@@ -156,7 +156,7 @@ export async function findUserByIdentifier(identifier: string) {
       deletedAt: null,
       OR: [{ phone }, { email: trimmed.toLowerCase() }],
     },
-    select: { id: true, phone: true, email: true, name: true, status: true },
+    select: { id: true, phone: true, email: true, name: true, status: true, isSuperAdmin: true },
   });
 }
 

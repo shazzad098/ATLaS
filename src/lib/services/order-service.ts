@@ -375,6 +375,16 @@ export async function requestReturn(
   await assertStoreAccess(actor, storeId);
   const order = await prisma.order.findFirst({ where: { id: orderId, storeId }, include: { items: true } });
   if (!order) throw new NotFoundError("Order");
+  if (order.status !== "SHIPPED" && order.status !== "DELIVERED") {
+    throw new AppError("VALIDATION_FAILED", "শুধু shipped বা delivered order-এর return request করা যাবে।", 422, {
+      orderStatus: order.status,
+    });
+  }
+  const activeReturn = await prisma.return.findFirst({
+    where: { orderId, status: { in: ["REQUESTED", "APPROVED", "RECEIVED"] } },
+    select: { id: true },
+  });
+  if (activeReturn) throw new ConflictError("এই order-এর একটি return request ইতিমধ্যে pending আছে।");
 
   await prisma.$transaction(async (tx) => {
     await tx.return.create({
@@ -382,14 +392,10 @@ export async function requestReturn(
     });
   });
 
-  if (order.status === "DELIVERED" || order.status === "SHIPPED") {
-    await updateOrderStatus(actor, storeId, orderId, {
-      status: "RETURN_REQUESTED",
-      note: input.reason,
-    });
-  } else {
-    await applyAllOrderFees(orderId);
-  }
+  await updateOrderStatus(actor, storeId, orderId, {
+    status: "RETURN_REQUESTED",
+    note: input.reason,
+  });
 
   await recordAudit({
     action: "order.return_requested",
@@ -408,12 +414,13 @@ export async function resolveReturn(
   storeId: string,
   returnId: string,
   input: { status: "APPROVED" | "REJECTED" | "RECEIVED" | "REFUNDED"; resolution?: string },
+  orderId?: string,
 ) {
   assertPermission(actor, "orders:refund");
   await assertStoreAccess(actor, storeId);
 
   const record = await prisma.return.findFirst({
-    where: { id: returnId, order: { storeId } },
+    where: { id: returnId, ...(orderId ? { orderId } : {}), order: { storeId } },
     include: { order: true },
   });
   if (!record) throw new NotFoundError("Return");

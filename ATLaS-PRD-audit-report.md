@@ -382,3 +382,15 @@ Phase 1 validation: `npm run typecheck`, `npm run lint` এবং `npm test` স
 PRD-এর seed requirement অনুযায়ী তৃতীয় polished demo store যোগ করা হয়েছে: `studio-tech` / Studio theme। এতে চারটি category, ১০টি product, variants, coupon, sandbox payment methods, ১২টি order এবং published storefront তৈরি হয়। বিদ্যমান `nokshi-demo` ও `dhaka-bazar` data অপরিবর্তিত রেখে reset list-এ তৃতীয় slug যুক্ত করা হয়েছে।
 
 Seed এখন explicit assertions চালায়: তিনটি store উপস্থিত, প্রতিটি published, selected theme সঠিক, এবং expected product/order count মিলে কি না। Temporary Prisma PostgreSQL-এ `npm run db:migrate` সফলভাবে সব ৪টি migration apply করেছে; `npm run db:seed` প্রথমবার এবং reset-এর পর দ্বিতীয়বারও সফল হয়েছে। দ্বিতীয় run-এ ৩টি existing demo tenant remove হয়ে পুনরায় তৈরি হয়েছে, তাই seed idempotency verified।
+
+## 11. Post-audit Phase 3 — Auth and return/refund API surface
+
+Versioned REST API-র missing subset হিসেবে যোগ হয়েছে:
+
+- `POST /api/v1/auth/request-otp` — LOGIN, SIGNUP এবং PASSWORD_RESET purpose, IP rate limit, account-enumeration-safe password reset response।
+- `POST /api/v1/auth/verify-otp` — OTP verification, login session/cookie creation, signup provisioning এবং password reset; ভুল/locked OTP-এর stable API errors।
+- `POST /api/v1/stores/{storeId}/orders/{orderId}/returns` — shipped/delivered order-এর duplicate-safe return request।
+- `PATCH /api/v1/stores/{storeId}/orders/{orderId}/returns/{returnId}` — tenant/store/order-bound return approval, receipt অথবা refund resolution।
+- OpenAPI document-এ নতুন চারটি route ও request schemas যোগ হয়েছে।
+
+Return service এখন pending payment/cancelled/returned order-এ request reject করে এবং একই order-এর active duplicate return block করে। Temporary PostgreSQL + Next server smoke test-এ OTP request `200`, OTP verify/session creation `200`, return request `201`, return approval `200`, এবং OpenAPI path discovery সফল হয়েছে।

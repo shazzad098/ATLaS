@@ -79,6 +79,8 @@ Status: [ ] open · [x] delivered with evidence
 ## 9. REST API & integrations (§11)
 - [ ] `/api/v1` endpoints: auth (request-otp, verify-otp, refresh, logout, me), stores & themes, catalog, commerce, billing, webhooks (payments/couriers), integrations connect, api-keys.
 - [ ] OpenAPI documentation, cursor pagination, request id, Idempotency-Key on checkout/payment, consistent error envelope, rate limits by plan, webhook signature verification.
+- [x] Auth REST subset: request-otp এবং verify-otp with session creation, signup provisioning, password reset, rate limiting and stable errors.
+- [x] Return/refund REST subset: return request এবং tenant/order-bound approval/resolution endpoints with duplicate/state guards.
 
 ## 10. Platform policies & quality
 - [ ] Bangla and English labels; BDT currency; Asia/Dhaka timezone.
