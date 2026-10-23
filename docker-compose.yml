@@ -1,0 +1,37 @@
+# Local PostgreSQL for ATLaS.
+#
+# The MVP normally runs Prisma's zero-install local Postgres (`npx prisma dev`).
+# This file is the Docker alternative for teams that prefer containerised
+# dependencies, and it is what CI can use as the test database.
+#
+#   docker compose up -d
+#   DATABASE_URL="postgres://postgres:postgres@localhost:5432/atlas?sslmode=disable"
+#
+# Then apply the schema and load the demo data:
+#   npx prisma db execute --file prisma/migrations/20261017165659_init/migration.sql --config prisma7.config.ts
+#   npx prisma db execute --file prisma/migrations/20261017170000_fee_ledger_unique_per_order_type/migration.sql --config prisma7.config.ts
+#   npm run db:seed
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: atlas-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: atlas
+      # Bangladesh-first product: money, dates and reports all assume Asia/Dhaka.
+      TZ: Asia/Dhaka
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlas-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  atlas-db-data:
