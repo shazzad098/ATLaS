@@ -45,11 +45,16 @@ export type ThemeContext = {
   announcement: string;
 };
 
-export type SectionProps = { ctx: ThemeContext };
+export type SectionProps = {
+  ctx: ThemeContext;
+  /** Featured products, when the section is rendered from the homepage. */
+  products?: StorefrontProduct[];
+};
 
 export type ProductGridProps = SectionProps & {
   title: string;
   products: StorefrontProduct[];
+  categories?: StorefrontCategory[];
   columns?: 3 | 4;
 };
 

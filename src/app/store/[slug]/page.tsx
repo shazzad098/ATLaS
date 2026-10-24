@@ -54,21 +54,34 @@ function renderSection(
       // Rendered by the layout so they wrap every storefront page.
       return null;
     case "Hero":
-      return <theme.Hero key="Hero" ctx={ctx} />;
+      return <theme.Hero key="Hero" ctx={ctx} products={products} />;
     case "CategoryGrid":
       return (
-        <theme.CategoryGrid key="CategoryGrid" ctx={ctx} title={section.title} categories={categories} />
+        <theme.CategoryGrid
+          key="CategoryGrid"
+          ctx={ctx}
+          title={section.title}
+          categories={categories}
+          products={products}
+        />
       );
     case "ProductGrid":
       return (
-        <theme.ProductGrid key="ProductGrid" ctx={ctx} title={section.title} products={products} columns={4} />
+        <theme.ProductGrid
+          key="ProductGrid"
+          ctx={ctx}
+          title={section.title}
+          products={products}
+          categories={categories}
+          columns={4}
+        />
       );
     case "PromoBanner":
-      return <theme.PromoBanner key="PromoBanner" ctx={ctx} />;
+      return <theme.PromoBanner key="PromoBanner" ctx={ctx} products={products} />;
     case "Testimonials":
-      return <theme.Testimonials key="Testimonials" ctx={ctx} />;
+      return <theme.Testimonials key="Testimonials" ctx={ctx} products={products} />;
     case "TrustBar":
-      return <theme.TrustBar key="TrustBar" ctx={ctx} />;
+      return <theme.TrustBar key="TrustBar" ctx={ctx} products={products} />;
     default:
       return null;
   }

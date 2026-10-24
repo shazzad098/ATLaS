@@ -1,13 +1,16 @@
 import * as kit from "@/themes/kit";
+import * as nokshi from "@/themes/nokshi";
 import type { SectionVariant, ThemeComponents } from "@/themes/types";
 
 /**
  * Theme registry (PRD §7 / FR-06).
  *
- * Each catalog theme binds a `SectionVariant` into the shared section kit. When
- * a merchant has selected a theme whose UI has not been implemented yet (a plan
- * upgrade may unlock a future theme), the registry falls back to `nokshi` so a
- * published storefront never renders blank.
+ * `bazar` and `studio` bind a `SectionVariant` into the shared section kit;
+ * `nokshi` ships its own component set because its storefront layout (split
+ * hero, circular category rail, brand story, newsletter band) is structurally
+ * different. When a merchant selects a theme whose UI has not been implemented
+ * yet (a plan upgrade may unlock a future theme), the registry falls back to
+ * `nokshi` so a published storefront never renders blank.
  */
 
 export const THEME_VARIANTS: Record<string, SectionVariant> = {
@@ -39,9 +42,24 @@ function bind(code: string, variant: SectionVariant): ThemeComponents {
   };
 }
 
-const REGISTRY: Record<string, ThemeComponents> = Object.fromEntries(
-  Object.entries(THEME_VARIANTS).map(([code, variant]) => [code, bind(code, variant)]),
-);
+const REGISTRY: Record<string, ThemeComponents> = {
+  nokshi: {
+    code: "nokshi",
+    name: THEME_LABELS.nokshi,
+    variant: "editorial",
+    Header: nokshi.Header,
+    Hero: nokshi.Hero,
+    CategoryGrid: nokshi.CategoryGrid,
+    ProductGrid: nokshi.ProductGrid,
+    PromoBanner: nokshi.PromoBanner,
+    Testimonials: nokshi.Testimonials,
+    TrustBar: nokshi.TrustBar,
+    Footer: nokshi.Footer,
+    ProductCard: nokshi.ProductCard,
+  },
+  bazar: bind("bazar", "dense"),
+  studio: bind("studio", "minimal"),
+};
 
 export const DEFAULT_THEME_CODE = "nokshi";
 

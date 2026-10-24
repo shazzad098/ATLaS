@@ -1,104 +1,149 @@
 import Link from "next/link";
-import { ButtonLink } from "@/components/ui/button";
+import { MobileNav } from "./mobile-nav";
 
-/** Marketing chrome for the public site: `/`, `/pricing`, `/themes`. */
+/** Marketing chrome for the public site: `/`, `/features`, `/pricing`, `/themes`. */
 
 const NAV = [
-  { href: "/#features", label: "ফিচার" },
-  { href: "/pricing", label: "প্রাইসিং" },
+  { href: "/features", label: "ফিচার" },
+  { href: "/pricing", label: "দাম" },
   { href: "/themes", label: "থিম" },
-  { href: "/store/nokshi-demo", label: "ডেমো দোকান" },
+  { href: "/store/nokshi-demo", label: "ডেমো স্টোর" },
 ];
+
+const FOOTER_COLUMNS = [
+  {
+    title: "প্রোডাক্ট",
+    links: [
+      { href: "/features", label: "ফিচার" },
+      { href: "/pricing", label: "দাম" },
+      { href: "/themes", label: "থিম" },
+      { href: "/store/nokshi-demo", label: "ডেমো স্টোর" },
+    ],
+  },
+  {
+    title: "রিসোর্স",
+    links: [
+      { href: "/pricing", label: "প্ল্যান তুলনা" },
+      { href: "/themes", label: "থিম গ্যালারি" },
+      { href: "/demo-sms", label: "ডেমো SMS ইনবক্স" },
+      { href: "/store/dhaka-bazar", label: "ঢাকা বাজার ডেমো" },
+    ],
+  },
+  {
+    title: "কোম্পানি",
+    links: [
+      { href: "/", label: "আমাদের সম্পর্কে" },
+      { href: "/login", label: "যোগাযোগ" },
+      { href: "/signup", label: "ফ্রি সাইনআপ" },
+      { href: "/account", label: "অ্যাকাউন্ট" },
+    ],
+  },
+];
+
+const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+
+function bn(value: number | string): string {
+  return String(value).replace(/\d/g, (digit) => BN_DIGITS[Number(digit)]);
+}
+
+function BrandMark({ size = "md" }: { size?: "md" | "sm" }) {
+  const box = size === "md" ? "h-9 w-9 rounded-[11px] text-[15px]" : "h-8 w-8 rounded-[10px] text-[13px]";
+  return (
+    <span className="flex items-center gap-2.5">
+      <span
+        className={`grid place-items-center bg-[#0BA678] font-bold text-white shadow-[0_6px_14px_-8px_rgba(11,166,120,0.9)] ${box}`}
+      >
+        A
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className="text-[17px] font-bold tracking-tight text-ink-900">ATLaS</span>
+        <span className="mt-1 text-[9px] font-semibold tracking-[0.18em] text-ink-400">বাংলাদেশ</span>
+      </span>
+    </span>
+  );
+}
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <header className="sticky top-0 z-30 border-b border-ink-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 text-sm font-bold text-white">
-              A
-            </span>
-            <span className="text-ink-900">ATLaS</span>
+      <header className="sticky top-0 z-40 border-b border-[#e8eeeb] bg-white/90 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-[1160px] items-center gap-2 px-4 sm:px-6">
+          <Link href="/" aria-label="ATLaS হোম">
+            <BrandMark />
           </Link>
 
-          <nav className="ml-4 hidden items-center gap-1 md:flex">
+          <nav className="ml-7 hidden items-center gap-0.5 md:flex">
             {NAV.map((item) => (
               <Link
-                key={item.href}
+                key={item.label}
                 href={item.href}
-                className="rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+                className="rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-600 transition hover:bg-[#f2f8f5] hover:text-ink-900"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
-            <ButtonLink href="/login" variant="ghost" size="sm">
+          <div className="ml-auto flex items-center gap-1.5">
+            <Link
+              href="/login"
+              className="hidden rounded-lg px-3 py-2 text-[13.5px] font-medium text-ink-600 transition hover:bg-[#f2f8f5] hover:text-ink-900 md:inline-flex"
+            >
               লগইন
-            </ButtonLink>
-            <ButtonLink href="/signup" size="sm">
-              ফ্রি শুরু করুন
-            </ButtonLink>
+            </Link>
+            <Link
+              href="/login"
+              className="hidden items-center justify-center rounded-[10px] bg-[#0BA678] px-4 py-2 text-[13px] font-semibold text-white shadow-[0_8px_18px_-10px_rgba(11,166,120,0.95)] transition hover:bg-[#099569] md:inline-flex"
+            >
+              ড্যাশবোর্ড
+            </Link>
+            <MobileNav />
           </div>
         </div>
       </header>
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-ink-200 bg-ink-50">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 font-semibold">
-              <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-xs font-bold text-white">
-                A
-              </span>
-              <span className="text-ink-900">ATLaS</span>
-            </div>
-            <p className="text-sm text-ink-500">
-              বাংলাদেশের উদ্যোক্তাদের জন্য সম্পূর্ণ ই-কমার্স দোকান — বিকাশ, নগদ, SSLCommerz আর ক্যাশ অন
-              ডেলিভারি সহ।
+      <footer className="border-t border-[#e8eeeb] bg-[#f7faf9]">
+        <div className="mx-auto grid max-w-[1160px] gap-10 px-4 py-14 sm:grid-cols-3 sm:px-6 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          <div className="space-y-4 sm:col-span-3 lg:col-span-1">
+            <Link href="/" aria-label="ATLaS হোম">
+              <BrandMark size="sm" />
+            </Link>
+            <p className="max-w-[300px] text-[13px] leading-6 text-ink-500">
+              বাংলাদেশের উদ্যোক্তাদের জন্য সম্পূর্ণ ই-কমার্স দোকান — থিম, প্রোডাক্ট, অর্ডার,
+              ডেলিভারি আর বিকাশ/নগদ/SSLCommerz/COD পেমেন্ট এক জায়গায়।
             </p>
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-ink-500">
+              <span className="rounded-full border border-[#e2ebe6] bg-white px-2.5 py-1">BDT · Asia/Dhaka</span>
+              <span className="rounded-full border border-[#e2ebe6] bg-white px-2.5 py-1">বাংলা ও English</span>
+            </div>
           </div>
 
-          <div className="space-y-2 text-sm">
-            <p className="font-semibold text-ink-900">শুরু করুন</p>
-            <Link href="/signup" className="block text-ink-600 hover:text-ink-900">
-              ফ্রি অ্যাকাউন্ট
-            </Link>
-            <Link href="/pricing" className="block text-ink-600 hover:text-ink-900">
-              প্ল্যান ও প্রাইসিং
-            </Link>
-            <Link href="/themes" className="block text-ink-600 hover:text-ink-900">
-              থিম গ্যালারি
-            </Link>
-          </div>
-
-          <div className="space-y-2 text-sm">
-            <p className="font-semibold text-ink-900">ডেমো দোকান</p>
-            <Link href="/store/nokshi-demo" className="block text-ink-600 hover:text-ink-900">
-              নকশি বুটিক
-            </Link>
-            <Link href="/store/dhaka-bazar" className="block text-ink-600 hover:text-ink-900">
-              ঢাকা বাজার
-            </Link>
-          </div>
-
-          <div className="space-y-2 text-sm">
-            <p className="font-semibold text-ink-900">প্ল্যাটফর্ম</p>
-            <p className="text-ink-500">BDT · Asia/Dhaka</p>
-            <p className="text-ink-500">বাংলা ও ইংরেজি</p>
-            <Link href="/login" className="block text-ink-600 hover:text-ink-900">
-              মার্চেন্ট লগইন
-            </Link>
-          </div>
+          {FOOTER_COLUMNS.map((column) => (
+            <div key={column.title} className="space-y-3 text-[13px]">
+              <p className="text-xs font-semibold tracking-wide text-ink-900">{column.title}</p>
+              <ul className="space-y-2">
+                {column.links.map((link) => (
+                  <li key={link.label}>
+                    <Link href={link.href} className="text-ink-500 transition hover:text-[#0B7A5B]">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div className="border-t border-ink-200 py-4">
-          <p className="mx-auto max-w-6xl px-4 text-xs text-ink-500">
-            © {new Date().getFullYear()} ATLaS। বাংলাদেশে তৈরি।
-          </p>
+        <div className="border-t border-[#e8eeeb]">
+          <div className="mx-auto flex max-w-[1160px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-[11.5px] text-ink-500 sm:px-6">
+            <p>© {bn(new Date().getFullYear())} ATLaS · সর্বস্বত্ব সংরক্ষিত</p>
+            <div className="flex items-center gap-5">
+              <span className="cursor-default">ব্যবহারের শর্তাবলী</span>
+              <span className="cursor-default">প্রাইভেসি পলিসি</span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

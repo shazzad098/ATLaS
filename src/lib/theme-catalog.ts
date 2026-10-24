@@ -145,50 +145,60 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
     version: "1.0.0",
     compatiblePlans: ALL_PLANS,
     preview: {
-      gradient: "from-rose-200 via-amber-100 to-rose-50",
-      swatches: ["#9F1239", "#F59E0B", "#FFF7ED"],
+      gradient: "from-rose-200 via-amber-100 to-amber-50",
+      swatches: ["#7A1E2B", "#C08A2E", "#FDF8F0"],
     },
     defaultConfig: {
       colors: {
-        primary: "#9F1239",
-        accent: "#B45309",
-        background: "#FFFBF5",
-        surface: "#FDF2F4",
-        text: "#3B1119",
-        muted: "#8A6A70",
+        primary: "#7A1E2B",
+        accent: "#C08A2E",
+        background: "#FDF8F0",
+        surface: "#F6ECDD",
+        text: "#2E1712",
+        muted: "#8B6F60",
       },
       typography: { headingFont: "serif", bodyFont: "sans", scale: "comfortable" },
       buttons: { style: "pill" },
       header: {
         style: "centered",
         showSearch: true,
-        announcement: "ঢাকার ভিতরে ২৪ ঘণ্টায় ডেলিভারি",
+        announcement: "সারাদেশে হোম ডেলিভারি · ১০০০৳+ অর্ডারে ফ্রি ডেলিভারি · নতুন সংগ্রহ এসেছে",
         sticky: true,
       },
       hero: {
         enabled: true,
-        title: "নকশি হাতে বোনা, আপনাকে ঘিরে",
-        subtitle: "সীমিত সংগ্রহ — প্রতিটি পিস হাতে বাছাই করা, ছোট ব্যাচে তৈরি।",
+        title: "নকশি হাতে বোনা, আপনার রুচিতে নতুন সাজ",
+        subtitle:
+          "সীমিত ব্যাচে হাতে বোনা শাড়ি, কুর্তি ও থ্রি-পিস — প্রতিটি পিস বাছাই করা, কারিগরের কাছ থেকে সোজা আপনার কাছে।",
         ctaLabel: "নতুন সংগ্রহ দেখুন",
         ctaHref: "/shop",
-        align: "center",
+        align: "left",
       },
-      sections: THEME_SECTION_KEYS.map((key) => ({
-        key,
+      sections: [
+        "Header",
+        "Hero",
+        "CategoryGrid",
+        "ProductGrid",
+        "PromoBanner",
+        "TrustBar",
+        "Testimonials",
+        "Footer",
+      ].map((key) => ({
+        key: key as (typeof THEME_SECTION_KEYS)[number],
         enabled: true,
         title:
           key === "CategoryGrid"
-            ? "ক্যাটাগরি"
+            ? "পছন্দের শাড়ি, কুর্তি ও থ্রি-পিস"
             : key === "ProductGrid"
-              ? "জনপ্রিয় পণ্য"
+              ? "আজকের নির্বাচিত পোশাক"
               : key === "Testimonials"
-                ? "ক্রেতাদের কথা"
+                ? "আমাদের ক্রেতারা যা বলছেন"
                 : "",
       })),
       promo: {
         enabled: true,
-        title: "ঈদ প্রস্তুতি",
-        body: "নির্বাচিত কুর্তি ও শাড়িতে ২০% পর্যন্ত ছাড়। স্টক সীমিত।",
+        title: "ঈদ আয়োজনে বিশেষ ছাড়",
+        body: "নির্বাচিত শাড়ি ও থ্রি-পিসে ২০% পর্যন্ত ছাড় — স্টক সীমিত, আগে এলে আগে পাবেন।",
         ctaLabel: "অফার দেখুন",
         ctaHref: "/shop",
       },
@@ -197,37 +207,46 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
         items: [
           { name: "সাদিয়া রহমান", quote: "কাপড়ের মান আসলেই ভালো, প্যাকেজিংও যত্নসহকারে।", location: "ধানমন্ডি, ঢাকা" },
           { name: "তাশনিম আক্তার", quote: "ছবির সাথে ঠিক মিলে গেছে। আবার অর্ডার করব।", location: "চট্টগ্রাম" },
+          { name: "নুসরাত জাহান", quote: "হাতে বোনা কাজটা এত নিখুঁত হবে ভাবিনি।", location: "উত্তরা, ঢাকা" },
         ],
       },
       trust: {
         enabled: true,
-        items: ["৭ দিনের রিটার্ন", "ক্যাশ অন ডেলিভারি", "১০০% অরিজিনাল কাপড়"],
+        items: ["সারাদেশে হোম ডেলিভারি", "৭ দিনে সহজ রিটার্ন", "১০০% হাতে বোনা", "২৪/৭ কাস্টমার সাপোর্ট"],
       },
       footer: {
-        about: "নকশি — ছোট পরিসরে হাতে তৈরি পোশাক, সোজা কারিগরের কাছ থেকে আপনার কাছে।",
+        about:
+          "নকশি বুটিক — হাতে বোনা শাড়ি, কুর্তি ও থ্রি-পিসের ছোট ব্যাচের সংগ্রহ, সোজা কারিগরের কাছ থেকে।",
         columns: [
           {
             title: "কেনাকাটা",
             links: [
               { label: "সব পণ্য", href: "/shop" },
-              { label: "কার্ট", href: "/cart" },
+              { label: "শাড়ি", href: "/shop?category=sharee" },
+              { label: "কুর্তি", href: "/shop?category=kurti" },
+              { label: "থ্রি-পিস", href: "/shop?category=three-piece" },
             ],
           },
           {
-            title: "সহায়তা",
+            title: "গ্রাহক সেবা",
             links: [
               { label: "রিটার্ন নীতি", href: "/page/returns" },
+              { label: "ডেলিভারি তথ্য", href: "/page/delivery" },
               { label: "যোগাযোগ", href: "/page/contact" },
+              { label: "প্রাইভেসি", href: "/page/privacy" },
             ],
           },
         ],
-        note: "© নকশি। সর্বস্বত্ব সংরক্ষিত।",
+        note: "© নকশি বুটিক। সর্বস্বত্ব সংরক্ষিত।",
       },
       navigation: [
         { label: "হোম", href: "/" },
-        { label: "দোকান", href: "/shop" },
-        { label: "নীতি", href: "/page/returns" },
-        { label: "যোগাযোগ", href: "/page/contact" },
+        { label: "শপ", href: "/shop" },
+        { label: "শাড়ি", href: "/shop?category=sharee" },
+        { label: "কুর্তি", href: "/shop?category=kurti" },
+        { label: "থ্রি-পিস", href: "/shop?category=three-piece" },
+        { label: "ওড়না", href: "/shop?category=orna" },
+        { label: "আমাদের সম্পর্কে", href: "/page/contact" },
       ],
     },
   },
