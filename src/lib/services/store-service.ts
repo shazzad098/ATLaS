@@ -10,6 +10,7 @@ import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import { recordAudit } from "@/lib/audit";
 import { ensureThemeCatalog, resolveStoreTheme, selectTheme } from "@/lib/services/theme-service";
 import { ensureSubdomain, subdomainHost } from "@/lib/services/domain-service";
+import { decryptSecretJson, encryptSecretJson } from "@/lib/secrets";
 
 /**
  * Store lifecycle + settings (FR-02, FR-04).
@@ -566,11 +567,24 @@ export async function togglePaymentMethod(
   actor: ActorContext,
   storeId: string,
   provider: "COD" | "BKASH" | "NAGAD" | "SSLCOMMERZ",
-  input: { isEnabled: boolean; publicConfig?: Record<string, unknown>; secretRef?: string | null },
+  input: {
+    isEnabled: boolean;
+    publicConfig?: Record<string, unknown>;
+    secretRef?: string | null;
+    credentials?: Record<string, string>;
+  },
 ) {
   assertPermission(actor, "payments:write");
   await assertStoreAccess(actor, storeId);
 
+  const cleanCredentials = input.credentials
+    ? Object.fromEntries(
+        Object.entries(input.credentials).filter(([, value]) => typeof value === "string" && value.trim()),
+      )
+    : undefined;
+  const encryptedCredentials = input.credentials !== undefined
+    ? (Object.keys(cleanCredentials ?? {}).length > 0 ? encryptSecretJson(cleanCredentials!) : null)
+    : input.secretRef;
   const method = await prisma.paymentMethod.upsert({
     where: { storeId_provider: { storeId, provider } },
     create: {
@@ -578,12 +592,14 @@ export async function togglePaymentMethod(
       provider,
       isEnabled: input.isEnabled,
       publicConfigJson: (input.publicConfig ?? {}) as never,
-      encryptedSecretRef: input.secretRef ?? null,
+      encryptedSecretRef: encryptedCredentials ?? null,
     },
     update: {
       isEnabled: input.isEnabled,
       ...(input.publicConfig ? { publicConfigJson: input.publicConfig as never } : {}),
-      ...(input.secretRef !== undefined ? { encryptedSecretRef: input.secretRef } : {}),
+      ...(input.credentials !== undefined || input.secretRef !== undefined
+        ? { encryptedSecretRef: encryptedCredentials ?? null }
+        : {}),
     },
   });
 
@@ -682,10 +698,25 @@ export async function loadStorefrontByHost(host: string): Promise<StorefrontCont
 
 /** All payment methods configured for a store (Admin → Payments). */
 export async function listPaymentMethods(storeId: string) {
-  return prisma.paymentMethod.findMany({
+  const methods = await prisma.paymentMethod.findMany({
     where: { storeId },
     orderBy: { provider: "asc" },
   });
+  return methods.map(({ encryptedSecretRef, ...method }) => ({
+    ...method,
+    credentialsConfigured: Boolean(encryptedSecretRef),
+  }));
+}
+
+export async function getStorePaymentCredentials(
+  storeId: string,
+  provider: "COD" | "BKASH" | "NAGAD" | "SSLCOMMERZ" | "MANUAL",
+) {
+  const method = await prisma.paymentMethod.findUnique({
+    where: { storeId_provider: { storeId, provider } },
+    select: { encryptedSecretRef: true },
+  });
+  return decryptSecretJson(method?.encryptedSecretRef);
 }
 
 /**
@@ -699,14 +730,15 @@ export async function storefrontPaymentOptions(storeId: string) {
     orderBy: { provider: "asc" },
   });
 
-  return methods.map((method) => {
+  return Promise.all(methods.map(async (method) => {
     const adapter = getPaymentAdapter(method.provider);
+    const credentials = await getStorePaymentCredentials(storeId, method.provider);
     return {
       value: method.provider,
       label: adapter.label,
-      note: adapter.isConfigured()
+      note: adapter.isConfigured(credentials)
         ? adapter.notes
         : `${adapter.notes} (স্যান্ডবক্স মোড — লাইভ কী যোগ করলে আসল পেমেন্ট হবে)`,
     };
-  });
+  }));
 }

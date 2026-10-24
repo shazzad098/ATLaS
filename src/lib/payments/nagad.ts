@@ -7,6 +7,7 @@ import {
   type InitiateContext,
   type InitiateResult,
   type PaymentAdapter,
+  type PaymentCredentials,
 } from "@/lib/payments/types";
 import {
   SANDBOX_SIGNATURE_HEADER,
@@ -14,6 +15,16 @@ import {
   sandboxTxnId,
   verifySandboxSignature,
 } from "@/lib/payments/sandbox";
+
+type NagadConfig = { baseUrl: string; merchantId: string; privateKey: string };
+
+function config(credentials?: PaymentCredentials): NagadConfig {
+  return {
+    baseUrl: credentials?.baseUrl || env.gateways.nagad.baseUrl,
+    merchantId: credentials?.merchantId || env.gateways.nagad.merchantId,
+    privateKey: credentials?.privateKey || env.gateways.nagad.privateKey,
+  };
+}
 
 /**
  * Nagad Remote Payment Gateway (FR-05).
@@ -29,13 +40,14 @@ export const nagadAdapter: PaymentAdapter = {
   label: "Nagad",
   notes: "Nagad merchant onboarding-এর RSA key pair ছাড়া live flow চালু হবে না।",
 
-  isConfigured() {
-    const { merchantId, privateKey } = env.gateways.nagad;
+  isConfigured(credentials) {
+    const { merchantId, privateKey } = config(credentials);
     return Boolean(merchantId && privateKey);
   },
 
   async initiate(context: InitiateContext): Promise<InitiateResult> {
-    if (!this.isConfigured()) {
+    const gateway = config(context.credentials);
+    if (!this.isConfigured(context.credentials)) {
       return {
         providerTxnId: sandboxTxnId("NGD", context.orderNo),
         status: "PENDING",
@@ -45,7 +57,7 @@ export const nagadAdapter: PaymentAdapter = {
       };
     }
 
-    const { baseUrl, merchantId } = env.gateways.nagad;
+    const { baseUrl, merchantId } = gateway;
     const reference = `NGD${Date.now()}`;
 
     const initialize = await fetch(
@@ -63,7 +75,7 @@ export const nagadAdapter: PaymentAdapter = {
             currencyCode: context.currency,
             amount: context.amount,
             challenge: reference,
-          }),
+          }, gateway.privateKey),
         }),
       },
     );
@@ -105,17 +117,18 @@ export const nagadAdapter: PaymentAdapter = {
     };
   },
 
-  async parseCallback(request: Request, rawBody: string): Promise<CallbackResult> {
+  async parseCallback(request: Request, rawBody: string, credentials): Promise<CallbackResult> {
     const payload = safeJson(rawBody);
     const params = new URL(request.url).searchParams;
     const paymentRefId = params.get("payment_ref_id") ?? (payload.payment_ref_id as string | undefined);
     const status = params.get("status") ?? (payload.status as string | undefined);
+    const gateway = config(credentials);
 
     if (paymentRefId) {
       // The authoritative verification is the `verify/payment` call below.
       const verified =
         status === "Success"
-          ? await verifyPayment(paymentRefId)
+          ? await verifyPayment(paymentRefId, gateway)
           : { ok: false as const, message: status ?? "unknown" };
 
       return {
@@ -147,11 +160,12 @@ export const nagadAdapter: PaymentAdapter = {
     };
   },
 
-  async refund({ providerTxnId, amount }) {
-    if (!this.isConfigured()) {
+  async refund({ providerTxnId, amount, credentials }) {
+    const gateway = config(credentials);
+    if (!this.isConfigured(credentials)) {
       return { ok: true, refundRef: `SBXREFUND-${providerTxnId}` };
     }
-    const { baseUrl } = env.gateways.nagad;
+    const { baseUrl } = gateway;
     const response = await fetch(`${baseUrl}/remote-payment-gateway-1.0/api/dfs/refund/payment`, {
       method: "POST",
       headers: { "content-type": "application/json", "X-KM-Api-Version": "v-0.2.0" },
@@ -162,8 +176,8 @@ export const nagadAdapter: PaymentAdapter = {
   },
 };
 
-async function verifyPayment(paymentRefId: string): Promise<{ ok: boolean; message?: string }> {
-  const { baseUrl } = env.gateways.nagad;
+async function verifyPayment(paymentRefId: string, gateway: NagadConfig): Promise<{ ok: boolean; message?: string }> {
+  const { baseUrl } = gateway;
   try {
     const response = await fetch(
       `${baseUrl}/remote-payment-gateway-1.0/api/dfs/verify/payment/${paymentRefId}`,
@@ -182,8 +196,8 @@ async function verifyPayment(paymentRefId: string): Promise<{ ok: boolean; messa
  * The key is issued per merchant, so this throws a clear, actionable error until
  * onboarding supplies it rather than silently sending plaintext.
  */
-function encryptSensitiveData(payload: Record<string, unknown>): string {
-  if (!env.gateways.nagad.privateKey) {
+function encryptSensitiveData(payload: Record<string, unknown>, privateKey: string): string {
+  if (!privateKey) {
     throw new PaymentAdapterError(
       "Nagad sensitive data encrypt করতে merchant RSA key দরকার।",
       "NAGAD",
@@ -191,7 +205,7 @@ function encryptSensitiveData(payload: Record<string, unknown>): string {
   }
   const serialized = JSON.stringify(payload);
   return publicEncrypt(
-    { key: env.gateways.nagad.privateKey, padding: constants.RSA_PKCS1_PADDING },
+    { key: privateKey, padding: constants.RSA_PKCS1_PADDING },
     Buffer.from(serialized),
   )
     .toString("base64")

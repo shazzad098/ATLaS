@@ -8,6 +8,7 @@ import type {
   InitiateContext,
   InitiateResult,
   PaymentAdapter,
+  PaymentCredentials,
   PaymentProviderName,
 } from "@/lib/payments/types";
 
@@ -51,4 +52,4 @@ export function paymentAdapterStatus() {
 }
 
 export { SANDBOX_SIGNATURE_HEADER, signSandboxPayload } from "@/lib/payments/sandbox";
-export type { CallbackResult, InitiateContext, InitiateResult, PaymentAdapter, PaymentProviderName };
+export type { CallbackResult, InitiateContext, InitiateResult, PaymentAdapter, PaymentCredentials, PaymentProviderName };

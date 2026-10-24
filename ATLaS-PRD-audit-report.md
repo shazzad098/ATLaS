@@ -394,3 +394,16 @@ Versioned REST API-র missing subset হিসেবে যোগ হয়ে�
 - OpenAPI document-এ নতুন চারটি route ও request schemas যোগ হয়েছে।
 
 Return service এখন pending payment/cancelled/returned order-এ request reject করে এবং একই order-এর active duplicate return block করে। Temporary PostgreSQL + Next server smoke test-এ OTP request `200`, OTP verify/session creation `200`, return request `201`, return approval `200`, এবং OpenAPI path discovery সফল হয়েছে।
+
+## 12. Post-audit Phase 4 — Courier webhook and merchant gateway connection
+
+Courier integration এখন generic signed-webhook flow ব্যবহার করে:
+
+- `CourierShipment` এবং `CourierWebhookEvent` model/migration যোগ হয়েছে।
+- `POST /api/v1/webhooks/couriers/{provider}` JSON বা form payload গ্রহণ করে, HMAC `x-courier-signature` যাচাই করে, event idempotency enforce করে, tracking record রাখে এবং `SHIPPED`/`DELIVERED` status order-এ apply করে।
+- Invalid signature আগে reject হয়—একই event key-এর valid event পরে forged signature দিয়ে replay করলেও trusted result ফেরত দেয় না।
+- `COURIER_WEBHOOK_SECRET`, `COURIER_API_URL` এবং `COURIER_API_KEY` deployment contract-এ document করা হয়েছে।
+
+Merchant gateway connection-এর জন্য `PaymentMethod.encryptedSecretRef` এখন AES-256-GCM encrypted credential payload রাখে; credential values API response বা admin list-এ ফেরত যায় না। Checkout initiation, payment callback validation এবং refund adapter-এ store-specific credentials pass হয়। Admin payment form ও API-তে bKash, Nagad এবং SSLCommerz credential save/test করা যায়; bKash live callback-এ execute-payment verification বাধ্যতামূলক করা হয়েছে।
+
+Temporary PostgreSQL + Next smoke test evidence: migration/seed সফল, gateway configure `200`, gateway test `200` with `configured: true`, secret-leak check pass, signed courier delivery `200`, duplicate courier event idempotently handled, forged signature `401`, order status `DELIVERED`, shipment persistence verified, এবং OpenAPI route discovery pass।

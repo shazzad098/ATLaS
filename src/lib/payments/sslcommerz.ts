@@ -6,6 +6,7 @@ import {
   type InitiateContext,
   type InitiateResult,
   type PaymentAdapter,
+  type PaymentCredentials,
 } from "@/lib/payments/types";
 import {
   SANDBOX_SIGNATURE_HEADER,
@@ -13,6 +14,16 @@ import {
   sandboxTxnId,
   verifySandboxSignature,
 } from "@/lib/payments/sandbox";
+
+type SslcommerzConfig = { baseUrl: string; storeId: string; storePassword: string };
+
+function config(credentials?: PaymentCredentials): SslcommerzConfig {
+  return {
+    baseUrl: credentials?.baseUrl || env.gateways.sslcommerz.baseUrl,
+    storeId: credentials?.storeId || env.gateways.sslcommerz.storeId,
+    storePassword: credentials?.storePassword || env.gateways.sslcommerz.storePassword,
+  };
+}
 
 /**
  * SSLCommerz Hosted Checkout (FR-05).
@@ -27,13 +38,14 @@ export const sslcommerzAdapter: PaymentAdapter = {
   label: "SSLCommerz",
   notes: "Card, mobile banking ও net banking একসাথে — store id/password দিলেই live।",
 
-  isConfigured() {
-    const { storeId, storePassword } = env.gateways.sslcommerz;
+  isConfigured(credentials) {
+    const { storeId, storePassword } = config(credentials);
     return Boolean(storeId && storePassword);
   },
 
   async initiate(context: InitiateContext): Promise<InitiateResult> {
-    if (!this.isConfigured()) {
+    const gateway = config(context.credentials);
+    if (!this.isConfigured(context.credentials)) {
       return {
         providerTxnId: sandboxTxnId("SSL", context.orderNo),
         status: "PENDING",
@@ -43,7 +55,7 @@ export const sslcommerzAdapter: PaymentAdapter = {
       };
     }
 
-    const { baseUrl, storeId, storePassword } = env.gateways.sslcommerz;
+    const { baseUrl, storeId, storePassword } = gateway;
     const body = new URLSearchParams({
       store_id: storeId,
       store_passwd: storePassword,
@@ -96,13 +108,13 @@ export const sslcommerzAdapter: PaymentAdapter = {
     };
   },
 
-  async parseCallback(request: Request, rawBody: string): Promise<CallbackResult> {
+  async parseCallback(request: Request, rawBody: string, credentials): Promise<CallbackResult> {
     const payload = safeJson(rawBody);
     const tranId = typeof payload.tran_id === "string" ? payload.tran_id : null;
     const valId = typeof payload.val_id === "string" ? payload.val_id : null;
 
     if (tranId && valId) {
-      const validation = await validateTransaction(valId);
+      const validation = await validateTransaction(valId, config(credentials));
       const ok = validation.ok && validation.amount !== undefined;
 
       return {
@@ -136,11 +148,12 @@ export const sslcommerzAdapter: PaymentAdapter = {
     };
   },
 
-  async refund({ providerTxnId, amount }) {
-    if (!this.isConfigured()) {
+  async refund({ providerTxnId, amount, credentials }) {
+    const gateway = config(credentials);
+    if (!this.isConfigured(credentials)) {
       return { ok: true, refundRef: `SBXREFUND-${providerTxnId}` };
     }
-    const { baseUrl, storeId, storePassword } = env.gateways.sslcommerz;
+    const { baseUrl, storeId, storePassword } = gateway;
     const response = await fetch(`${baseUrl}/validator/api/merchantTransIDvalidationAPI.php`, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -160,8 +173,9 @@ export const sslcommerzAdapter: PaymentAdapter = {
 
 async function validateTransaction(
   valId: string,
+  gateway: SslcommerzConfig,
 ): Promise<{ ok: boolean; amount?: string; message?: string }> {
-  const { baseUrl, storeId, storePassword } = env.gateways.sslcommerz;
+  const { baseUrl, storeId, storePassword } = gateway;
   const url = new URL(`${baseUrl}/validator/api/validationserverAPI.php`);
   url.searchParams.set("val_id", valId);
   url.searchParams.set("store_id", storeId);

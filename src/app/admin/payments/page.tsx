@@ -55,14 +55,19 @@ export default async function PaymentsPage() {
               return (
                 <tr key={method.id}>
                   <Td className="font-medium">{PROVIDER_LABEL[method.provider] ?? method.provider}</Td>
-                  <Td>
-                    <Badge tone={adapter?.configured ? "success" : "warning"}>
-                      {adapter?.configured ? "লাইভ কী" : "স্যান্ডবক্স"}
+                    <Td>
+                      <Badge tone={method.credentialsConfigured || adapter?.configured ? "success" : "warning"}>
+                        {method.credentialsConfigured || adapter?.configured ? "লাইভ কী" : "স্যান্ডবক্স"}
                     </Badge>
                   </Td>
                   <Td className="max-w-md text-xs text-ink-500">{adapter?.notes}</Td>
                   <Td>
-                    <PaymentMethodForm storeId={store.id} provider={method.provider} isEnabled={method.isEnabled} />
+                    <PaymentMethodForm
+                      storeId={store.id}
+                      provider={method.provider}
+                      isEnabled={method.isEnabled}
+                      credentialsConfigured={method.credentialsConfigured}
+                    />
                   </Td>
                 </tr>
               );

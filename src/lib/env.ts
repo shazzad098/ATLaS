@@ -99,7 +99,9 @@ export const env = {
   },
   courier: {
     provider: optional("COURIER_PROVIDER"),
+    apiUrl: optional("COURIER_API_URL"),
     apiKey: optional("COURIER_API_KEY"),
+    webhookSecret: optional("COURIER_WEBHOOK_SECRET"),
   },
   get secretsKey() {
     return optional("SECRETS_KEY", "dev-only-32-char-secret-manager-key");

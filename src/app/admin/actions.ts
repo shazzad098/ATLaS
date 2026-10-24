@@ -416,8 +416,23 @@ export async function togglePaymentMethodAction(_prev: AdminState, formData: For
     const { actor } = await ctx("payments:write");
     const provider = required(formData, "provider") as "COD" | "BKASH" | "NAGAD" | "SSLCOMMERZ";
     const isEnabled = formData.get("isEnabled") === "on";
+    const credentialFields = provider === "BKASH"
+      ? ["appKey", "appSecret", "username", "password"]
+      : provider === "NAGAD"
+        ? ["merchantId", "privateKey"]
+        : provider === "SSLCOMMERZ"
+          ? ["storeId", "storePassword"]
+          : [];
+    const credentials = Object.fromEntries(
+      credentialFields
+        .map((field) => [field, text(formData, `credential_${field}`)] as const)
+        .filter(([, value]) => value.trim()),
+    );
 
-    await togglePaymentMethod(actor, required(formData, "storeId"), provider, { isEnabled });
+    await togglePaymentMethod(actor, required(formData, "storeId"), provider, {
+      isEnabled,
+      ...(Object.keys(credentials).length > 0 ? { credentials } : {}),
+    });
     revalidateAdmin("/admin/payments");
     return { ok: true, message: `${provider} ${isEnabled ? "চালু" : "বন্ধ"} করা হয়েছে।` };
   } catch (error) {

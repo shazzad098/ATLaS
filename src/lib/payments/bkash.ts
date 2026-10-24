@@ -7,6 +7,7 @@ import {
   type InitiateContext,
   type InitiateResult,
   type PaymentAdapter,
+  type PaymentCredentials,
 } from "@/lib/payments/types";
 import {
   SANDBOX_SIGNATURE_HEADER,
@@ -26,8 +27,20 @@ import {
 
 const SANDBOX_CALLBACK_KEY = "bkashTxnId";
 
-async function grantToken(): Promise<string> {
-  const { baseUrl, appKey, appSecret, username, password } = env.gateways.bkash;
+type BkashConfig = { baseUrl: string; appKey: string; appSecret: string; username: string; password: string };
+
+function config(credentials?: PaymentCredentials): BkashConfig {
+  return {
+    baseUrl: credentials?.baseUrl || env.gateways.bkash.baseUrl,
+    appKey: credentials?.appKey || env.gateways.bkash.appKey,
+    appSecret: credentials?.appSecret || env.gateways.bkash.appSecret,
+    username: credentials?.username || env.gateways.bkash.username,
+    password: credentials?.password || env.gateways.bkash.password,
+  };
+}
+
+async function grantToken(gateway: BkashConfig): Promise<string> {
+  const { baseUrl, appKey, appSecret, username, password } = gateway;
   const response = await fetch(`${baseUrl}/tokenized/checkout/token/grant`, {
     method: "POST",
     headers: {
@@ -54,13 +67,14 @@ export const bkashAdapter: PaymentAdapter = {
   label: "bKash",
   notes: "Merchant-এর নিজের bKash merchant account লাগবে (PRD §18.6 সিদ্ধান্তের অপেক্ষায়)।",
 
-  isConfigured() {
-    const { appKey, appSecret, username, password } = env.gateways.bkash;
+  isConfigured(credentials) {
+    const { appKey, appSecret, username, password } = config(credentials);
     return Boolean(appKey && appSecret && username && password);
   },
 
   async initiate(context: InitiateContext): Promise<InitiateResult> {
-    if (!this.isConfigured()) {
+    const gateway = config(context.credentials);
+    if (!this.isConfigured(context.credentials)) {
       return {
         providerTxnId: sandboxTxnId("BKS", context.orderNo),
         status: "PENDING",
@@ -70,8 +84,8 @@ export const bkashAdapter: PaymentAdapter = {
       };
     }
 
-    const token = await grantToken();
-    const { baseUrl, appKey } = env.gateways.bkash;
+    const token = await grantToken(gateway);
+    const { baseUrl, appKey } = gateway;
     const response = await fetch(`${baseUrl}/tokenized/checkout/create`, {
       method: "POST",
       headers: {
@@ -112,21 +126,22 @@ export const bkashAdapter: PaymentAdapter = {
     };
   },
 
-  async parseCallback(request: Request, rawBody: string): Promise<CallbackResult> {
+  async parseCallback(request: Request, rawBody: string, credentials): Promise<CallbackResult> {
     const params = new URL(request.url).searchParams;
     const paymentId = params.get("paymentID") ?? request.headers.get("x-bkash-payment-id");
     const status = params.get("status");
+    const gateway = config(credentials);
 
-    // bKash reports the outcome on the callback URL. The authoritative check is
-    // the execute call, performed by `payment-service` before crediting.
     if (paymentId) {
+      const execution = status === "success" ? await executePayment(paymentId, gateway) : { ok: false, message: status ?? "unknown" };
       return {
         eventKey: `bkash:${paymentId}:${status ?? "unknown"}`,
         providerTxnId: paymentId,
         orderNo: params.get("merchantInvoiceNumber"),
-        amount: params.get("amount"),
-        status: status === "success" ? "SUCCEEDED" : status ? "FAILED" : "PENDING",
-        signatureValid: true,
+        amount: execution.amount ?? params.get("amount"),
+        status: execution.ok ? "SUCCEEDED" : status ? "FAILED" : "PENDING",
+        signatureValid: status === "success" ? execution.ok : true,
+        failureReason: execution.ok ? undefined : execution.message,
         raw: Object.fromEntries(params.entries()),
       };
     }
@@ -134,12 +149,13 @@ export const bkashAdapter: PaymentAdapter = {
     return parseSandboxBody(rawBody, request);
   },
 
-  async refund({ providerTxnId, amount }) {
-    if (!this.isConfigured()) {
+  async refund({ providerTxnId, amount, credentials }) {
+    const gateway = config(credentials);
+    if (!this.isConfigured(credentials)) {
       return { ok: true, refundRef: `SBXREFUND-${providerTxnId}`, message: "Sandbox refund" };
     }
-    const token = await grantToken();
-    const { baseUrl } = env.gateways.bkash;
+    const token = await grantToken(gateway);
+    const { baseUrl } = gateway;
     const response = await fetch(`${baseUrl}/tokenized/checkout/payment/refund`, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: token },
@@ -153,6 +169,25 @@ export const bkashAdapter: PaymentAdapter = {
     };
   },
 };
+
+async function executePayment(paymentId: string, gateway: BkashConfig): Promise<{ ok: boolean; amount?: string; message?: string }> {
+  try {
+    const token = await grantToken(gateway);
+    const response = await fetch(`${gateway.baseUrl}/tokenized/checkout/execute`, {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: token, "x-app-key": gateway.appKey },
+      body: JSON.stringify({ paymentID: paymentId }),
+    });
+    const data = (await response.json()) as { transactionStatus?: string; amount?: string; statusMessage?: string };
+    return {
+      ok: response.ok && data.transactionStatus === "Completed",
+      amount: data.amount,
+      message: data.statusMessage ?? data.transactionStatus,
+    };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "bKash execute failed" };
+  }
+}
 
 function parseSandboxBody(rawBody: string, request: Request): CallbackResult {
   const payload = safeJson(rawBody);

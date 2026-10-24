@@ -81,6 +81,8 @@ Status: [ ] open · [x] delivered with evidence
 - [ ] OpenAPI documentation, cursor pagination, request id, Idempotency-Key on checkout/payment, consistent error envelope, rate limits by plan, webhook signature verification.
 - [x] Auth REST subset: request-otp এবং verify-otp with session creation, signup provisioning, password reset, rate limiting and stable errors.
 - [x] Return/refund REST subset: return request এবং tenant/order-bound approval/resolution endpoints with duplicate/state guards.
+- [x] Courier webhook subset: signed, idempotent shipment events with tracking persistence and order status mapping.
+- [x] Merchant gateway subset: encrypted per-store bKash/Nagad/SSLCommerz credentials, configuration/test API, checkout/refund/callback credential plumbing.
 
 ## 10. Platform policies & quality
 - [ ] Bangla and English labels; BDT currency; Asia/Dhaka timezone.

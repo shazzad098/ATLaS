@@ -8,6 +8,7 @@
  */
 
 export type PaymentProviderName = "COD" | "BKASH" | "NAGAD" | "SSLCOMMERZ";
+export type PaymentCredentials = Record<string, string>;
 
 export type InitiateContext = {
   orderId: string;
@@ -19,6 +20,7 @@ export type InitiateContext = {
   callbackUrl: string;
   successUrl: string;
   failureUrl: string;
+  credentials?: PaymentCredentials;
 };
 
 export type InitiateResult = {
@@ -48,10 +50,10 @@ export interface PaymentAdapter {
   readonly label: string;
   /** Merchant-facing notes shown in Admin → Payments. */
   readonly notes: string;
-  isConfigured(): boolean;
+  isConfigured(credentials?: PaymentCredentials): boolean;
   initiate(context: InitiateContext): Promise<InitiateResult>;
-  parseCallback(request: Request, rawBody: string): Promise<CallbackResult>;
-  refund(input: { providerTxnId: string; amount: string }): Promise<{
+  parseCallback(request: Request, rawBody: string, credentials?: PaymentCredentials): Promise<CallbackResult>;
+  refund(input: { providerTxnId: string; amount: string; credentials?: PaymentCredentials }): Promise<{
     ok: boolean;
     refundRef?: string;
     message?: string;

@@ -12,6 +12,7 @@ import { finalizeCouponRedemption, releaseCouponReservation } from "@/lib/servic
 import type { ActorContext } from "@/lib/rbac";
 import { assertPermission } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
+import { getStorePaymentCredentials } from "@/lib/services/store-service";
 
 /**
  * Payment orchestration: webhooks, reconciliation and refunds (FR-05).
@@ -39,7 +40,8 @@ export async function handlePaymentWebhook(
   const adapter = getPaymentAdapter(providerName);
   const provider = adapter.provider as PaymentProviderName;
 
-  const callback = await adapter.parseCallback(request, rawBody);
+  const credentials = await callbackCredentials(provider, request, rawBody);
+  const callback = await adapter.parseCallback(request, rawBody, credentials);
   const payloadHash = createHash("sha256").update(rawBody || "").digest("hex");
 
   // Claim the event before any payment/order side effects. A conditional update
@@ -282,6 +284,26 @@ async function findOrderForCallback(orderNo: string | null, providerTxnId: strin
   return null;
 }
 
+async function callbackCredentials(provider: PaymentProviderName, request: Request, rawBody: string) {
+  let payload: Record<string, unknown> = {};
+  try {
+    const parsed = JSON.parse(rawBody || "{}");
+    if (parsed && typeof parsed === "object") payload = parsed as Record<string, unknown>;
+  } catch {
+    payload = Object.fromEntries(new URLSearchParams(rawBody).entries());
+  }
+  const params = new URL(request.url).searchParams;
+  const orderNo =
+    params.get("merchantInvoiceNumber") ??
+    params.get("order_id") ??
+    (typeof payload.tran_id === "string" ? payload.tran_id : null) ??
+    (typeof payload.orderNo === "string" ? payload.orderNo : null) ??
+    (typeof payload.order_no === "string" ? payload.order_no : null);
+  if (!orderNo) return {};
+  const order = await prisma.order.findFirst({ where: { orderNo }, select: { storeId: true } });
+  return order ? getStorePaymentCredentials(order.storeId, provider) : {};
+}
+
 async function markPaymentFailure(providerTxnId: string | null, reason: string) {
   if (!providerTxnId) return;
   await prisma.payment.updateMany({
@@ -426,9 +448,11 @@ export async function refundOrder(
 
   if (paid && paid.provider !== "COD") {
     const adapter = getPaymentAdapter(paid.provider);
+    const credentials = await getStorePaymentCredentials(storeId, paid.provider);
     const result = await adapter.refund({
       providerTxnId: paid.providerTxnId ?? order.orderNo,
       amount,
+      credentials,
     });
     if (!result.ok) {
       throw new AppError(

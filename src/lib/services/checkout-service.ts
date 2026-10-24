@@ -15,6 +15,7 @@ import {
 } from "@/lib/services/coupon-service";
 import { getPaymentAdapter } from "@/lib/payments";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
+import { getStorePaymentCredentials } from "@/lib/services/store-service";
 
 /**
  * Checkout (FR-05, US-05).
@@ -272,6 +273,7 @@ export async function placeOrder(input: {
     }
   } else {
     const adapter = getPaymentAdapter(input.payload.paymentProvider);
+    const credentials = await getStorePaymentCredentials(store.id, input.payload.paymentProvider);
     let initiation;
     try {
       initiation = await adapter.initiate({
@@ -284,6 +286,7 @@ export async function placeOrder(input: {
         callbackUrl: `${input.baseUrl}/api/v1/webhooks/payments/${input.payload.paymentProvider.toLowerCase()}`,
         successUrl: `${input.baseUrl}/store/${store.slug}/order/${order.orderNo}`,
         failureUrl: `${input.baseUrl}/store/${store.slug}/checkout?error=payment_failed`,
+        credentials,
       });
     } catch (error) {
       await cancelPendingCheckout(order.id, store.id, pricing.lines, "Payment initiation failed");

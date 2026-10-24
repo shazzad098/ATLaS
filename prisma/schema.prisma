@@ -369,6 +369,7 @@ model Store {
   inventoryMovements InventoryMovement[]
   paymentMethods     PaymentMethod[]
   deliveryZones      DeliveryZone[]
+  courierShipments   CourierShipment[]
   feeLedger          FeeLedger[]
 
   @@index([tenantId, status])
@@ -698,6 +699,7 @@ model Order {
   events    OrderEvent[]
   payments  Payment[]
   returns   Return[]
+  courierShipments CourierShipment[]
   feeLedger FeeLedger[]
 
   @@unique([storeId, orderNo])
@@ -755,6 +757,27 @@ model Return {
   @@index([orderId, status])
 }
 
+model CourierShipment {
+  id           String    @id @default(cuid())
+  storeId      String
+  orderId      String
+  provider     String
+  trackingCode String
+  status       String
+  payloadJson  Json      @default("{}")
+  shippedAt    DateTime?
+  deliveredAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, trackingCode])
+  @@index([storeId, status, updatedAt])
+  @@index([orderId])
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 5. Payments, billing and fees (PRD §10.5)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -808,6 +831,23 @@ model PaymentWebhookEvent {
   updatedAt      DateTime        @updatedAt
 
   // Idempotency guard: a provider event is processed at most once (PRD §10.7).
+  @@unique([provider, eventKey])
+  @@index([provider, status])
+}
+
+model CourierWebhookEvent {
+  id             String   @id @default(cuid())
+  provider       String
+  eventKey       String
+  signatureValid Boolean  @default(false)
+  payloadHash    String
+  payloadJson    Json     @default("{}")
+  processedAt    DateTime?
+  status         String   @default("RECEIVED")
+  error          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
   @@unique([provider, eventKey])
   @@index([provider, status])
 }

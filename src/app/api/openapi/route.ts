@@ -70,6 +70,30 @@ const document = {
         responses: { "200": { description: "Recorded webhook outcome" } },
       },
     },
+    "/webhooks/couriers/{provider}": {
+      post: {
+        security: [],
+        parameters: [{ name: "provider", in: "path", required: true, schema: { type: "string" } }, { name: "x-courier-signature", in: "header", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Recorded courier shipment status" }, "401": { description: "Invalid courier signature" } },
+      },
+    },
+    "/stores/{storeId}/payment-methods": {
+      get: {
+        parameters: [{ name: "storeId", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Merchant payment methods without secret values" } },
+      },
+    },
+    "/stores/{storeId}/payment-methods/{provider}": {
+      put: {
+        parameters: [{ name: "storeId", in: "path", required: true, schema: { type: "string" } }, { name: "provider", in: "path", required: true, schema: { type: "string", enum: ["COD", "BKASH", "NAGAD", "SSLCOMMERZ"] } }],
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/PaymentMethodConfig" } } } },
+        responses: { "200": { description: "Payment method configured" }, "422": { description: "Invalid provider or configuration" } },
+      },
+      post: {
+        parameters: [{ name: "storeId", in: "path", required: true, schema: { type: "string" } }, { name: "provider", in: "path", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Gateway connection configuration test" } },
+      },
+    },
     "/stores/{storeId}/orders/{orderId}/returns": {
       post: {
         parameters: [
@@ -119,6 +143,11 @@ const document = {
         type: "object",
         required: ["status"],
         properties: { status: { type: "string", enum: ["APPROVED", "REJECTED", "RECEIVED", "REFUNDED"] }, resolution: { type: "string", maxLength: 500 } },
+      },
+      PaymentMethodConfig: {
+        type: "object",
+        required: ["isEnabled"],
+        properties: { isEnabled: { type: "boolean" }, credentials: { type: "object", additionalProperties: { type: "string", format: "password" } } },
       },
     },
   },
