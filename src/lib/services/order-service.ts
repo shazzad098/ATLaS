@@ -5,6 +5,7 @@ import type { ActorContext } from "@/lib/rbac";
 import { assertPermission } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
 import { recordAudit } from "@/lib/audit";
+import { emitMerchantWebhook } from "@/lib/services/webhook-service";
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import {
   commitReservedSale,
@@ -312,6 +313,25 @@ export async function applyTransition(params: {
 
   if (order) {
     await notifyStoreOwner(order, to);
+    await emitMerchantWebhook({
+      tenantId: order.store.tenantId,
+      eventType: "order.status_changed",
+      data: {
+        orderId,
+        orderNo: order.orderNo,
+        storeId: order.storeId,
+        fromStatus: from,
+        toStatus: to,
+        grandTotal: String(order.grandTotal),
+      },
+    });
+    if (to === "PAID") {
+      await emitMerchantWebhook({
+        tenantId: order.store.tenantId,
+        eventType: "payment.succeeded",
+        data: { orderId, orderNo: order.orderNo, storeId: order.storeId, amount: String(order.grandTotal) },
+      });
+    }
   }
 }
 

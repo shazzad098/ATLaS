@@ -93,7 +93,8 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   Notification: 'Notification',
   SupportTicket: 'SupportTicket',
-  WebhookDelivery: 'WebhookDelivery'
+  WebhookDelivery: 'WebhookDelivery',
+  WebhookEndpoint: 'WebhookEndpoint'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -550,6 +551,7 @@ export const CourierShipmentScalarFieldEnum = {
   orderId: 'orderId',
   provider: 'provider',
   trackingCode: 'trackingCode',
+  idempotencyKey: 'idempotencyKey',
   status: 'status',
   payloadJson: 'payloadJson',
   shippedAt: 'shippedAt',
@@ -807,6 +809,7 @@ export type SupportTicketScalarFieldEnum = (typeof SupportTicketScalarFieldEnum)
 export const WebhookDeliveryScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  endpointId: 'endpointId',
   eventType: 'eventType',
   endpoint: 'endpoint',
   payloadJson: 'payloadJson',
@@ -820,6 +823,21 @@ export const WebhookDeliveryScalarFieldEnum = {
 } as const
 
 export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]
+
+
+export const WebhookEndpointScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  url: 'url',
+  encryptedSecretRef: 'encryptedSecretRef',
+  eventTypes: 'eventTypes',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebhookEndpointScalarFieldEnum = (typeof WebhookEndpointScalarFieldEnum)[keyof typeof WebhookEndpointScalarFieldEnum]
 
 
 export const SortOrder = {

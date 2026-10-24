@@ -16,6 +16,7 @@ export type AppErrorCode =
   | "FEATURE_NOT_AVAILABLE"
   | "RATE_LIMITED"
   | "PAYMENT_FAILED"
+  | "INTEGRATION_FAILED"
   | "TENANT_MISMATCH"
   | "INTERNAL";
 

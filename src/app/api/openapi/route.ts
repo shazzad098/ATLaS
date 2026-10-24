@@ -94,6 +94,28 @@ const document = {
         responses: { "200": { description: "Gateway connection configuration test" } },
       },
     },
+    "/webhooks/merchant": {
+      get: { responses: { "200": { description: "Merchant webhook endpoints without secret values" } } },
+      post: {
+        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/MerchantWebhookEndpoint" } } } },
+        responses: { "201": { description: "Created endpoint; signing secret is returned once" } },
+      },
+    },
+    "/webhooks/merchant/{endpointId}": {
+      patch: { requestBody: { content: { "application/json": { schema: { $ref: "#/components/schemas/MerchantWebhookEndpointPatch" } } } }, responses: { "200": { description: "Updated endpoint" } } },
+      delete: { responses: { "200": { description: "Deleted endpoint" } } },
+    },
+    "/webhooks/merchant/{endpointId}/test": {
+      post: { responses: { "200": { description: "Test delivery result" } } },
+    },
+    "/stores/{storeId}/orders/{orderId}/shipments": {
+      get: { responses: { "200": { description: "Courier shipments for an order" } } },
+      post: {
+        parameters: [{ name: "Idempotency-Key", in: "header", required: true, schema: { type: "string" } }],
+        requestBody: { content: { "application/json": { schema: { $ref: "#/components/schemas/CreateShipment" } } } },
+        responses: { "201": { description: "Courier shipment created" }, "503": { description: "Courier integration unavailable" } },
+      },
+    },
     "/stores/{storeId}/orders/{orderId}/returns": {
       post: {
         parameters: [
@@ -148,6 +170,18 @@ const document = {
         type: "object",
         required: ["isEnabled"],
         properties: { isEnabled: { type: "boolean" }, credentials: { type: "object", additionalProperties: { type: "string", format: "password" } } },
+      },
+      MerchantWebhookEndpoint: {
+        type: "object",
+        required: ["name", "url"],
+        properties: { name: { type: "string" }, url: { type: "string", format: "uri" }, eventTypes: { type: "array", items: { type: "string" } }, isActive: { type: "boolean" } },
+      },
+      MerchantWebhookEndpointPatch: {
+        allOf: [{ $ref: "#/components/schemas/MerchantWebhookEndpoint" }, { type: "object", properties: { rotateSecret: { type: "boolean" } } }],
+      },
+      CreateShipment: {
+        type: "object",
+        properties: { provider: { type: "string" }, serviceType: { type: "string" }, notes: { type: "string" } },
       },
     },
   },

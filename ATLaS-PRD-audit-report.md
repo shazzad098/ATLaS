@@ -407,3 +407,16 @@ Courier integration এখন generic signed-webhook flow ব্যবহার 
 Merchant gateway connection-এর জন্য `PaymentMethod.encryptedSecretRef` এখন AES-256-GCM encrypted credential payload রাখে; credential values API response বা admin list-এ ফেরত যায় না। Checkout initiation, payment callback validation এবং refund adapter-এ store-specific credentials pass হয়। Admin payment form ও API-তে bKash, Nagad এবং SSLCommerz credential save/test করা যায়; bKash live callback-এ execute-payment verification বাধ্যতামূলক করা হয়েছে।
 
 Temporary PostgreSQL + Next smoke test evidence: migration/seed সফল, gateway configure `200`, gateway test `200` with `configured: true`, secret-leak check pass, signed courier delivery `200`, duplicate courier event idempotently handled, forged signature `401`, order status `DELIVERED`, shipment persistence verified, এবং OpenAPI route discovery pass।
+
+## 13. Post-audit Phase 5 — Outbound merchant webhooks and courier shipment creation
+
+Merchant outbound webhook foundation এখন সম্পূর্ণ:
+
+- `WebhookEndpoint` model-এ tenant-scoped URL, event subscriptions, active state এবং AES-256-GCM encrypted signing secret যোগ হয়েছে। Secret create/rotate response-এ একবারই ফেরত যায়; list/update response-এ secret বা encrypted value expose হয় না।
+- `POST/GET /api/v1/webhooks/merchant`, `PATCH/DELETE /api/v1/webhooks/merchant/{endpointId}` এবং `POST /api/v1/webhooks/merchant/{endpointId}/test` endpoint যোগ হয়েছে।
+- `order.created`, `order.status_changed`, `payment.succeeded` এবং `shipment.created` event enqueue হয়। Delivery payload-এ event id, timestamp ও data থাকে; `x-atlas-signature` HMAC header `timestamp.payload` থেকে তৈরি হয়।
+- Delivery worker atomic claim, 10-second timeout, exponential retry, `FAILED`/`DEAD` state এবং cron integration সহ কাজ করে। Production-এ HTTPS এবং private/loopback webhook target block করা হয়েছে যাতে SSRF risk কমে।
+
+Courier shipment creation এখন `POST /api/v1/stores/{storeId}/orders/{orderId}/shipments` endpoint-এ আছে; `Idempotency-Key` বাধ্যতামূলক। Sandbox provider local tracking code তৈরি করে, configured provider generic `/shipments` API-তে signed bearer request পাঠায়, shipment record রাখে, order-কে `SHIPPED` করে এবং `shipment.created` outbound event enqueue করে। একই idempotency key replay করলে একই shipment ফেরত আসে।
+
+Temporary PostgreSQL + Next smoke test evidence: migration/seed সফল, endpoint create/list/test delivery pass, HMAC signature independently verified, shipment creation `201`, replay `200` with `replayed: true`, order status `SHIPPED`, queued outbound events cron দ্বারা `DELIVERED`, unreachable endpoint `FAILED` with `nextRetryAt`, এবং OpenAPI route discovery pass।

@@ -16,6 +16,7 @@ import {
 import { getPaymentAdapter } from "@/lib/payments";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
 import { getStorePaymentCredentials } from "@/lib/services/store-service";
+import { emitMerchantWebhook } from "@/lib/services/webhook-service";
 
 /**
  * Checkout (FR-05, US-05).
@@ -252,6 +253,18 @@ export async function placeOrder(input: {
   });
 
   // Post-commit side effects (each is independently safe to retry).
+  await emitMerchantWebhook({
+    tenantId: store.tenantId,
+    eventType: "order.created",
+    data: {
+      orderId: order.id,
+      orderNo: order.orderNo,
+      storeId: store.id,
+      customerName: input.payload.customerName,
+      paymentProvider: input.payload.paymentProvider,
+      grandTotal: pricing.grandTotal,
+    },
+  });
   let redirectUrl: string | undefined;
   let paymentStatus = "PENDING";
 

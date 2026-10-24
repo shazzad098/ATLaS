@@ -83,6 +83,8 @@ Status: [ ] open · [x] delivered with evidence
 - [x] Return/refund REST subset: return request এবং tenant/order-bound approval/resolution endpoints with duplicate/state guards.
 - [x] Courier webhook subset: signed, idempotent shipment events with tracking persistence and order status mapping.
 - [x] Merchant gateway subset: encrypted per-store bKash/Nagad/SSLCommerz credentials, configuration/test API, checkout/refund/callback credential plumbing.
+- [x] Outbound merchant webhook subset: tenant endpoints, encrypted signing secrets, event enqueue, signed delivery, retry/dead-letter worker and cron processing.
+- [x] Courier shipment creation subset: idempotent shipment API, sandbox/provider dispatch, order-to-shipped transition and shipment.created event.
 
 ## 10. Platform policies & quality
 - [ ] Bangla and English labels; BDT currency; Asia/Dhaka timezone.

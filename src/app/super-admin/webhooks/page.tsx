@@ -182,7 +182,7 @@ export default async function WebhooksPage() {
         {deliveries.length === 0 ? (
           <CardBody>
             <p className="text-sm text-ink-500">
-              কোনো merchant webhook endpoint কনফিগার করা নেই — ফিচারটি আগামী রিলিজে যুক্ত হবে।
+              এখনো কোনো outbound merchant webhook delivery তৈরি হয়নি। Merchant API থেকে endpoint configure করুন।
             </p>
           </CardBody>
         ) : (

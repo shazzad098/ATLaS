@@ -200,6 +200,7 @@ enum TicketStatus {
 
 enum WebhookStatus {
   PENDING
+  PROCESSING
   DELIVERED
   FAILED
   DEAD
@@ -253,6 +254,7 @@ model Tenant {
   auditLogs         AuditLog[]
   tickets           SupportTicket[]
   webhookDeliveries WebhookDelivery[]
+  webhookEndpoints  WebhookEndpoint[]
 
   @@index([ownerUserId])
   @@index([status])
@@ -763,6 +765,7 @@ model CourierShipment {
   orderId      String
   provider     String
   trackingCode String
+  idempotencyKey String?
   status       String
   payloadJson  Json      @default("{}")
   shippedAt    DateTime?
@@ -774,6 +777,7 @@ model CourierShipment {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@unique([provider, trackingCode])
+  @@unique([storeId, idempotencyKey])
   @@index([storeId, status, updatedAt])
   @@index([orderId])
 }
@@ -1057,6 +1061,7 @@ model SupportTicket {
 model WebhookDelivery {
   id          String        @id @default(cuid())
   tenantId    String
+  endpointId  String?
   eventType   String
   endpoint    String
   payloadJson Json          @default("{}")
@@ -1069,6 +1074,25 @@ model WebhookDelivery {
   createdAt   DateTime      @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  webhookEndpoint WebhookEndpoint? @relation(fields: [endpointId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, status, nextRetryAt])
+  @@index([endpointId])
+}
+
+model WebhookEndpoint {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  name                String
+  url                 String
+  encryptedSecretRef  String
+  eventTypes          String[] @default([])
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  tenant     Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([tenantId, isActive])
 }

@@ -439,7 +439,8 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   Notification: 'Notification',
   SupportTicket: 'SupportTicket',
-  WebhookDelivery: 'WebhookDelivery'
+  WebhookDelivery: 'WebhookDelivery',
+  WebhookEndpoint: 'WebhookEndpoint'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -455,7 +456,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "tenant" | "membership" | "role" | "session" | "otpChallenge" | "rateLimitBucket" | "store" | "storeSettings" | "theme" | "themeVersion" | "storeTheme" | "contentPage" | "domain" | "category" | "product" | "productVariant" | "productImage" | "inventoryMovement" | "asset" | "customer" | "cart" | "cartItem" | "order" | "orderItem" | "orderEvent" | "return" | "courierShipment" | "paymentMethod" | "payment" | "paymentWebhookEvent" | "courierWebhookEvent" | "plan" | "subscription" | "invoice" | "usageCounter" | "feeLedger" | "coupon" | "deliveryZone" | "auditLog" | "notification" | "supportTicket" | "webhookDelivery"
+    modelProps: "user" | "tenant" | "membership" | "role" | "session" | "otpChallenge" | "rateLimitBucket" | "store" | "storeSettings" | "theme" | "themeVersion" | "storeTheme" | "contentPage" | "domain" | "category" | "product" | "productVariant" | "productImage" | "inventoryMovement" | "asset" | "customer" | "cart" | "cartItem" | "order" | "orderItem" | "orderEvent" | "return" | "courierShipment" | "paymentMethod" | "payment" | "paymentWebhookEvent" | "courierWebhookEvent" | "plan" | "subscription" | "invoice" | "usageCounter" | "feeLedger" | "coupon" | "deliveryZone" | "auditLog" | "notification" | "supportTicket" | "webhookDelivery" | "webhookEndpoint"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3641,6 +3642,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WebhookEndpoint: {
+      payload: Prisma.$WebhookEndpointPayload<ExtArgs>
+      fields: Prisma.WebhookEndpointFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebhookEndpointFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebhookEndpointFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>
+        }
+        findFirst: {
+          args: Prisma.WebhookEndpointFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebhookEndpointFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>
+        }
+        findMany: {
+          args: Prisma.WebhookEndpointFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>[]
+        }
+        create: {
+          args: Prisma.WebhookEndpointCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>
+        }
+        createMany: {
+          args: Prisma.WebhookEndpointCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebhookEndpointCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>[]
+        }
+        delete: {
+          args: Prisma.WebhookEndpointDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>
+        }
+        update: {
+          args: Prisma.WebhookEndpointUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebhookEndpointDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebhookEndpointUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebhookEndpointUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebhookEndpointUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookEndpointPayload>
+        }
+        aggregate: {
+          args: Prisma.WebhookEndpointAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookEndpoint>
+        }
+        groupBy: {
+          args: Prisma.WebhookEndpointGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookEndpointGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebhookEndpointCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookEndpointCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4118,6 +4193,7 @@ export const CourierShipmentScalarFieldEnum = {
   orderId: 'orderId',
   provider: 'provider',
   trackingCode: 'trackingCode',
+  idempotencyKey: 'idempotencyKey',
   status: 'status',
   payloadJson: 'payloadJson',
   shippedAt: 'shippedAt',
@@ -4375,6 +4451,7 @@ export type SupportTicketScalarFieldEnum = (typeof SupportTicketScalarFieldEnum)
 export const WebhookDeliveryScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  endpointId: 'endpointId',
   eventType: 'eventType',
   endpoint: 'endpoint',
   payloadJson: 'payloadJson',
@@ -4388,6 +4465,21 @@ export const WebhookDeliveryScalarFieldEnum = {
 } as const
 
 export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]
+
+
+export const WebhookEndpointScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  url: 'url',
+  encryptedSecretRef: 'encryptedSecretRef',
+  eventTypes: 'eventTypes',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebhookEndpointScalarFieldEnum = (typeof WebhookEndpointScalarFieldEnum)[keyof typeof WebhookEndpointScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -5070,6 +5162,7 @@ export type GlobalOmitConfig = {
   notification?: Prisma.NotificationOmit
   supportTicket?: Prisma.SupportTicketOmit
   webhookDelivery?: Prisma.WebhookDeliveryOmit
+  webhookEndpoint?: Prisma.WebhookEndpointOmit
 }
 
 /* Types for Logging */

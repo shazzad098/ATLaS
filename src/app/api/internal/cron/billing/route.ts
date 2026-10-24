@@ -4,6 +4,7 @@ import { ok, route } from "@/lib/api";
 import { env } from "@/lib/env";
 import { runBillingSweep } from "@/lib/services/billing-service";
 import { expirePendingPayments } from "@/lib/services/payment-service";
+import { deliverPendingWebhooks } from "@/lib/services/webhook-service";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -25,9 +26,10 @@ export const POST = route(async (request: Request) => {
   if (!hasValidCronToken(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const [billing, payments] = await Promise.all([
+  const [billing, payments, webhooks] = await Promise.all([
     runBillingSweep(),
     expirePendingPayments(),
+    deliverPendingWebhooks(50),
   ]);
-  return ok({ billing, payments });
+  return ok({ billing, payments, webhooks });
 });

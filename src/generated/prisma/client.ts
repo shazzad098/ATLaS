@@ -256,3 +256,8 @@ export type SupportTicket = Prisma.SupportTicketModel
  *
  */
 export type WebhookDelivery = Prisma.WebhookDeliveryModel
+/**
+ * Model WebhookEndpoint
+ *
+ */
+export type WebhookEndpoint = Prisma.WebhookEndpointModel

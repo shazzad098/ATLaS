@@ -30,6 +30,7 @@ export type CourierShipmentMinAggregateOutputType = {
   orderId: string | null
   provider: string | null
   trackingCode: string | null
+  idempotencyKey: string | null
   status: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
@@ -43,6 +44,7 @@ export type CourierShipmentMaxAggregateOutputType = {
   orderId: string | null
   provider: string | null
   trackingCode: string | null
+  idempotencyKey: string | null
   status: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
@@ -56,6 +58,7 @@ export type CourierShipmentCountAggregateOutputType = {
   orderId: number
   provider: number
   trackingCode: number
+  idempotencyKey: number
   status: number
   payloadJson: number
   shippedAt: number
@@ -72,6 +75,7 @@ export type CourierShipmentMinAggregateInputType = {
   orderId?: true
   provider?: true
   trackingCode?: true
+  idempotencyKey?: true
   status?: true
   shippedAt?: true
   deliveredAt?: true
@@ -85,6 +89,7 @@ export type CourierShipmentMaxAggregateInputType = {
   orderId?: true
   provider?: true
   trackingCode?: true
+  idempotencyKey?: true
   status?: true
   shippedAt?: true
   deliveredAt?: true
@@ -98,6 +103,7 @@ export type CourierShipmentCountAggregateInputType = {
   orderId?: true
   provider?: true
   trackingCode?: true
+  idempotencyKey?: true
   status?: true
   payloadJson?: true
   shippedAt?: true
@@ -185,6 +191,7 @@ export type CourierShipmentGroupByOutputType = {
   orderId: string
   provider: string
   trackingCode: string
+  idempotencyKey: string | null
   status: string
   payloadJson: runtime.JsonValue
   shippedAt: Date | null
@@ -220,6 +227,7 @@ export type CourierShipmentWhereInput = {
   orderId?: Prisma.StringFilter<"CourierShipment"> | string
   provider?: Prisma.StringFilter<"CourierShipment"> | string
   trackingCode?: Prisma.StringFilter<"CourierShipment"> | string
+  idempotencyKey?: Prisma.StringNullableFilter<"CourierShipment"> | string | null
   status?: Prisma.StringFilter<"CourierShipment"> | string
   payloadJson?: Prisma.JsonFilter<"CourierShipment">
   shippedAt?: Prisma.DateTimeNullableFilter<"CourierShipment"> | Date | string | null
@@ -236,6 +244,7 @@ export type CourierShipmentOrderByWithRelationInput = {
   orderId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   trackingCode?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   payloadJson?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -249,6 +258,7 @@ export type CourierShipmentOrderByWithRelationInput = {
 export type CourierShipmentWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   provider_trackingCode?: Prisma.CourierShipmentProviderTrackingCodeCompoundUniqueInput
+  storeId_idempotencyKey?: Prisma.CourierShipmentStoreIdIdempotencyKeyCompoundUniqueInput
   AND?: Prisma.CourierShipmentWhereInput | Prisma.CourierShipmentWhereInput[]
   OR?: Prisma.CourierShipmentWhereInput[]
   NOT?: Prisma.CourierShipmentWhereInput | Prisma.CourierShipmentWhereInput[]
@@ -256,6 +266,7 @@ export type CourierShipmentWhereUniqueInput = Prisma.AtLeast<{
   orderId?: Prisma.StringFilter<"CourierShipment"> | string
   provider?: Prisma.StringFilter<"CourierShipment"> | string
   trackingCode?: Prisma.StringFilter<"CourierShipment"> | string
+  idempotencyKey?: Prisma.StringNullableFilter<"CourierShipment"> | string | null
   status?: Prisma.StringFilter<"CourierShipment"> | string
   payloadJson?: Prisma.JsonFilter<"CourierShipment">
   shippedAt?: Prisma.DateTimeNullableFilter<"CourierShipment"> | Date | string | null
@@ -264,7 +275,7 @@ export type CourierShipmentWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"CourierShipment"> | Date | string
   store?: Prisma.XOR<Prisma.StoreScalarRelationFilter, Prisma.StoreWhereInput>
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
-}, "id" | "provider_trackingCode">
+}, "id" | "provider_trackingCode" | "storeId_idempotencyKey">
 
 export type CourierShipmentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -272,6 +283,7 @@ export type CourierShipmentOrderByWithAggregationInput = {
   orderId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   trackingCode?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   payloadJson?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -292,6 +304,7 @@ export type CourierShipmentScalarWhereWithAggregatesInput = {
   orderId?: Prisma.StringWithAggregatesFilter<"CourierShipment"> | string
   provider?: Prisma.StringWithAggregatesFilter<"CourierShipment"> | string
   trackingCode?: Prisma.StringWithAggregatesFilter<"CourierShipment"> | string
+  idempotencyKey?: Prisma.StringNullableWithAggregatesFilter<"CourierShipment"> | string | null
   status?: Prisma.StringWithAggregatesFilter<"CourierShipment"> | string
   payloadJson?: Prisma.JsonWithAggregatesFilter<"CourierShipment">
   shippedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"CourierShipment"> | Date | string | null
@@ -304,6 +317,7 @@ export type CourierShipmentCreateInput = {
   id?: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -320,6 +334,7 @@ export type CourierShipmentUncheckedCreateInput = {
   orderId: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -332,6 +347,7 @@ export type CourierShipmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -348,6 +364,7 @@ export type CourierShipmentUncheckedUpdateInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -362,6 +379,7 @@ export type CourierShipmentCreateManyInput = {
   orderId: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -374,6 +392,7 @@ export type CourierShipmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -388,6 +407,7 @@ export type CourierShipmentUncheckedUpdateManyInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -411,12 +431,18 @@ export type CourierShipmentProviderTrackingCodeCompoundUniqueInput = {
   trackingCode: string
 }
 
+export type CourierShipmentStoreIdIdempotencyKeyCompoundUniqueInput = {
+  storeId: string
+  idempotencyKey: string
+}
+
 export type CourierShipmentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   storeId?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   trackingCode?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
   payloadJson?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
@@ -431,6 +457,7 @@ export type CourierShipmentMaxOrderByAggregateInput = {
   orderId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   trackingCode?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
@@ -444,6 +471,7 @@ export type CourierShipmentMinOrderByAggregateInput = {
   orderId?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   trackingCode?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
@@ -539,6 +567,7 @@ export type CourierShipmentCreateWithoutStoreInput = {
   id?: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -553,6 +582,7 @@ export type CourierShipmentUncheckedCreateWithoutStoreInput = {
   orderId: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -596,6 +626,7 @@ export type CourierShipmentScalarWhereInput = {
   orderId?: Prisma.StringFilter<"CourierShipment"> | string
   provider?: Prisma.StringFilter<"CourierShipment"> | string
   trackingCode?: Prisma.StringFilter<"CourierShipment"> | string
+  idempotencyKey?: Prisma.StringNullableFilter<"CourierShipment"> | string | null
   status?: Prisma.StringFilter<"CourierShipment"> | string
   payloadJson?: Prisma.JsonFilter<"CourierShipment">
   shippedAt?: Prisma.DateTimeNullableFilter<"CourierShipment"> | Date | string | null
@@ -608,6 +639,7 @@ export type CourierShipmentCreateWithoutOrderInput = {
   id?: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -622,6 +654,7 @@ export type CourierShipmentUncheckedCreateWithoutOrderInput = {
   storeId: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -661,6 +694,7 @@ export type CourierShipmentCreateManyStoreInput = {
   orderId: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -673,6 +707,7 @@ export type CourierShipmentUpdateWithoutStoreInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -687,6 +722,7 @@ export type CourierShipmentUncheckedUpdateWithoutStoreInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -700,6 +736,7 @@ export type CourierShipmentUncheckedUpdateManyWithoutStoreInput = {
   orderId?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -713,6 +750,7 @@ export type CourierShipmentCreateManyOrderInput = {
   storeId: string
   provider: string
   trackingCode: string
+  idempotencyKey?: string | null
   status: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Date | string | null
@@ -725,6 +763,7 @@ export type CourierShipmentUpdateWithoutOrderInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -739,6 +778,7 @@ export type CourierShipmentUncheckedUpdateWithoutOrderInput = {
   storeId?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -752,6 +792,7 @@ export type CourierShipmentUncheckedUpdateManyWithoutOrderInput = {
   storeId?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.StringFieldUpdateOperationsInput | string
   trackingCode?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -768,6 +809,7 @@ export type CourierShipmentSelect<ExtArgs extends runtime.Types.Extensions.Inter
   orderId?: boolean
   provider?: boolean
   trackingCode?: boolean
+  idempotencyKey?: boolean
   status?: boolean
   payloadJson?: boolean
   shippedAt?: boolean
@@ -784,6 +826,7 @@ export type CourierShipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   orderId?: boolean
   provider?: boolean
   trackingCode?: boolean
+  idempotencyKey?: boolean
   status?: boolean
   payloadJson?: boolean
   shippedAt?: boolean
@@ -800,6 +843,7 @@ export type CourierShipmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   orderId?: boolean
   provider?: boolean
   trackingCode?: boolean
+  idempotencyKey?: boolean
   status?: boolean
   payloadJson?: boolean
   shippedAt?: boolean
@@ -816,6 +860,7 @@ export type CourierShipmentSelectScalar = {
   orderId?: boolean
   provider?: boolean
   trackingCode?: boolean
+  idempotencyKey?: boolean
   status?: boolean
   payloadJson?: boolean
   shippedAt?: boolean
@@ -824,7 +869,7 @@ export type CourierShipmentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CourierShipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "orderId" | "provider" | "trackingCode" | "status" | "payloadJson" | "shippedAt" | "deliveredAt" | "createdAt" | "updatedAt", ExtArgs["result"]["courierShipment"]>
+export type CourierShipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "orderId" | "provider" | "trackingCode" | "idempotencyKey" | "status" | "payloadJson" | "shippedAt" | "deliveredAt" | "createdAt" | "updatedAt", ExtArgs["result"]["courierShipment"]>
 export type CourierShipmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -850,6 +895,7 @@ export type $CourierShipmentPayload<ExtArgs extends runtime.Types.Extensions.Int
     orderId: string
     provider: string
     trackingCode: string
+    idempotencyKey: string | null
     status: string
     payloadJson: runtime.JsonValue
     shippedAt: Date | null
@@ -1286,6 +1332,7 @@ export interface CourierShipmentFieldRefs {
   readonly orderId: Prisma.FieldRef<"CourierShipment", 'String'>
   readonly provider: Prisma.FieldRef<"CourierShipment", 'String'>
   readonly trackingCode: Prisma.FieldRef<"CourierShipment", 'String'>
+  readonly idempotencyKey: Prisma.FieldRef<"CourierShipment", 'String'>
   readonly status: Prisma.FieldRef<"CourierShipment", 'String'>
   readonly payloadJson: Prisma.FieldRef<"CourierShipment", 'Json'>
   readonly shippedAt: Prisma.FieldRef<"CourierShipment", 'DateTime'>
