@@ -521,9 +521,19 @@ export async function saveThemeDraftAction(_prev: AdminState, formData: FormData
 export async function publishThemeAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
   try {
     const { actor } = await ctx("design:write");
-    await publishTheme(actor, required(formData, "storeId"), required(formData, "themeVersionId"));
-    revalidateAdmin("/admin/design", "/");
-    return { ok: true, message: "থিম publish হয়েছে।" };
+    const storeId = required(formData, "storeId");
+    const themeVersionId = required(formData, "themeVersionId");
+    // Publish always saves the editor's current values first, so a merchant can
+    // never publish an older draft by pressing the wrong button.
+    const raw = text(formData, "config");
+    if (raw) {
+      const patch = JSON.parse(raw) as Record<string, unknown>;
+      await saveThemeDraft(actor, storeId, themeVersionId, patch);
+    }
+    await publishTheme(actor, storeId, themeVersionId);
+    revalidateAdmin("/admin/design", "/design-preview", "/");
+    revalidatePath("/store", "layout");
+    return { ok: true, message: "থিম publish হয়েছে — live দোকানে পরিবর্তন দেখা যাচ্ছে।" };
   } catch (error) {
     return message(error, "Publish করা যায়নি।");
   }

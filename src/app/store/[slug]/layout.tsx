@@ -79,7 +79,11 @@ export default async function StorefrontLayout({
   const ctx = themeContextFrom(context);
 
   return (
-    <div className="store-surface flex min-h-screen flex-col" style={themeStyle(ctx.config)}>
+    <div
+      className="store-surface flex min-h-screen flex-col"
+      data-density={ctx.config.typography.scale}
+      style={themeStyle(ctx.config)}
+    >
       <theme.Header ctx={ctx} />
       <main className="flex-1">{children}</main>
       <theme.Footer ctx={ctx} />

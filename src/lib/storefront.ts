@@ -44,6 +44,8 @@ export function storefrontAvailability(context: StorefrontContext): {
 
 /** Canonical, always-correct storefront href (works on subdomains and paths). */
 export function storePath(slug: string, path = ""): string {
+  // Merchant-entered links may point off-site; never prefix those.
+  if (/^(?:https?:|mailto:|tel:)/i.test(path)) return path;
   const suffix = path && !path.startsWith("/") ? `/${path}` : path;
   return `/store/${slug}${suffix === "/" ? "" : suffix}`;
 }

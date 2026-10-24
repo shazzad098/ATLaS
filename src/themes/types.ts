@@ -47,6 +47,8 @@ export type ThemeContext = {
 
 export type SectionProps = {
   ctx: ThemeContext;
+  /** Merchant-editable heading for the section, when it supports one. */
+  title?: string;
   /** Featured products, when the section is rendered from the homepage. */
   products?: StorefrontProduct[];
 };

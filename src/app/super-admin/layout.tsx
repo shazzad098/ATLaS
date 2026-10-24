@@ -1,76 +1,99 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { LogOut, Search, ShieldCheck } from "lucide-react";
+import type { CSSProperties } from "react";
 import { readSession } from "@/lib/auth/session";
 import { logoutAction } from "@/app/(auth)/actions";
+import { prisma } from "@/lib/db";
+import { AppShell, type AppNavGroup } from "@/components/ui/app-shell";
 
 /** Platform operator shell (PRD §4.5). Only `isSuperAdmin` users get past the guard. */
 
 export const metadata = { title: "Super Admin" };
-
-const NAV = [
-  { href: "/super-admin", label: "ওভারভিউ" },
-  { href: "/super-admin/tenants", label: "টেন্যান্ট" },
-  { href: "/super-admin/plans", label: "প্ল্যান" },
-  { href: "/super-admin/fees", label: "ফি লেজার" },
-  { href: "/super-admin/themes", label: "থিম ক্যাটালগ" },
-  { href: "/super-admin/webhooks", label: "ওয়েবহুক" },
-  { href: "/super-admin/audit", label: "সিকিউরিটি" },
-  { href: "/super-admin/tickets", label: "সাপোর্ট" },
-];
 
 export default async function SuperAdminLayout({ children }: { children: React.ReactNode }) {
   const session = await readSession();
   if (!session) redirect("/login");
   if (!session.user.isSuperAdmin) redirect("/admin");
 
-  return (
-    <div className="flex min-h-screen flex-col bg-ink-50">
-      <header className="sticky top-0 z-30 border-b border-ink-200 bg-ink-900 text-white">
-        <div className="mx-auto flex max-w-[110rem] items-center gap-3 px-4 py-2.5">
-          <Link href="/super-admin" className="flex items-center gap-2 font-semibold">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-white/10">
-              <ShieldCheck className="h-4 w-4" />
-            </span>
-            <span className="hidden sm:inline">ATLaS · Super Admin</span>
-          </Link>
+  const openTickets = await prisma.supportTicket.count({
+    where: { status: { in: ["OPEN", "PENDING"] } },
+  });
 
-          <div className="ml-auto flex items-center gap-3">
-            <span className="hidden text-xs text-white/70 lg:inline">
-              {session.user.name ?? session.user.phone}
+  const nav: AppNavGroup[] = [
+    {
+      items: [{ href: "/super-admin", label: "ওভারভিউ", icon: "overview" }],
+    },
+    {
+      title: "টেন্যান্ট ম্যানেজমেন্ট",
+      items: [
+        { href: "/super-admin/tenants", label: "সব টেন্যান্ট", icon: "tenants" },
+        { href: "/super-admin/plans", label: "প্ল্যান ও লিমিট", icon: "plans" },
+        { href: "/super-admin/fees", label: "ফি লেজার", icon: "fees" },
+      ],
+    },
+    {
+      title: "প্ল্যাটফর্ম",
+      items: [
+        { href: "/super-admin/themes", label: "থিম ক্যাটালগ", icon: "themes" },
+        { href: "/super-admin/webhooks", label: "ওয়েবহুক", icon: "webhooks" },
+      ],
+    },
+    {
+      title: "অপারেশনস",
+      items: [
+        { href: "/super-admin/audit", label: "সিকিউরিটি ও অডিট", icon: "audit" },
+        {
+          href: "/super-admin/tickets",
+          label: "সাপোর্ট টিকেট",
+          icon: "tickets",
+          badge: openTickets > 0 ? String(openTickets) : undefined,
+        },
+      ],
+    },
+  ];
+
+  return (
+    <div
+      className="admin-themed"
+      style={{ "--admin-primary": "#4F46E5", "--admin-deep": "#111C3B" } as CSSProperties}
+    >
+      <AppShell
+        variant="platform"
+        brand={{ name: "ATLaS", subtitle: "Platform Control", href: "/super-admin", mark: "A" }}
+        nav={nav}
+        user={{ name: session.user.name ?? session.user.phone, meta: "Super Admin" }}
+        search={
+          <form action="/super-admin/tenants" className="relative w-full max-w-md">
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink-400" />
+            <input
+              type="search"
+              name="q"
+              placeholder="টেন্যান্ট, ফোন বা ইমেইল খুঁজুন…"
+              className="h-9 w-full rounded-lg border border-ink-200 bg-ink-50/70 pr-3 pl-9 text-[12.5px] text-ink-800 outline-none transition focus:border-brand-400 focus:bg-white"
+            />
+          </form>
+        }
+        topbar={
+          <>
+            <span className="hidden items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[10.5px] font-semibold text-brand-700 md:inline-flex">
+              <ShieldCheck className="h-3 w-3" />
+              Platform ops
             </span>
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-white/10"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-[12px] font-medium text-ink-600 transition hover:bg-ink-100 hover:text-ink-900"
               >
                 <LogOut className="h-3.5 w-3.5" />
-                লগআউট
+                <span className="hidden sm:inline">লগআউট</span>
               </button>
             </form>
-          </div>
-        </div>
-
-        <nav className="mx-auto flex max-w-[110rem] gap-1 overflow-x-auto px-4 pb-2 no-scrollbar">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-white/70 hover:bg-white/10 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </header>
-
-      <main className="mx-auto w-full max-w-[110rem] flex-1 px-4 py-6">{children}</main>
-
-      <footer className="border-t border-ink-200 bg-white py-6">
-        <div className="mx-auto max-w-[110rem] px-4 text-xs text-ink-500">
-          প্ল্যাটফর্ম অপারেশন — সাবস্ক্রিপশন, ফি ও থিম ক্যাটালগ। প্রতিটি পরিবর্তন audit log-এ থাকে।
-        </div>
-      </footer>
+          </>
+        }
+        footerNote="প্ল্যাটফর্ম অপারেশন — সাবস্ক্রিপশন, ফি, থিম ও সিকিউরিটি। প্রতিটি পরিবর্তন audit log-এ সংরক্ষিত থাকে।"
+      >
+        {children}
+      </AppShell>
     </div>
   );
 }

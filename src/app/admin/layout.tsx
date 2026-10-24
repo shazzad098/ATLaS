@@ -1,57 +1,70 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  BarChart3,
-  Bell,
-  Boxes,
-  ExternalLink,
-  FolderTree,
-  LayoutDashboard,
-  LifeBuoy,
-  Palette,
-  Percent,
-  Receipt,
-  Settings,
-  ShoppingCart,
-  Truck,
-  Users,
-  UserSquare2,
-  Wallet,
-  Warehouse,
-} from "lucide-react";
+import { Bell, ExternalLink, LogOut, Palette, Sparkles } from "lucide-react";
+import type { CSSProperties } from "react";
 import { STORE_COOKIE, getActiveStore, getWorkspace } from "@/lib/tenant";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
+import { resolveStoreTheme } from "@/lib/services/theme-service";
 import { storePath } from "@/lib/storefront";
-import { Alert, Badge } from "@/components/ui/shell";
+import { prisma } from "@/lib/db";
+import { Alert, Badge, Meter } from "@/components/ui/shell";
+import { AppShell, type AppNavGroup, type NavIcon } from "@/components/ui/app-shell";
 import { logoutAction } from "@/app/(auth)/actions";
 import { StoreSwitcher } from "@/app/admin/_components/store-switcher";
 
-/** Merchant admin shell: permission-filtered sidebar, store switcher, plan banner. */
+/**
+ * Merchant admin shell.
+ *
+ * The panel wears its own storefront's identity: the primary colour of the
+ * active theme drives `--admin-primary`, which re-derives the whole `brand-*`
+ * ramp inside `.admin-themed`. Dhaka Bazar therefore works in green and Nokshi
+ * in maroon, while the layout, navigation and data stay identical.
+ */
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: typeof LayoutDashboard;
-  permission: string;
-};
+type NavItem = { href: string; label: string; icon: NavIcon; permission: string };
 
-const NAV: NavItem[] = [
-  { href: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, permission: "store:read" },
-  { href: "/admin/orders", label: "অর্ডার", icon: ShoppingCart, permission: "orders:read" },
-  { href: "/admin/products", label: "পণ্য", icon: Boxes, permission: "catalog:read" },
-  { href: "/admin/inventory", label: "ইনভেন্টরি", icon: Warehouse, permission: "catalog:read" },
-  { href: "/admin/categories", label: "ক্যাটাগরি", icon: FolderTree, permission: "catalog:read" },
-  { href: "/admin/customers", label: "কাস্টমার", icon: Users, permission: "customers:read" },
-  { href: "/admin/design", label: "ডিজাইন", icon: Palette, permission: "design:read" },
-  { href: "/admin/delivery", label: "ডেলিভারি", icon: Truck, permission: "delivery:read" },
-  { href: "/admin/payments", label: "পেমেন্ট", icon: Wallet, permission: "payments:read" },
-  { href: "/admin/discounts", label: "ডিসকাউন্ট", icon: Percent, permission: "discounts:read" },
-  { href: "/admin/reports", label: "রিপোর্ট", icon: BarChart3, permission: "reports:read" },
-  { href: "/admin/staff", label: "স্টাফ", icon: UserSquare2, permission: "staff:read" },
-  { href: "/admin/billing", label: "বিলিং", icon: Receipt, permission: "billing:read" },
-  { href: "/admin/support", label: "সাপোর্ট", icon: LifeBuoy, permission: "store:read" },
-  { href: "/admin/settings", label: "সেটিংস", icon: Settings, permission: "settings:read" },
+const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
+  {
+    title: "মূল",
+    items: [
+      { href: "/admin", label: "ড্যাশবোর্ড", icon: "dashboard", permission: "store:read" },
+      { href: "/admin/orders", label: "অর্ডার", icon: "orders", permission: "orders:read" },
+      { href: "/admin/customers", label: "কাস্টমার", icon: "customers", permission: "customers:read" },
+    ],
+  },
+  {
+    title: "ক্যাটালগ",
+    items: [
+      { href: "/admin/products", label: "পণ্য", icon: "products", permission: "catalog:read" },
+      { href: "/admin/inventory", label: "ইনভেন্টরি", icon: "inventory", permission: "catalog:read" },
+      { href: "/admin/categories", label: "ক্যাটাগরি", icon: "categories", permission: "catalog:read" },
+    ],
+  },
+  {
+    title: "মার্কেটিং",
+    items: [
+      { href: "/admin/design", label: "ডিজাইন", icon: "design", permission: "design:read" },
+      { href: "/admin/discounts", label: "ডিসকাউন্ট", icon: "discounts", permission: "discounts:read" },
+    ],
+  },
+  {
+    title: "অপারেশনস",
+    items: [
+      { href: "/admin/delivery", label: "ডেলিভারি", icon: "delivery", permission: "delivery:read" },
+      { href: "/admin/payments", label: "পেমেন্ট", icon: "payments", permission: "payments:read" },
+      { href: "/admin/reports", label: "রিপোর্ট", icon: "reports", permission: "reports:read" },
+      { href: "/admin/staff", label: "স্টাফ", icon: "staff", permission: "staff:read" },
+    ],
+  },
+  {
+    title: "অ্যাকাউন্ট",
+    items: [
+      { href: "/admin/billing", label: "বিলিং ও প্ল্যান", icon: "billing", permission: "billing:read" },
+      { href: "/admin/support", label: "সাপোর্ট", icon: "support", permission: "store:read" },
+      { href: "/admin/settings", label: "সেটিংস", icon: "settings", permission: "settings:read" },
+    ],
+  },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -61,34 +74,61 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const store = await getActiveStore(workspace);
   if (!store) redirect("/onboarding");
 
-  const snapshot = await loadEntitlementSnapshot(workspace.activeTenant.tenantId);
-  const jar = await cookies();
-  const storeCookie = jar.get(STORE_COOKIE)?.value;
+  const [snapshot, theme, unread, jar] = await Promise.all([
+    loadEntitlementSnapshot(workspace.activeTenant.tenantId),
+    resolveStoreTheme(store.id),
+    prisma.notification.count({ where: { userId: workspace.user.id, readAt: null } }),
+    cookies(),
+  ]);
 
-  const visible = NAV.filter((item) => workspace.actor.permissions.includes(item.permission));
+  const storeCookie = jar.get(STORE_COOKIE)?.value;
+  const primary = theme.config.colors.primary;
+  const deep = `color-mix(in srgb, ${primary} 68%, #07110c)`;
+  const pageTint = `color-mix(in srgb, ${primary} 4%, #f6f7f9)`;
+
+  const nav: AppNavGroup[] = NAV_GROUPS.map((group) => ({
+    title: group.title,
+    items: group.items
+      .filter((item) => workspace.actor.permissions.includes(item.permission))
+      .map((item) => ({ href: item.href, label: item.label, icon: item.icon })),
+  })).filter((group) => group.items.length > 0);
 
   return (
-    <div className="flex min-h-screen flex-col bg-ink-50">
-      <header className="sticky top-0 z-30 border-b border-ink-200 bg-white">
-        <div className="mx-auto flex max-w-[110rem] items-center gap-3 px-4 py-2.5">
-          <Link href="/admin" className="flex items-center gap-2 font-semibold" aria-label="ATLaS admin">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-xs font-bold text-white">
-              A
-            </span>
-            <span className="hidden sm:inline">ATLaS</span>
-          </Link>
+    <div
+      className="admin-themed"
+      style={
+        {
+          "--admin-primary": primary,
+          "--admin-deep": deep,
+          "--admin-page": pageTint,
+        } as CSSProperties
+      }
+    >
+      <AppShell
+        variant="merchant"
+        brand={{
+          name: store.name,
+          subtitle: `${theme.name} থিম · ${workspace.activeTenant.tenantName}`,
+          href: "/admin",
+          mark: store.name.slice(0, 1).toUpperCase(),
+        }}
+        nav={nav}
+        user={{
+          name: workspace.user.name ?? workspace.user.phone,
+          meta: `${workspace.activeTenant.roleName} · ${snapshot.planName}`,
+        }}
+        topbar={
+          <>
+            <StoreSwitcher
+              stores={workspace.stores.map((item) => ({ id: item.id, name: item.name }))}
+              activeId={storeCookie ?? store.id}
+            />
 
-          <StoreSwitcher
-            stores={workspace.stores.map((item) => ({ id: item.id, name: item.name }))}
-            activeId={storeCookie ?? store.id}
-          />
-
-          <div className="ml-auto flex items-center gap-2">
             {store.status === "PUBLISHED" ? (
               <Link
                 href={storePath(store.slug)}
                 target="_blank"
-                className="hidden items-center gap-1.5 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-50 sm:inline-flex"
+                className="hidden h-9 items-center gap-1.5 rounded-lg border border-ink-200 bg-white px-3 text-[11.5px] font-medium text-ink-700 hover:bg-ink-50 sm:inline-flex"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 দোকান দেখুন
@@ -99,77 +139,76 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
             <Link
               href="/admin/notifications"
-              className="relative inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-ink-600 hover:bg-ink-100"
+              className="relative inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-[11.5px] font-medium text-ink-600 hover:bg-ink-100"
             >
               <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">নোটিফিকেশন</span>
-            </Link>
-
-            <Link
-              href="/account"
-              className="hidden text-xs text-ink-500 hover:text-ink-900 lg:inline"
-            >
-              {workspace.user.name ?? workspace.user.phone} · {workspace.activeTenant.roleName}
+              <span className="hidden md:inline">নোটিফিকেশন</span>
+              {unread > 0 ? (
+                <span className="absolute top-1 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                  {unread > 9 ? "৯+" : unread}
+                </span>
+              ) : null}
             </Link>
 
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="rounded-lg px-3 py-1.5 text-xs font-medium text-ink-600 hover:bg-ink-100"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-[11.5px] font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
               >
-                লগআউট
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">লগআউট</span>
               </button>
             </form>
+          </>
+        }
+        banner={
+          <div className="mb-5 space-y-3">
+            {snapshot.suspended ? (
+              <Alert tone="danger" title="অ্যাকাউন্ট সাময়িক বন্ধ">
+                সাবস্ক্রিপশন সমস্যার কারণে দোকান বন্ধ আছে। বিলিং পেজে গিয়ে পেমেন্ট সম্পন্ন করুন।
+              </Alert>
+            ) : snapshot.readOnly ? (
+              <Alert tone="warning" title="Read-only মোড">
+                নতুন অর্ডার নেওয়া বন্ধ আছে। বিলিং আপডেট করলে আবার চালু হবে।
+              </Alert>
+            ) : null}
+
+            <div className="rounded-xl border border-ink-200 bg-white px-4 py-3 shadow-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone="brand">{snapshot.planName} প্ল্যান</Badge>
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-ink-500">
+                  <Palette className="h-3 w-3" />
+                  {theme.name} থিম
+                </span>
+                <span className="hidden items-center gap-1 text-[11px] text-ink-400 sm:inline-flex">
+                  <Sparkles className="h-3 w-3" />
+                  মার্চেন্ট প্যানেল আপনার স্টোরফ্রন্টের রঙে
+                </span>
+                <Link
+                  href="/admin/billing"
+                  className="ml-auto text-[11.5px] font-semibold text-brand-700 hover:underline"
+                >
+                  প্ল্যান ও বিলিং →
+                </Link>
+              </div>
+
+              <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <Meter label="পণ্য" used={snapshot.usage.products} limit={snapshot.limits.products} />
+                <Meter
+                  label="এই মাসের অর্ডার"
+                  used={snapshot.usage.ordersThisPeriod}
+                  limit={snapshot.limits.monthlyOrders}
+                />
+                <Meter label="স্টোরেজ" used={snapshot.usage.storageMb} limit={snapshot.limits.storageMb} unit=" MB" />
+                <Meter label="স্টাফ সিট" used={snapshot.usage.staffSeats} limit={snapshot.limits.staffSeats} />
+              </div>
+            </div>
           </div>
-        </div>
-
-        <nav className="mx-auto flex max-w-[110rem] gap-1 overflow-x-auto px-4 pb-2 no-scrollbar">
-          {visible.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900"
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </header>
-
-      <div className="mx-auto w-full max-w-[110rem] flex-1 px-4 py-6">
-        {snapshot.suspended ? (
-          <Alert tone="danger" className="mb-4" title="অ্যাকাউন্ট সাময়িক বন্ধ">
-            সাবস্ক্রিপশন সমস্যার কারণে দোকান বন্ধ আছে। বিলিং পেজে গিয়ে পেমেন্ট সম্পন্ন করুন।
-          </Alert>
-        ) : snapshot.readOnly ? (
-          <Alert tone="warning" className="mb-4" title="Read-only মোড">
-            নতুন অর্ডার নেওয়া বন্ধ আছে। বিলিং আপডেট করলে আবার চালু হবে।
-          </Alert>
-        ) : null}
-
-        <div className="mb-5 flex flex-wrap items-center gap-2 text-xs text-ink-500">
-          <Badge tone="brand">{snapshot.planName} প্ল্যান</Badge>
-          <span>
-            পণ্য {snapshot.usage.products}
-            {snapshot.limits.products === null ? "" : ` / ${snapshot.limits.products}`}
-          </span>
-          <span aria-hidden>·</span>
-          <span>
-            এই মাসে অর্ডার {snapshot.usage.ordersThisPeriod}
-            {snapshot.limits.monthlyOrders === null ? "" : ` / ${snapshot.limits.monthlyOrders}`}
-          </span>
-        </div>
-
+        }
+        footerNote={`${workspace.activeTenant.tenantName} · ${store.name} — সাবস্ক্রিপশন, অর্ডার ও ক্যাটালগ একই ডেটাবেস থেকে।`}
+      >
         {children}
-      </div>
-
-      <footer className="border-t border-ink-200 bg-white py-6">
-        <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-2 px-4 text-xs text-ink-500">
-          <p>প্ল্যাটফর্ম ফি ও সাবস্ক্রিপশন মডেল — BDT / Asia/Dhaka</p>
-          <p>{workspace.activeTenant.tenantName}</p>
-        </div>
-      </footer>
+      </AppShell>
     </div>
   );
 }

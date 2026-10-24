@@ -1,3 +1,4 @@
+import * as bazar from "@/themes/bazar";
 import * as kit from "@/themes/kit";
 import * as nokshi from "@/themes/nokshi";
 import type { SectionVariant, ThemeComponents } from "@/themes/types";
@@ -5,12 +6,12 @@ import type { SectionVariant, ThemeComponents } from "@/themes/types";
 /**
  * Theme registry (PRD §7 / FR-06).
  *
- * `bazar` and `studio` bind a `SectionVariant` into the shared section kit;
- * `nokshi` ships its own component set because its storefront layout (split
- * hero, circular category rail, brand story, newsletter band) is structurally
- * different. When a merchant selects a theme whose UI has not been implemented
- * yet (a plan upgrade may unlock a future theme), the registry falls back to
- * `nokshi` so a published storefront never renders blank.
+ * `studio` binds a `SectionVariant` into the shared section kit; `nokshi` and
+ * `bazar` ship their own component sets because their storefront layouts are
+ * structurally different (editorial boutique vs. dense grocery marketplace).
+ * When a merchant selects a theme whose UI has not been implemented yet (a plan
+ * upgrade may unlock a future theme), the registry falls back to `nokshi` so a
+ * published storefront never renders blank.
  */
 
 export const THEME_VARIANTS: Record<string, SectionVariant> = {
@@ -57,7 +58,20 @@ const REGISTRY: Record<string, ThemeComponents> = {
     Footer: nokshi.Footer,
     ProductCard: nokshi.ProductCard,
   },
-  bazar: bind("bazar", "dense"),
+  bazar: {
+    code: "bazar",
+    name: THEME_LABELS.bazar,
+    variant: "dense",
+    Header: bazar.Header,
+    Hero: bazar.Hero,
+    CategoryGrid: bazar.CategoryGrid,
+    ProductGrid: bazar.ProductGrid,
+    PromoBanner: bazar.PromoBanner,
+    Testimonials: bazar.Testimonials,
+    TrustBar: bazar.TrustBar,
+    Footer: bazar.Footer,
+    ProductCard: bazar.ProductCard,
+  },
   studio: bind("studio", "minimal"),
 };
 

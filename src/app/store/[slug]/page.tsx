@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import { getStorefrontContext, themeContextFrom } from "@/lib/storefront";
 import { listStorefrontCategories, listStorefrontProducts } from "@/lib/storefront-data";
 import { getTheme } from "@/themes";
-import type { ThemeComponents } from "@/themes/types";
-import type { ThemeConfig } from "@/lib/theme-catalog";
+import { StorefrontSections } from "@/themes/storefront-sections";
 
 /**
  * Storefront homepage (PRD §7).
@@ -25,64 +24,13 @@ export default async function StorefrontHome({ params }: { params: Promise<{ slu
     listStorefrontCategories(context.store.id),
   ]);
 
-  const configured = ctx.config.sections.filter((section) => section.enabled);
-  const sections = configured.length
-    ? configured
-    : (["Hero", "CategoryGrid", "ProductGrid", "PromoBanner", "TrustBar"] as const).map((key) => ({
-        key,
-        enabled: true,
-        title: "",
-      }));
-
   return (
-    <>
-      {sections.map((section) => renderSection(section, theme, ctx, products, categories))}
-    </>
+    <StorefrontSections
+      theme={theme}
+      ctx={ctx}
+      products={products}
+      categories={categories}
+      sections={ctx.config.sections.filter((section) => section.enabled)}
+    />
   );
-}
-
-function renderSection(
-  section: ThemeConfig["sections"][number],
-  theme: ThemeComponents,
-  ctx: ReturnType<typeof themeContextFrom>,
-  products: Awaited<ReturnType<typeof listStorefrontProducts>>["products"],
-  categories: Awaited<ReturnType<typeof listStorefrontCategories>>,
-) {
-  switch (section.key) {
-    case "Header":
-    case "Footer":
-      // Rendered by the layout so they wrap every storefront page.
-      return null;
-    case "Hero":
-      return <theme.Hero key="Hero" ctx={ctx} products={products} />;
-    case "CategoryGrid":
-      return (
-        <theme.CategoryGrid
-          key="CategoryGrid"
-          ctx={ctx}
-          title={section.title}
-          categories={categories}
-          products={products}
-        />
-      );
-    case "ProductGrid":
-      return (
-        <theme.ProductGrid
-          key="ProductGrid"
-          ctx={ctx}
-          title={section.title}
-          products={products}
-          categories={categories}
-          columns={4}
-        />
-      );
-    case "PromoBanner":
-      return <theme.PromoBanner key="PromoBanner" ctx={ctx} products={products} />;
-    case "Testimonials":
-      return <theme.Testimonials key="Testimonials" ctx={ctx} products={products} />;
-    case "TrustBar":
-      return <theme.TrustBar key="TrustBar" ctx={ctx} products={products} />;
-    default:
-      return null;
-  }
 }

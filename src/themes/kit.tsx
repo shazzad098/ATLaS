@@ -55,12 +55,12 @@ function columnsClass(variant: SectionVariant, columns: 3 | 4): string {
 
 export function Header({ ctx, variant }: SectionProps & { variant: SectionVariant }) {
   const hasAnnouncement = Boolean(ctx.announcement);
-  const centered = variant === "editorial" && ctx.config.header.style === "centered";
-  const searchEnabled = ctx.config.header.showSearch;
+  const centered = ctx.config.header.style === "centered";
+  const searchEnabled = ctx.config.header.showSearch && ctx.config.header.style !== "minimal";
 
   return (
     <header
-      className={`store-surface sticky top-0 z-40 border-b ${variant === "minimal" ? "border-black/5" : "border-black/10"}`}
+      className={`store-surface ${ctx.config.header.sticky ? "sticky top-0" : "relative"} z-40 border-b ${variant === "minimal" ? "border-black/5" : "border-black/10"}`}
     >
       {hasAnnouncement ? (
         <div
@@ -374,14 +374,14 @@ export function PromoBanner({ ctx, variant }: SectionProps & { variant: SectionV
 
 // ── Testimonials ─────────────────────────────────────────────────────────────
 
-export function Testimonials({ ctx, variant }: SectionProps & { variant: SectionVariant }) {
+export function Testimonials({ ctx, title, variant }: SectionProps & { variant: SectionVariant }) {
   const { testimonials } = ctx.config;
   if (!testimonials.enabled || testimonials.items.length === 0) return null;
 
   return (
     <section className={`store-surface ${sectionPad(variant)}`}>
       <div className="atlas-shell">
-        <h2 className={`mb-5 ${headingClass(variant)}`}>ক্রেতাদের কথা</h2>
+        <h2 className={`mb-5 ${headingClass(variant)}`}>{title || "ক্রেতাদের কথা"}</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.items.map((item, index) => (
             <figure
@@ -412,27 +412,30 @@ export function Testimonials({ ctx, variant }: SectionProps & { variant: Section
 
 // ── Trust bar ────────────────────────────────────────────────────────────────
 
-export function TrustBar({ ctx, variant }: SectionProps & { variant: SectionVariant }) {
+export function TrustBar({ ctx, title, variant }: SectionProps & { variant: SectionVariant }) {
   const { trust } = ctx.config;
   if (!trust.enabled || trust.items.length === 0) return null;
 
   return (
     <section className="border-y border-black/10 tone-surface">
-      <div className="atlas-shell grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
-        {trust.items.map((item, index) => {
-          const Icon = TRUST_ICONS[index % TRUST_ICONS.length];
-          return (
-            <div key={item} className="flex items-center gap-3">
-              <span
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white"
-                style={{ background: "var(--store-primary)" }}
-              >
-                <Icon className="h-4 w-4" />
-              </span>
-              <span className={`text-sm font-medium ${variant === "editorial" ? "font-serif" : ""}`}>{item}</span>
-            </div>
-          );
-        })}
+      <div className="atlas-shell py-6">
+        {title ? <h2 className={`mb-4 text-center ${headingClass(variant)}`}>{title}</h2> : null}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {trust.items.map((item, index) => {
+            const Icon = TRUST_ICONS[index % TRUST_ICONS.length];
+            return (
+              <div key={item} className="flex items-center gap-3">
+                <span
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white"
+                  style={{ background: "var(--store-primary)" }}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className={`text-sm font-medium ${variant === "editorial" ? "font-serif" : ""}`}>{item}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

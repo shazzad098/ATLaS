@@ -260,14 +260,14 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
     compatiblePlans: ALL_PLANS,
     preview: {
       gradient: "from-emerald-200 via-lime-100 to-emerald-50",
-      swatches: ["#047857", "#65A30D", "#F7FEE7"],
+      swatches: ["#0E7A3F", "#65A30D", "#EAF7EF"],
     },
     defaultConfig: {
       colors: {
-        primary: "#047857",
+        primary: "#0E7A3F",
         accent: "#65A30D",
         background: "#FFFFFF",
-        surface: "#F1F8F4",
+        surface: "#EAF7EF",
         text: "#0B2018",
         muted: "#5B7568",
       },
@@ -276,62 +276,96 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
       header: {
         style: "classic",
         showSearch: true,
-        announcement: "ভোরের বাজার — প্রতিদিন সকাল ৭টায় নতুন স্টক",
+        announcement: "সারাদেশে হোম ডেলিভারি · ৫০০৳+ অর্ডারে ফ্রি ডেলিভারি · নতুন স্টক এসেছে",
         sticky: true,
       },
       hero: {
         enabled: true,
-        title: "আজকের বাজার, আজই বাড়িতে",
-        subtitle: "সকালের অর্ডার — সন্ধ্যার মধ্যে ডেলিভারি।",
-        ctaLabel: "বাজার শুরু করুন",
+        title: "আজকের বাজার, আজই বাড়িতে!",
+        subtitle:
+          "সকালের তাজা সবজি, মাছ আর মুদি — হাতে বাছাই করা, বাজারের দামে। একই দিনে ঘরে পৌঁছে দিচ্ছি।",
+        ctaLabel: "শপিং শুরু করুন",
         ctaHref: "/shop",
         align: "left",
       },
-      sections: THEME_SECTION_KEYS.map((key) => ({
-        key,
+      sections: [
+        "Header",
+        "Hero",
+        "CategoryGrid",
+        "ProductGrid",
+        "PromoBanner",
+        "TrustBar",
+        "Testimonials",
+        "Footer",
+      ].map((key) => ({
+        key: key as (typeof THEME_SECTION_KEYS)[number],
         enabled: true,
         title:
           key === "CategoryGrid"
-            ? "ক্যাটাগরি"
+            ? "জনপ্রিয় ক্যাটাগরি"
             : key === "ProductGrid"
-              ? "নতুন স্টক"
+              ? "সবচেয়ে সেরা ৮ প্রোডাক্টের বাজার"
               : key === "Testimonials"
-                ? "কাস্টমার রিভিউ"
+                ? "ক্রেতাদের অভিজ্ঞতা ও মতামত"
                 : "",
       })),
       promo: {
         enabled: true,
-        title: "৫০০ টাকার উপরে ফ্রি ডেলিভারি",
-        body: "নির্বাচিত এলাকায় প্রযোজ্য। অর্ডারের সময় ঠিকানা দেখে নিন।",
+        title: "৫০০ টাকার উপরে ফ্রি ডেলিভারি!",
+        body: "মিরপুর, উত্তরা, ধানমন্ডি ও আজিমপুরে প্রযোজ্য। অর্ডারের সময় ডেলিভারি এলাকা মিলিয়ে নিন।",
         ctaLabel: "শর্ত দেখুন",
         ctaHref: "/page/delivery",
       },
       testimonials: {
         enabled: true,
         items: [
-          { name: "রফিকুল ইসলাম", quote: "সবজি টাটকা ছিল, দামও বাজারের মতোই।", location: "মিরপুর ১০" },
-          { name: "নুসরাত জাহান", quote: "প্রতিদিনের বাজার এখন এখান থেকেই করি।", location: "উত্তরা" },
+          {
+            name: "রফিকুল ইসলাম",
+            quote: "সবজি একদম টাটকা ছিল, দামও বাজারের মতোই। এখন প্রতিদিন এখান থেকেই বাজার করি।",
+            location: "মিরপুর ১০, ঢাকা",
+          },
+          {
+            name: "নুসরাত জাহান",
+            quote: "সকালে অর্ডার দিয়েছি, দুপুরের মধ্যে হাতে পেয়েছি। প্যাকেজিংও পরিষ্কার ছিল।",
+            location: "উত্তরা, ঢাকা",
+          },
+          {
+            name: "তানভীর হোসেন",
+            quote: "মাছ আর মাংসের মান ভালো, ওজনেও ঠিক। দামও অন্য জায়গার চেয়ে কম মনে হয়েছে।",
+            location: "ধানমন্ডি, ঢাকা",
+          },
         ],
       },
       trust: {
         enabled: true,
-        items: ["ডেলিভারি ট্র্যাকিং", "ক্যাশ অন ডেলিভারি", "ওজনে কারচুপি নেই"],
+        items: [
+          "সহজ রিটার্ন পলিসি",
+          "সাশ্রয়ী মূল্যে বাজার",
+          "দ্রুত হোম ডেলিভারি",
+          "নিরাপদ পেমেন্ট",
+        ],
       },
       footer: {
-        about: "ঢাকা বাজার — প্রতিদিনের টাটকা পণ্য, বাজারের দামে।",
+        about:
+          "ঢাকা বাজার — প্রতিদিনের টাটকা সবজি, মাছ, মুদি ও নিত্যপণ্য, বাজারের সেরা দামে ঘরে পৌঁছে দেওয়া।",
         columns: [
           {
-            title: "ক্যাটাগরি",
+            title: "পণ্য ক্যাটাগরি",
             links: [
               { label: "সব পণ্য", href: "/shop" },
-              { label: "কার্ট", href: "/cart" },
+              { label: "সবজি", href: "/shop?category=sobji" },
+              { label: "ফল", href: "/shop?category=fol" },
+              { label: "মাছ ও মাংস", href: "/shop?category=mach" },
+              { label: "মুদি", href: "/shop?category=mudi" },
             ],
           },
           {
-            title: "সেবা",
+            title: "গ্রাহক সেবা",
             links: [
-              { label: "ডেলিভারি এলাকা", href: "/page/delivery" },
-              { label: "যোগাযোগ", href: "/page/contact" },
+              { label: "ডেলিভারি তথ্য", href: "/page/delivery" },
+              { label: "রিটার্ন পলিসি", href: "/page/returns" },
+              { label: "প্রাইভেসি", href: "/page/privacy" },
+              { label: "শর্তাবলী", href: "/page/terms" },
             ],
           },
         ],
@@ -340,6 +374,8 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
       navigation: [
         { label: "হোম", href: "/" },
         { label: "সব পণ্য", href: "/shop" },
+        { label: "সবজি", href: "/shop?category=sobji" },
+        { label: "মাছ ও মাংস", href: "/shop?category=mach" },
         { label: "ডেলিভারি", href: "/page/delivery" },
         { label: "যোগাযোগ", href: "/page/contact" },
       ],

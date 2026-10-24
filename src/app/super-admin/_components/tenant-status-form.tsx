@@ -20,7 +20,7 @@ export function TenantStatusForm({ tenantId, status }: { tenantId: string; statu
   const [selected, setSelected] = useState(status);
 
   return (
-    <form action={submit} className="flex flex-wrap items-center gap-2">
+    <form action={submit} className="flex flex-nowrap items-center gap-2">
       <input type="hidden" name="tenantId" value={tenantId} />
       <Select
         name="status"

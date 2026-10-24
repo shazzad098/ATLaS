@@ -43,7 +43,7 @@ const accent = "var(--store-accent)";
 const background = "var(--store-background)";
 const surface = "var(--store-surface)";
 
-const HEADING = "font-serif tracking-tight";
+const HEADING = "store-heading tracking-tight";
 
 /** "শিরোনাম, বাকি অংশ" → two lines, the second one tinted like the reference. */
 function splitTitle(title: string): [string, string] {
@@ -112,13 +112,73 @@ function SectionHeading({
 // ── Header ───────────────────────────────────────────────────────────────────
 
 export function Header({ ctx }: SectionProps) {
+  const { header } = ctx.config;
   const home = storePath(ctx.slug);
   const shop = storePath(ctx.slug, "/shop");
   const cart = storePath(ctx.slug, "/cart");
+  const centered = header.style === "centered";
+  const minimal = header.style === "minimal";
+  const showSearch = header.showSearch && !minimal;
+
+  const logo = (
+    <Link href={home} className="flex shrink-0 items-center gap-2.5" aria-label={ctx.storeName}>
+      <span
+        className="grid h-10 w-10 place-items-center rounded-full text-lg font-bold text-white shadow-[0_6px_16px_-8px_rgba(90,20,30,0.8)]"
+        style={{ background: primary }}
+      >
+        {ctx.storeName.trim().charAt(0)}
+      </span>
+      <span className="flex flex-col leading-none">
+        <span className={`${HEADING} text-[17px] font-bold sm:text-[19px]`}>{ctx.storeName}</span>
+        {!minimal ? (
+          <span className="muted mt-1 text-[8.5px] font-medium tracking-[0.2em]">হাতে বোনা · বাংলাদেশ</span>
+        ) : null}
+      </span>
+    </Link>
+  );
+
+  const links = ctx.navigation.map((link) => (
+    <Link
+      key={`${link.label}-${link.href}`}
+      href={storePath(ctx.slug, link.href)}
+      className="rounded-full px-2.5 py-1.5 text-[12.5px] font-medium transition hover:bg-[var(--store-surface)]"
+      style={{ color: "var(--store-text)" }}
+    >
+      {link.label}
+    </Link>
+  ));
+
+  const searchForm = (
+    <form
+      action={shop}
+      className={`items-center gap-2 rounded-full border px-3 py-1.5 ${centered ? "flex" : "hidden xl:flex"}`}
+      style={{ borderColor: "color-mix(in srgb, var(--store-primary) 18%, transparent)" }}
+    >
+      <Search className="h-3.5 w-3.5 opacity-60" />
+      <input
+        type="search"
+        name="q"
+        placeholder="পণ্য খুঁজুন…"
+        className={`${centered ? "w-40" : "w-32"} bg-transparent text-[12px] outline-none placeholder:opacity-60`}
+      />
+    </form>
+  );
+
+  const cartLink = (
+    <Link
+      href={cart}
+      className="store-btn inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-white transition hover:opacity-90"
+      style={{ background: primary }}
+      aria-label="কার্ট"
+    >
+      <ShoppingBag className="h-4 w-4" />
+      <span className="hidden text-[12px] font-semibold sm:inline">কার্ট</span>
+    </Link>
+  );
 
   return (
     <header
-      className="sticky top-0 z-40 border-b bg-[var(--store-background)] backdrop-blur"
+      className={`${header.sticky ? "sticky top-0" : "relative"} z-40 border-b bg-[var(--store-background)] backdrop-blur`}
       style={{ borderColor: "color-mix(in srgb, var(--store-primary) 14%, transparent)" }}
     >
       {ctx.announcement ? (
@@ -133,66 +193,37 @@ export function Header({ ctx }: SectionProps) {
         </div>
       ) : null}
 
-      <div className="atlas-shell flex items-center gap-3 py-3">
-        <Link href={home} className="flex shrink-0 items-center gap-2.5" aria-label={ctx.storeName}>
-          <span
-            className="grid h-10 w-10 place-items-center rounded-full text-lg font-bold text-white shadow-[0_6px_16px_-8px_rgba(90,20,30,0.8)]"
-            style={{ background: primary }}
-          >
-            {ctx.storeName.trim().charAt(0)}
-          </span>
-          <span className="flex flex-col leading-none">
-            <span className={`${HEADING} text-[17px] font-bold sm:text-[19px]`}>{ctx.storeName}</span>
-            <span className="muted mt-1 text-[8.5px] font-medium tracking-[0.2em]">হাতে বোনা · বাংলাদেশ</span>
-          </span>
-        </Link>
-
-        <nav className="ml-4 hidden flex-1 items-center gap-0.5 lg:flex">
-          {ctx.navigation.map((link) => (
-            <Link
-              key={`${link.label}-${link.href}`}
-              href={storePath(ctx.slug, link.href)}
-              className="rounded-full px-2.5 py-1.5 text-[12.5px] font-medium transition hover:bg-[var(--store-surface)]"
-              style={{ color: "var(--store-text)" }}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="ml-auto flex items-center gap-1.5 lg:ml-0">
-          <form
-            action={shop}
-            className="hidden items-center gap-2 rounded-full border px-3 py-1.5 xl:flex"
-            style={{ borderColor: "color-mix(in srgb, var(--store-primary) 18%, transparent)" }}
-          >
-            <Search className="h-3.5 w-3.5 opacity-60" />
-            <input
-              type="search"
-              name="q"
-              placeholder="পণ্য খুঁজুন…"
-              className="w-32 bg-transparent text-[12px] outline-none placeholder:opacity-60"
-            />
-          </form>
-          <Link
-            href={shop}
-            aria-label="পণ্য খুঁজুন"
-            className="grid h-9 w-9 place-items-center rounded-full border transition hover:bg-[var(--store-surface)] xl:hidden"
-            style={{ borderColor: "color-mix(in srgb, var(--store-primary) 18%, transparent)" }}
-          >
-            <Search className="h-4 w-4" />
-          </Link>
-          <Link
-            href={cart}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-white transition hover:opacity-90"
-            style={{ background: primary }}
-            aria-label="কার্ট"
-          >
-            <ShoppingBag className="h-4 w-4" />
-            <span className="hidden text-[12px] font-semibold sm:inline">কার্ট</span>
-          </Link>
+      {centered ? (
+        <div className="atlas-shell flex flex-col items-center gap-2 py-3">
+          {logo}
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            {showSearch ? searchForm : null}
+            {cartLink}
+          </div>
+          <nav className="hidden items-center gap-0.5 lg:flex">{links}</nav>
         </div>
-      </div>
+      ) : (
+        <div className="atlas-shell flex items-center gap-3 py-3">
+          {logo}
+
+          <nav className="ml-4 hidden flex-1 items-center gap-0.5 lg:flex">{links}</nav>
+
+          <div className="ml-auto flex items-center gap-1.5 lg:ml-0">
+            {showSearch ? searchForm : null}
+            {showSearch ? (
+              <Link
+                href={shop}
+                aria-label="পণ্য খুঁজুন"
+                className="grid h-9 w-9 place-items-center rounded-full border transition hover:bg-[var(--store-surface)] xl:hidden"
+                style={{ borderColor: "color-mix(in srgb, var(--store-primary) 18%, transparent)" }}
+              >
+                <Search className="h-4 w-4" />
+              </Link>
+            ) : null}
+            {cartLink}
+          </div>
+        </div>
+      )}
 
       <nav className="atlas-shell no-scrollbar flex gap-1 overflow-x-auto pb-2 text-[12px] lg:hidden">
         {ctx.navigation.map((link) => (
@@ -223,6 +254,7 @@ export function Hero({ ctx, products = [] }: SectionProps) {
   const featured = products[0] ?? null;
   const image = featured?.imageUrl ?? null;
   const points = ctx.config.trust.items.slice(0, 3);
+  const centered = hero.align === "center";
 
   return (
     <section
@@ -242,8 +274,8 @@ export function Hero({ ctx, products = [] }: SectionProps) {
       />
 
       <div className="atlas-shell relative grid gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-14">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
+        <div className={centered ? "text-center" : ""}>
+          <div className={`flex flex-wrap items-center gap-2 ${centered ? "justify-center" : ""}`}>
             <Stars />
             <span className="muted text-[11px] font-medium">৫০০+ সন্তুষ্ট ক্রেতা</span>
           </div>
@@ -270,19 +302,21 @@ export function Hero({ ctx, products = [] }: SectionProps) {
             ) : null}
           </h1>
 
-          <p className="muted mt-4 max-w-xl text-[13px] leading-7 sm:text-[13.5px]">{hero.subtitle}</p>
+          <p className={`muted mt-4 max-w-xl text-[13px] leading-7 sm:text-[13.5px] ${centered ? "mx-auto" : ""}`}>
+            {hero.subtitle}
+          </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-2.5">
+          <div className={`mt-6 flex flex-wrap items-center gap-2.5 ${centered ? "justify-center" : ""}`}>
             <Link
               href={storePath(ctx.slug, hero.ctaHref)}
-              className="inline-flex items-center gap-1.5 rounded-full px-5 py-3 text-[12.5px] font-semibold text-white shadow-[0_14px_28px_-16px_rgba(90,20,30,0.9)] transition hover:opacity-90"
+              className="store-btn inline-flex items-center gap-1.5 rounded-full px-5 py-3 text-[12.5px] font-semibold text-white shadow-[0_14px_28px_-16px_rgba(90,20,30,0.9)] transition hover:opacity-90"
               style={{ background: primary }}
             >
               {hero.ctaLabel} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href={storePath(ctx.slug, "/page/contact")}
-              className="inline-flex items-center gap-1.5 rounded-full border bg-white/70 px-5 py-3 text-[12.5px] font-semibold transition hover:bg-white"
+              className="store-btn inline-flex items-center gap-1.5 rounded-full border bg-white/70 px-5 py-3 text-[12.5px] font-semibold transition hover:bg-white"
               style={{
                 borderColor: "color-mix(in srgb, var(--store-primary) 25%, transparent)",
                 color: primary,
@@ -293,7 +327,7 @@ export function Hero({ ctx, products = [] }: SectionProps) {
           </div>
 
           {points.length ? (
-            <ul className="muted mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-medium">
+            <ul className={`muted mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-medium ${centered ? "justify-center" : ""}`}>
               {points.map((point) => (
                 <li key={point} className="inline-flex items-center gap-1.5">
                   <Check className="h-3.5 w-3.5" style={{ color: primary }} strokeWidth={2.6} />
@@ -550,7 +584,7 @@ export function ProductGrid({
         <div className="mt-8 text-center">
           <Link
             href={storePath(ctx.slug, "/shop")}
-            className="inline-flex items-center gap-1.5 rounded-full border px-5 py-2.5 text-[12px] font-semibold transition hover:bg-[var(--store-surface)]"
+            className="store-btn inline-flex items-center gap-1.5 rounded-full border px-5 py-2.5 text-[12px] font-semibold transition hover:bg-[var(--store-surface)]"
             style={{
               borderColor: "color-mix(in srgb, var(--store-primary) 28%, transparent)",
               color: primary,
@@ -601,7 +635,7 @@ export function PromoBanner({ ctx, products = [] }: SectionProps) {
               {promo.ctaLabel ? (
                 <Link
                   href={storePath(ctx.slug, promo.ctaHref)}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-[12px] font-bold"
+                  className="store-btn inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-[12px] font-bold"
                   style={{ color: primary }}
                 >
                   {promo.ctaLabel} <ArrowRight className="h-3.5 w-3.5" />
@@ -681,31 +715,36 @@ export function PromoBanner({ ctx, products = [] }: SectionProps) {
 
 const TRUST_ICONS = [Truck, RefreshCw, ShieldCheck, Phone] as const;
 
-export function TrustBar({ ctx }: SectionProps) {
+export function TrustBar({ ctx, title }: SectionProps) {
   const { trust } = ctx.config;
   if (!trust.enabled || trust.items.length === 0) return null;
 
   return (
     <section className="store-surface border-b" style={{ borderColor: "color-mix(in srgb, var(--store-primary) 12%, transparent)" }}>
-      <div className="atlas-shell grid gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4">
-        {trust.items.map((item, index) => {
-          const Icon = TRUST_ICONS[index % TRUST_ICONS.length];
-          return (
-            <div key={item} className="flex items-center gap-3">
-              <span
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
-                style={{
-                  borderColor: "color-mix(in srgb, var(--store-primary) 20%, transparent)",
-                  color: primary,
-                  background: background,
-                }}
-              >
-                <Icon className="h-4 w-4" />
-              </span>
-              <span className={`${HEADING} text-[12.5px] font-semibold`}>{item}</span>
-            </div>
-          );
-        })}
+      <div className="atlas-shell py-6">
+        {title ? (
+          <p className={`${HEADING} mb-4 text-center text-[18px] font-bold sm:text-[20px]`}>{title}</p>
+        ) : null}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {trust.items.map((item, index) => {
+            const Icon = TRUST_ICONS[index % TRUST_ICONS.length];
+            return (
+              <div key={item} className="flex items-center gap-3">
+                <span
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full border"
+                  style={{
+                    borderColor: "color-mix(in srgb, var(--store-primary) 20%, transparent)",
+                    color: primary,
+                    background: background,
+                  }}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className={`${HEADING} text-[12.5px] font-semibold`}>{item}</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -713,7 +752,7 @@ export function TrustBar({ ctx }: SectionProps) {
 
 // ── Testimonials + newsletter ────────────────────────────────────────────────
 
-export function Testimonials({ ctx }: SectionProps) {
+export function Testimonials({ ctx, title }: SectionProps) {
   const { testimonials } = ctx.config;
   const items = testimonials.items.slice(0, 3);
   const whatsapp = ctx.contact.whatsapp || ctx.contact.phone;
@@ -726,7 +765,7 @@ export function Testimonials({ ctx }: SectionProps) {
             <SectionHeading
               align="center"
               eyebrow="ক্রেতার মতামত"
-              title="আমাদের ক্রেতারা যা বলছেন"
+              title={title || "আমাদের ক্রেতারা যা বলছেন"}
               subtitle="প্রতিদিনের ক্রেতাদের অভিজ্ঞতা — যাচাই করা রিভিউ।"
             />
 
@@ -785,14 +824,14 @@ export function Testimonials({ ctx }: SectionProps) {
                 href={whatsapp ? `https://wa.me/88${whatsapp.replace(/\D/g, "").slice(-11)}` : storePath(ctx.slug, "/page/contact")}
                 target={whatsapp ? "_blank" : undefined}
                 rel={whatsapp ? "noreferrer" : undefined}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-[12px] font-semibold text-white transition hover:opacity-90"
+                className="store-btn inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-[12px] font-semibold text-white transition hover:opacity-90"
                 style={{ background: primary }}
               >
                 <Phone className="h-3.5 w-3.5" /> হোয়াটসঅ্যাপে যোগ দিন
               </a>
               <Link
                 href={storePath(ctx.slug, "/page/contact")}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border bg-white px-5 py-2.5 text-[12px] font-semibold"
+                className="store-btn inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border bg-white px-5 py-2.5 text-[12px] font-semibold"
                 style={{
                   borderColor: "color-mix(in srgb, var(--store-primary) 22%, transparent)",
                   color: primary,

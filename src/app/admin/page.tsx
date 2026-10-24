@@ -161,7 +161,10 @@ export default async function AdminDashboard() {
                 {recent.map((order) => (
                   <tr key={order.id}>
                     <Td>
-                      <Link href={`/admin/orders/${order.id}`} className="font-medium text-brand-700 hover:underline">
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="font-medium whitespace-nowrap text-brand-700 hover:underline"
+                      >
                         {order.orderNo}
                       </Link>
                       <span className="block text-xs text-ink-400">{formatDate(order.placedAt)}</span>

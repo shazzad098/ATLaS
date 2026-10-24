@@ -151,9 +151,62 @@ export function Stat({
   );
 }
 
+/**
+ * Usage meter shared by the platform dashboard, the tenant detail page and the
+ * merchant plan strip. `limit === null` means the plan is unlimited, so the bar
+ * stays a quiet accent instead of pretending there is a ceiling.
+ */
+export function Meter({
+  label,
+  used,
+  limit,
+  unit = "",
+  className,
+}: {
+  label: string;
+  used: number;
+  limit: number | null;
+  unit?: string;
+  className?: string;
+}) {
+  const percent = limit && limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : null;
+  const bar =
+    percent === null
+      ? "bg-brand-400/60"
+      : percent >= 90
+        ? "bg-red-500"
+        : percent >= 70
+          ? "bg-amber-500"
+          : "bg-brand-600";
+
+  return (
+    <div className={className}>
+      <div className="flex items-baseline justify-between gap-2 text-[11px]">
+        <span className="font-medium text-ink-600">{label}</span>
+        <span className="text-ink-500 tabular-nums">
+          {used.toLocaleString("en-US")}
+          {unit}
+          <span className="text-ink-400"> / {limit === null ? "∞" : `${limit.toLocaleString("en-US")}${unit}`}</span>
+        </span>
+      </div>
+      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
+        <div
+          className={cn("h-full rounded-full transition-[width]", bar)}
+          style={{ width: percent === null ? "14%" : `${Math.max(percent, 2)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("w-full overflow-x-auto", className)}>
+    <div
+      className={cn(
+        "w-full overflow-x-auto overscroll-x-contain [scrollbar-color:var(--color-ink-300)_transparent] [scrollbar-width:thin]",
+        className,
+      )}
+    >
       <table className="w-full min-w-full border-collapse text-sm">{children}</table>
     </div>
   );

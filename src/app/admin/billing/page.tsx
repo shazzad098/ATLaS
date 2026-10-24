@@ -2,7 +2,7 @@ import { requireActiveStore } from "@/lib/tenant";
 import { formatDate } from "@/lib/dates";
 import { formatBdt } from "@/lib/money";
 import { pricingMatrix, getSubscriptionDetail, listInvoices } from "@/lib/services/billing-service";
-import { Badge, Card, CardBody, CardHeader, Stat, Table, Td, Th } from "@/components/ui/shell";
+import { Badge, Card, CardBody, CardHeader, Meter, Stat, Table, Td, Th } from "@/components/ui/shell";
 import { InvoiceRowAction, PlanSwitcher } from "@/app/admin/_components/plan-switcher";
 
 /** Billing: plan, usage vs limits, overage and invoices (PRD §5). */
@@ -58,11 +58,20 @@ export default async function BillingPage() {
 
       <Card>
         <CardHeader title="প্ল্যান ও সীমা" description="আপনার ব্যবহার ও সীমা একসাথে" />
-        <CardBody className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-          <Usage label="পণ্য" used={snapshot.usage.products} limit={snapshot.limits.products} />
-          <Usage label="এই মাসের অর্ডার" used={snapshot.usage.ordersThisPeriod} limit={snapshot.limits.monthlyOrders} />
-          <Usage label="স্টোরেজ (MB)" used={snapshot.usage.storageMb} limit={snapshot.limits.storageMb} />
-          <Usage label="স্টাফ সিট" used={snapshot.usage.staffSeats} limit={snapshot.limits.staffSeats} />
+        <CardBody className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
+          <Meter label="পণ্য" used={snapshot.usage.products} limit={snapshot.limits.products} />
+          <Meter
+            label="এই মাসের অর্ডার"
+            used={snapshot.usage.ordersThisPeriod}
+            limit={snapshot.limits.monthlyOrders}
+          />
+          <Meter
+            label="স্টোরেজ"
+            used={snapshot.usage.storageMb}
+            limit={snapshot.limits.storageMb}
+            unit=" MB"
+          />
+          <Meter label="স্টাফ সিট" used={snapshot.usage.staffSeats} limit={snapshot.limits.staffSeats} />
         </CardBody>
       </Card>
 
@@ -133,28 +142,6 @@ export default async function BillingPage() {
           </Table>
         )}
       </Card>
-    </div>
-  );
-}
-
-function Usage({ label, used, limit }: { label: string; used: number; limit: number | null }) {
-  const percent = limit === null || limit === 0 ? 0 : Math.min(100, Math.round((used / limit) * 100));
-  const over = limit !== null && used > limit;
-  return (
-    <div>
-      <p className="text-xs text-ink-500">{label}</p>
-      <p className="mt-0.5 font-semibold text-ink-900">
-        {used}
-        {limit === null ? " / ∞" : ` / ${limit}`}
-      </p>
-      {limit !== null ? (
-        <span className="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-ink-100">
-          <span
-            className={`block h-full rounded-full ${over ? "bg-red-500" : "bg-brand-500"}`}
-            style={{ width: `${Math.max(2, percent)}%` }}
-          />
-        </span>
-      ) : null}
     </div>
   );
 }

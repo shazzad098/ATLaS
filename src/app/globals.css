@@ -77,6 +77,38 @@ body {
   outline-offset: 2px;
 }
 
+/*
+ * Merchant admin theming.
+ *
+ * The merchant panel borrows the active storefront's primary colour, so a
+ * Dhaka Bazar merchant works in green and a Nokshi merchant in maroon. The
+ * whole `brand-*` ramp is re-derived from `--admin-primary`, which means every
+ * existing `text-brand-700` / `bg-brand-50` utility follows the store theme
+ * without touching each page.
+ */
+.admin-themed {
+  --color-brand-50: color-mix(in srgb, var(--admin-primary) 7%, #ffffff);
+  --color-brand-100: color-mix(in srgb, var(--admin-primary) 14%, #ffffff);
+  --color-brand-200: color-mix(in srgb, var(--admin-primary) 28%, #ffffff);
+  --color-brand-300: color-mix(in srgb, var(--admin-primary) 45%, #ffffff);
+  --color-brand-400: color-mix(in srgb, var(--admin-primary) 65%, #ffffff);
+  --color-brand-500: color-mix(in srgb, var(--admin-primary) 82%, #ffffff);
+  --color-brand-600: var(--admin-primary);
+  --color-brand-700: color-mix(in srgb, var(--admin-primary) 88%, #000000);
+  --color-brand-800: color-mix(in srgb, var(--admin-primary) 74%, #000000);
+  --color-brand-900: color-mix(in srgb, var(--admin-primary) 60%, #000000);
+}
+
+/*
+ * Grid children default to `min-width: auto`, so a wide table or a long
+ * unbroken string can push its card past the viewport. Letting the cards shrink
+ * keeps the page inside the viewport and moves the scroll into the table's own
+ * `overflow-x-auto` wrapper.
+ */
+.admin-themed .grid > * {
+  min-width: 0;
+}
+
 /* Storefront surfaces pick up the active theme's tokens. */
 .store-surface {
   background: var(--store-background);
@@ -91,12 +123,27 @@ body {
 .store-surface .muted {
   color: var(--store-muted);
 }
+/* Headings can use any element; the token still follows the merchant's font pick. */
+.store-surface .store-heading {
+  font-family: var(--store-heading-font, var(--font-sans));
+}
+/* "Compact" tightens the homepage rhythm without touching the merchant's copy. */
+.store-surface[data-density="compact"] main > section {
+  padding-block: 1.75rem;
+}
 .store-surface .tone-surface,
 .tone-surface {
   background: var(--store-surface);
 }
-.store-surface a {
-  color: inherit;
+/*
+ * Storefront links inherit the surrounding text colour by default. The rule
+ * lives in the `base` layer so a Tailwind colour utility (in `utilities`) can
+ * still override it — e.g. a white "cart" link or the admin preview bar.
+ */
+@layer base {
+  .store-surface :where(a) {
+    color: inherit;
+  }
 }
 .store-btn {
   border-radius: var(--store-button-radius);

@@ -40,22 +40,31 @@ export default async function DesignPage() {
     <div className="space-y-5">
       <PageHeader
         title="ডিজাইন"
-        description="থিম, রঙ, হিরো ও সেকশন — publish না করা পর্যন্ত live দোকানে কিছুই বদলাবে না।"
+        description="থিম, রঙ, হিরো, সেকশন, মেনু ও ফুটার — সব এক জায়গায়। Publish করলে live দোকানে যাবে।"
         action={
-          store.status === "PUBLISHED" ? (
+          <div className="flex flex-wrap items-center gap-2">
             <Link
-              href={storePath(store.slug)}
+              href="/design-preview"
               target="_blank"
               className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-50"
             >
-              দোকানপ্রিভিউ দেখুন
+              ড্রাফট প্রিভিউ
             </Link>
-          ) : null
+            {store.status === "PUBLISHED" ? (
+              <Link
+                href={storePath(store.slug)}
+                target="_blank"
+                className="rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-50"
+              >
+                live দোকান
+              </Link>
+            ) : null}
+          </div>
         }
       />
 
       <Alert tone="info">
-        থিমের পরিবর্তন save করলে সেটি draft-এ থাকে — publish করলে live দোকানে যাবে। আর দোকান publish করা আলাদা কাজ।
+        সব পরিবর্তন আগে draft-এ সেভ হয়। Publish চাপলে সেভ হয়ে সরাসরি live দোকানে যাবে — তাই নির্ভয়ে সম্পাদনা করুন।
       </Alert>
 
       {selected ? (
@@ -63,6 +72,8 @@ export default async function DesignPage() {
           storeId={store.id}
           themeVersionId={selected.themeVersion.id}
           themeCode={state.themeCode ?? selected.themeVersion.theme.code}
+          themeName={state.themeName ?? selected.themeVersion.theme.name}
+          storeName={store.name}
           draft={state.draftConfig ?? resolveThemeConfig(selected.themeVersion.theme.code, null).config}
           isPublished={state.isPublished}
           canSwitch={state.canSwitch}
