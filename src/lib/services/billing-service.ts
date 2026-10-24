@@ -6,6 +6,7 @@ import { PLAN_CODES, planMatrixFor, type PlanCode } from "@/lib/plans";
 import { invalidateEntitlements, loadEntitlementSnapshot, overageCount } from "@/lib/entitlements";
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import { recordAudit } from "@/lib/audit";
+import { trackEvent } from "@/lib/services/analytics-service";
 import { attachPendingFeesToInvoice, feeSummary } from "@/lib/services/fee-service";
 import type { ActorContext } from "@/lib/rbac";
 import type { Tx } from "@/lib/services/fee-service";
@@ -219,6 +220,12 @@ export async function startTrial(
     resourceId: subscription.id,
     metadata: { planCode, billingPeriod, trialEnd: trialEnd.toISOString() },
   });
+  await trackEvent({
+    name: "subscription_started",
+    tenantId: actor.tenantId,
+    actorId: actor.userId,
+    properties: { planCode, billingPeriod, trial: true },
+  });
 
   return subscription;
 }
@@ -280,6 +287,23 @@ export async function changePlan(
       downgrade: PLAN_CODES.indexOf(planCode) < PLAN_CODES.indexOf((current?.plan.code ?? "free") as PlanCode),
     },
   });
+  const previousCode = current?.plan.code ?? "free";
+  if (PLAN_CODES.indexOf(planCode) > PLAN_CODES.indexOf(previousCode as PlanCode)) {
+    await trackEvent({
+      name: "plan_upgraded",
+      tenantId: actor.tenantId,
+      actorId: actor.userId,
+      properties: { from: previousCode, to: planCode, billingPeriod },
+    });
+  }
+  if (!current || previousCode === "free") {
+    await trackEvent({
+      name: "subscription_started",
+      tenantId: actor.tenantId,
+      actorId: actor.userId,
+      properties: { planCode, billingPeriod, trial: false },
+    });
+  }
 
   return subscription;
 }
@@ -449,6 +473,12 @@ export async function markInvoicePaid(actor: ActorContext, invoiceId: string) {
     resourceId: invoiceId,
     metadata: { total: String(invoice.total) },
   });
+  await trackEvent({
+    name: "subscription_renewed",
+    tenantId: actor.tenantId,
+    actorId: actor.userId,
+    properties: { invoiceId, total: String(invoice.total) },
+  });
   return paid;
 }
 
@@ -560,6 +590,12 @@ export async function runBillingSweep(now = new Date()): Promise<SweepResult> {
         type: NOTIFICATION_TYPES.SUBSCRIPTION_FAILED,
         title: "Renewal payment ব্যর্থ",
         body: `${GRACE_DAYS} দিনের grace period শুরু হয়েছে।`,
+      });
+      await trackEvent({
+        name: "subscription_failed",
+        tenantId: subscription.tenantId,
+        actorId: ownerId,
+        properties: { planCode: subscription.plan.code, graceDays: GRACE_DAYS },
       });
       continue;
     }

@@ -255,6 +255,7 @@ model Tenant {
   tickets           SupportTicket[]
   webhookDeliveries WebhookDelivery[]
   webhookEndpoints  WebhookEndpoint[]
+  analyticsEvents   AnalyticsEvent[]
 
   @@index([ownerUserId])
   @@index([status])
@@ -337,6 +338,24 @@ model RateLimitBucket {
   updatedAt   DateTime @updatedAt
 
   @@index([expiresAt])
+}
+
+/// Product analytics events are append-only and intentionally separate from the audit log.
+/// Audit records answer "who changed what"; this table answers funnel and usage questions.
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  storeId    String?
+  actorId    String?
+  name       String
+  properties Json     @default("{}")
+  occurredAt DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([name, occurredAt])
+  @@index([tenantId, occurredAt])
+  @@index([storeId, name, occurredAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -8,6 +8,7 @@ import { isValidSlug, randomSuffix, slugify } from "@/lib/slug";
 import { toDecimalString } from "@/lib/money";
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import { recordAudit } from "@/lib/audit";
+import { trackEvent } from "@/lib/services/analytics-service";
 import { ensureThemeCatalog, resolveStoreTheme, selectTheme } from "@/lib/services/theme-service";
 import { ensureSubdomain, subdomainHost } from "@/lib/services/domain-service";
 import { decryptSecretJson, encryptSecretJson } from "@/lib/secrets";
@@ -172,6 +173,13 @@ export async function createStore(actor: ActorContext, raw: unknown) {
     resourceType: "Store",
     resourceId: store.id,
     metadata: { slug, themeCode: themeEntry },
+  });
+  await trackEvent({
+    name: "store_created",
+    tenantId: actor.tenantId,
+    storeId: store.id,
+    actorId: actor.userId,
+    properties: { slug, themeCode: themeEntry },
   });
 
   return store;
@@ -428,6 +436,12 @@ export async function publishStore(actor: ActorContext, storeId: string) {
     resourceType: "Store",
     resourceId: storeId,
     metadata: { slug: store.slug },
+  });
+  await trackEvent({
+    name: "store_published",
+    tenantId: actor.tenantId,
+    storeId,
+    actorId: actor.userId,
   });
 
   return store;

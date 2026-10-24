@@ -14,6 +14,7 @@ import {
 import { assertStoreAccess } from "@/lib/tenant";
 import { adjustStock } from "@/lib/services/inventory-service";
 import { recordAudit } from "@/lib/audit";
+import { trackEvent } from "@/lib/services/analytics-service";
 
 /**
  * Catalog (FR-03).
@@ -154,6 +155,7 @@ export async function createProduct(
   // Server-side quota check (PRD US-02). Never trust a hidden button.
   const snapshot = await loadEntitlementSnapshot(actor.tenantId);
   assertProductQuota(snapshot, 1);
+  const hadProducts = (await prisma.product.count({ where: { storeId, deletedAt: null } })) > 0;
 
   const slug = await uniqueProductSlug(storeId, input.slug || input.name);
 
@@ -238,6 +240,15 @@ export async function createProduct(
     metadata: { name: product.name, variants: input.variants.length },
     ip: options.ip,
   });
+  if (!hadProducts) {
+    await trackEvent({
+      name: "first_product_created",
+      tenantId: actor.tenantId,
+      storeId,
+      actorId: actor.userId,
+      properties: { productId: product.id },
+    });
+  }
 
   return product;
 }

@@ -17,6 +17,7 @@ import { getPaymentAdapter } from "@/lib/payments";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
 import { getStorePaymentCredentials } from "@/lib/services/store-service";
 import { emitMerchantWebhook } from "@/lib/services/webhook-service";
+import { trackEvent } from "@/lib/services/analytics-service";
 
 /**
  * Checkout (FR-05, US-05).
@@ -264,6 +265,18 @@ export async function placeOrder(input: {
       paymentProvider: input.payload.paymentProvider,
       grandTotal: pricing.grandTotal,
     },
+  });
+  await trackEvent({
+    name: "checkout_started",
+    tenantId: store.tenantId,
+    storeId: store.id,
+    properties: { orderId: order.id, paymentProvider: input.payload.paymentProvider, grandTotal: pricing.grandTotal },
+  });
+  await trackEvent({
+    name: "order_created",
+    tenantId: store.tenantId,
+    storeId: store.id,
+    properties: { orderId: order.id, paymentProvider: input.payload.paymentProvider, grandTotal: pricing.grandTotal },
   });
   let redirectUrl: string | undefined;
   let paymentStatus = "PENDING";

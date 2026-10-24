@@ -6,6 +6,7 @@ import { assertPermission } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
 import { recordAudit } from "@/lib/audit";
 import { emitMerchantWebhook } from "@/lib/services/webhook-service";
+import { trackEvent } from "@/lib/services/analytics-service";
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import {
   commitReservedSale,
@@ -330,6 +331,12 @@ export async function applyTransition(params: {
         tenantId: order.store.tenantId,
         eventType: "payment.succeeded",
         data: { orderId, orderNo: order.orderNo, storeId: order.storeId, amount: String(order.grandTotal) },
+      });
+      await trackEvent({
+        name: "payment_succeeded",
+        tenantId: order.store.tenantId,
+        storeId: order.storeId,
+        properties: { orderId, orderNo: order.orderNo, amount: String(order.grandTotal) },
       });
     }
   }

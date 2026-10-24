@@ -218,6 +218,7 @@ export type TenantWhereInput = {
   tickets?: Prisma.SupportTicketListRelationFilter
   webhookDeliveries?: Prisma.WebhookDeliveryListRelationFilter
   webhookEndpoints?: Prisma.WebhookEndpointListRelationFilter
+  analyticsEvents?: Prisma.AnalyticsEventListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -241,6 +242,7 @@ export type TenantOrderByWithRelationInput = {
   tickets?: Prisma.SupportTicketOrderByRelationAggregateInput
   webhookDeliveries?: Prisma.WebhookDeliveryOrderByRelationAggregateInput
   webhookEndpoints?: Prisma.WebhookEndpointOrderByRelationAggregateInput
+  analyticsEvents?: Prisma.AnalyticsEventOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -267,6 +269,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   tickets?: Prisma.SupportTicketListRelationFilter
   webhookDeliveries?: Prisma.WebhookDeliveryListRelationFilter
   webhookEndpoints?: Prisma.WebhookEndpointListRelationFilter
+  analyticsEvents?: Prisma.AnalyticsEventListRelationFilter
 }, "id">
 
 export type TenantOrderByWithAggregationInput = {
@@ -317,6 +320,7 @@ export type TenantCreateInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -339,6 +343,7 @@ export type TenantUncheckedCreateInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -361,6 +366,7 @@ export type TenantUpdateInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -383,6 +389,7 @@ export type TenantUncheckedUpdateInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -546,6 +553,22 @@ export type TenantUpdateOneWithoutRolesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutRolesInput, Prisma.TenantUpdateWithoutRolesInput>, Prisma.TenantUncheckedUpdateWithoutRolesInput>
 }
 
+export type TenantCreateNestedOneWithoutAnalyticsEventsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAnalyticsEventsInput, Prisma.TenantUncheckedCreateWithoutAnalyticsEventsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAnalyticsEventsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneWithoutAnalyticsEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAnalyticsEventsInput, Prisma.TenantUncheckedCreateWithoutAnalyticsEventsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAnalyticsEventsInput
+  upsert?: Prisma.TenantUpsertWithoutAnalyticsEventsInput
+  disconnect?: Prisma.TenantWhereInput | boolean
+  delete?: Prisma.TenantWhereInput | boolean
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutAnalyticsEventsInput, Prisma.TenantUpdateWithoutAnalyticsEventsInput>, Prisma.TenantUncheckedUpdateWithoutAnalyticsEventsInput>
+}
+
 export type TenantCreateNestedOneWithoutStoresInput = {
   create?: Prisma.XOR<Prisma.TenantCreateWithoutStoresInput, Prisma.TenantUncheckedCreateWithoutStoresInput>
   connectOrCreate?: Prisma.TenantCreateOrConnectWithoutStoresInput
@@ -695,6 +718,7 @@ export type TenantCreateWithoutOwnerInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutOwnerInput = {
@@ -716,6 +740,7 @@ export type TenantUncheckedCreateWithoutOwnerInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutOwnerInput = {
@@ -777,6 +802,7 @@ export type TenantCreateWithoutMembershipsInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutMembershipsInput = {
@@ -798,6 +824,7 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutMembershipsInput = {
@@ -835,6 +862,7 @@ export type TenantUpdateWithoutMembershipsInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutMembershipsInput = {
@@ -856,6 +884,7 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutRolesInput = {
@@ -877,6 +906,7 @@ export type TenantCreateWithoutRolesInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutRolesInput = {
@@ -898,6 +928,7 @@ export type TenantUncheckedCreateWithoutRolesInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutRolesInput = {
@@ -935,6 +966,7 @@ export type TenantUpdateWithoutRolesInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutRolesInput = {
@@ -947,6 +979,111 @@ export type TenantUncheckedUpdateWithoutRolesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  stores?: Prisma.StoreUncheckedUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
+  usageCounters?: Prisma.UsageCounterUncheckedUpdateManyWithoutTenantNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
+  webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+  webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutAnalyticsEventsInput = {
+  id?: string
+  name: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutTenantsInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleCreateNestedManyWithoutTenantInput
+  stores?: Prisma.StoreCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  invoices?: Prisma.InvoiceCreateNestedManyWithoutTenantInput
+  usageCounters?: Prisma.UsageCounterCreateNestedManyWithoutTenantInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
+  webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
+  webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutAnalyticsEventsInput = {
+  id?: string
+  name: string
+  ownerUserId: string
+  status?: $Enums.TenantStatus
+  timezone?: string
+  currency?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutTenantInput
+  roles?: Prisma.RoleUncheckedCreateNestedManyWithoutTenantInput
+  stores?: Prisma.StoreUncheckedCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  invoices?: Prisma.InvoiceUncheckedCreateNestedManyWithoutTenantInput
+  usageCounters?: Prisma.UsageCounterUncheckedCreateNestedManyWithoutTenantInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
+  webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
+  webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutAnalyticsEventsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAnalyticsEventsInput, Prisma.TenantUncheckedCreateWithoutAnalyticsEventsInput>
+}
+
+export type TenantUpsertWithoutAnalyticsEventsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutAnalyticsEventsInput, Prisma.TenantUncheckedUpdateWithoutAnalyticsEventsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAnalyticsEventsInput, Prisma.TenantUncheckedCreateWithoutAnalyticsEventsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutAnalyticsEventsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutAnalyticsEventsInput, Prisma.TenantUncheckedUpdateWithoutAnalyticsEventsInput>
+}
+
+export type TenantUpdateWithoutAnalyticsEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutTenantsNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUpdateManyWithoutTenantNestedInput
+  stores?: Prisma.StoreUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  invoices?: Prisma.InvoiceUpdateManyWithoutTenantNestedInput
+  usageCounters?: Prisma.UsageCounterUpdateManyWithoutTenantNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
+  webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
+  webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutAnalyticsEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  timezone?: Prisma.StringFieldUpdateOperationsInput | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutTenantNestedInput
+  roles?: Prisma.RoleUncheckedUpdateManyWithoutTenantNestedInput
   stores?: Prisma.StoreUncheckedUpdateManyWithoutTenantNestedInput
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
   invoices?: Prisma.InvoiceUncheckedUpdateManyWithoutTenantNestedInput
@@ -977,6 +1114,7 @@ export type TenantCreateWithoutStoresInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutStoresInput = {
@@ -998,6 +1136,7 @@ export type TenantUncheckedCreateWithoutStoresInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutStoresInput = {
@@ -1035,6 +1174,7 @@ export type TenantUpdateWithoutStoresInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutStoresInput = {
@@ -1056,6 +1196,7 @@ export type TenantUncheckedUpdateWithoutStoresInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutSubscriptionInput = {
@@ -1077,6 +1218,7 @@ export type TenantCreateWithoutSubscriptionInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutSubscriptionInput = {
@@ -1098,6 +1240,7 @@ export type TenantUncheckedCreateWithoutSubscriptionInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutSubscriptionInput = {
@@ -1135,6 +1278,7 @@ export type TenantUpdateWithoutSubscriptionInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutSubscriptionInput = {
@@ -1156,6 +1300,7 @@ export type TenantUncheckedUpdateWithoutSubscriptionInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutInvoicesInput = {
@@ -1177,6 +1322,7 @@ export type TenantCreateWithoutInvoicesInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutInvoicesInput = {
@@ -1198,6 +1344,7 @@ export type TenantUncheckedCreateWithoutInvoicesInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutInvoicesInput = {
@@ -1235,6 +1382,7 @@ export type TenantUpdateWithoutInvoicesInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutInvoicesInput = {
@@ -1256,6 +1404,7 @@ export type TenantUncheckedUpdateWithoutInvoicesInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutUsageCountersInput = {
@@ -1277,6 +1426,7 @@ export type TenantCreateWithoutUsageCountersInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutUsageCountersInput = {
@@ -1298,6 +1448,7 @@ export type TenantUncheckedCreateWithoutUsageCountersInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutUsageCountersInput = {
@@ -1335,6 +1486,7 @@ export type TenantUpdateWithoutUsageCountersInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutUsageCountersInput = {
@@ -1356,6 +1508,7 @@ export type TenantUncheckedUpdateWithoutUsageCountersInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutFeeLedgerInput = {
@@ -1377,6 +1530,7 @@ export type TenantCreateWithoutFeeLedgerInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutFeeLedgerInput = {
@@ -1398,6 +1552,7 @@ export type TenantUncheckedCreateWithoutFeeLedgerInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutFeeLedgerInput = {
@@ -1435,6 +1590,7 @@ export type TenantUpdateWithoutFeeLedgerInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutFeeLedgerInput = {
@@ -1456,6 +1612,7 @@ export type TenantUncheckedUpdateWithoutFeeLedgerInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAuditLogsInput = {
@@ -1477,6 +1634,7 @@ export type TenantCreateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAuditLogsInput = {
@@ -1498,6 +1656,7 @@ export type TenantUncheckedCreateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAuditLogsInput = {
@@ -1535,6 +1694,7 @@ export type TenantUpdateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAuditLogsInput = {
@@ -1556,6 +1716,7 @@ export type TenantUncheckedUpdateWithoutAuditLogsInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTicketsInput = {
@@ -1577,6 +1738,7 @@ export type TenantCreateWithoutTicketsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTicketsInput = {
@@ -1598,6 +1760,7 @@ export type TenantUncheckedCreateWithoutTicketsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTicketsInput = {
@@ -1635,6 +1798,7 @@ export type TenantUpdateWithoutTicketsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTicketsInput = {
@@ -1656,6 +1820,7 @@ export type TenantUncheckedUpdateWithoutTicketsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutWebhookDeliveriesInput = {
@@ -1677,6 +1842,7 @@ export type TenantCreateWithoutWebhookDeliveriesInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutWebhookDeliveriesInput = {
@@ -1698,6 +1864,7 @@ export type TenantUncheckedCreateWithoutWebhookDeliveriesInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutWebhookDeliveriesInput = {
@@ -1735,6 +1902,7 @@ export type TenantUpdateWithoutWebhookDeliveriesInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutWebhookDeliveriesInput = {
@@ -1756,6 +1924,7 @@ export type TenantUncheckedUpdateWithoutWebhookDeliveriesInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutWebhookEndpointsInput = {
@@ -1777,6 +1946,7 @@ export type TenantCreateWithoutWebhookEndpointsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
   tickets?: Prisma.SupportTicketCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutWebhookEndpointsInput = {
@@ -1798,6 +1968,7 @@ export type TenantUncheckedCreateWithoutWebhookEndpointsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
   tickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutTenantInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedCreateNestedManyWithoutTenantInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutWebhookEndpointsInput = {
@@ -1835,6 +2006,7 @@ export type TenantUpdateWithoutWebhookEndpointsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutWebhookEndpointsInput = {
@@ -1856,6 +2028,7 @@ export type TenantUncheckedUpdateWithoutWebhookEndpointsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyOwnerInput = {
@@ -1887,6 +2060,7 @@ export type TenantUpdateWithoutOwnerInput = {
   tickets?: Prisma.SupportTicketUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutOwnerInput = {
@@ -1908,6 +2082,7 @@ export type TenantUncheckedUpdateWithoutOwnerInput = {
   tickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutTenantNestedInput
   webhookDeliveries?: Prisma.WebhookDeliveryUncheckedUpdateManyWithoutTenantNestedInput
   webhookEndpoints?: Prisma.WebhookEndpointUncheckedUpdateManyWithoutTenantNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateManyWithoutOwnerInput = {
@@ -1936,6 +2111,7 @@ export type TenantCountOutputType = {
   tickets: number
   webhookDeliveries: number
   webhookEndpoints: number
+  analyticsEvents: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1949,6 +2125,7 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   tickets?: boolean | TenantCountOutputTypeCountTicketsArgs
   webhookDeliveries?: boolean | TenantCountOutputTypeCountWebhookDeliveriesArgs
   webhookEndpoints?: boolean | TenantCountOutputTypeCountWebhookEndpointsArgs
+  analyticsEvents?: boolean | TenantCountOutputTypeCountAnalyticsEventsArgs
 }
 
 /**
@@ -2031,6 +2208,13 @@ export type TenantCountOutputTypeCountWebhookEndpointsArgs<ExtArgs extends runti
   where?: Prisma.WebhookEndpointWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountAnalyticsEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AnalyticsEventWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2053,6 +2237,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   tickets?: boolean | Prisma.Tenant$ticketsArgs<ExtArgs>
   webhookDeliveries?: boolean | Prisma.Tenant$webhookDeliveriesArgs<ExtArgs>
   webhookEndpoints?: boolean | Prisma.Tenant$webhookEndpointsArgs<ExtArgs>
+  analyticsEvents?: boolean | Prisma.Tenant$analyticsEventsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -2105,6 +2290,7 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   tickets?: boolean | Prisma.Tenant$ticketsArgs<ExtArgs>
   webhookDeliveries?: boolean | Prisma.Tenant$webhookDeliveriesArgs<ExtArgs>
   webhookEndpoints?: boolean | Prisma.Tenant$webhookEndpointsArgs<ExtArgs>
+  analyticsEvents?: boolean | Prisma.Tenant$analyticsEventsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2129,6 +2315,7 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     tickets: Prisma.$SupportTicketPayload<ExtArgs>[]
     webhookDeliveries: Prisma.$WebhookDeliveryPayload<ExtArgs>[]
     webhookEndpoints: Prisma.$WebhookEndpointPayload<ExtArgs>[]
+    analyticsEvents: Prisma.$AnalyticsEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2545,6 +2732,7 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   tickets<T extends Prisma.Tenant$ticketsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SupportTicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   webhookDeliveries<T extends Prisma.Tenant$webhookDeliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$webhookDeliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebhookDeliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   webhookEndpoints<T extends Prisma.Tenant$webhookEndpointsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$webhookEndpointsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebhookEndpointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  analyticsEvents<T extends Prisma.Tenant$analyticsEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$analyticsEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3239,6 +3427,30 @@ export type Tenant$webhookEndpointsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.WebhookEndpointScalarFieldEnum | Prisma.WebhookEndpointScalarFieldEnum[]
+}
+
+/**
+ * Tenant.analyticsEvents
+ */
+export type Tenant$analyticsEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AnalyticsEvent
+   */
+  select?: Prisma.AnalyticsEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AnalyticsEvent
+   */
+  omit?: Prisma.AnalyticsEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AnalyticsEventInclude<ExtArgs> | null
+  where?: Prisma.AnalyticsEventWhereInput
+  orderBy?: Prisma.AnalyticsEventOrderByWithRelationInput | Prisma.AnalyticsEventOrderByWithRelationInput[]
+  cursor?: Prisma.AnalyticsEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AnalyticsEventScalarFieldEnum | Prisma.AnalyticsEventScalarFieldEnum[]
 }
 
 /**

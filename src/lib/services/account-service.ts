@@ -8,6 +8,7 @@ import { notify } from "@/lib/notifications";
 import { ensureSubscription } from "@/lib/services/billing-service";
 import { invalidateEntitlements } from "@/lib/entitlements";
 import { ensureThemeCatalog } from "@/lib/services/theme-service";
+import { trackEvent } from "@/lib/services/analytics-service";
 
 /**
  * Account provisioning (FR-01, FR-02).
@@ -299,6 +300,12 @@ export async function provisionAccount(input: {
   }).then(async ({ user, tenant }) => {
     await ensureSubscription(tenant.id);
     invalidateEntitlements(tenant.id);
+    await trackEvent({
+      name: "signup_completed",
+      tenantId: tenant.id,
+      actorId: user.id,
+      properties: { channel: "phone_otp" },
+    });
 
     return {
       userId: user.id,

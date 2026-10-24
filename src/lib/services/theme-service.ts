@@ -17,6 +17,7 @@ import {
   themeAllowedOnPlan,
 } from "@/lib/entitlements";
 import { recordAudit } from "@/lib/audit";
+import { trackEvent } from "@/lib/services/analytics-service";
 
 /**
  * Theme lifecycle (FR-06, PRD §7).
@@ -299,6 +300,13 @@ export async function selectTheme(
     resourceType: "StoreTheme",
     resourceId: version.id,
     metadata: { storeId, from: previous?.themeVersion.theme.code ?? null, to: themeCode, draftOnly },
+  });
+  await trackEvent({
+    name: "theme_selected",
+    tenantId: actor.tenantId,
+    storeId,
+    actorId: actor.userId,
+    properties: { from: previous?.themeVersion.theme.code ?? null, to: themeCode, draftOnly },
   });
 
   return { themeCode, warnings, draftOnly };

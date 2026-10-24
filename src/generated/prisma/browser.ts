@@ -55,6 +55,12 @@ export type OtpChallenge = Prisma.OtpChallengeModel
  */
 export type RateLimitBucket = Prisma.RateLimitBucketModel
 /**
+ * Model AnalyticsEvent
+ * Product analytics events are append-only and intentionally separate from the audit log.
+ * Audit records answer "who changed what"; this table answers funnel and usage questions.
+ */
+export type AnalyticsEvent = Prisma.AnalyticsEventModel
+/**
  * Model Store
  *
  */

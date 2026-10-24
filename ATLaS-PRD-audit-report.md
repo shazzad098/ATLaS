@@ -420,3 +420,15 @@ Merchant outbound webhook foundation এখন সম্পূর্ণ:
 Courier shipment creation এখন `POST /api/v1/stores/{storeId}/orders/{orderId}/shipments` endpoint-এ আছে; `Idempotency-Key` বাধ্যতামূলক। Sandbox provider local tracking code তৈরি করে, configured provider generic `/shipments` API-তে signed bearer request পাঠায়, shipment record রাখে, order-কে `SHIPPED` করে এবং `shipment.created` outbound event enqueue করে। একই idempotency key replay করলে একই shipment ফেরত আসে।
 
 Temporary PostgreSQL + Next smoke test evidence: migration/seed সফল, endpoint create/list/test delivery pass, HMAC signature independently verified, shipment creation `201`, replay `200` with `replayed: true`, order status `SHIPPED`, queued outbound events cron দ্বারা `DELIVERED`, unreachable endpoint `FAILED` with `nextRetryAt`, এবং OpenAPI route discovery pass।
+
+## 14. Post-audit Phase 6 — Analytics funnel and Super Admin list scalability
+
+Required analytics taxonomy এখন append-only `AnalyticsEvent` table-এ audit log থেকে আলাদা করে persist হয়। Signup, store creation/publish, theme selection, first product, checkout start, order creation, successful payment, subscription start/renewal/failure এবং plan upgrade lifecycle থেকে events লেখা হয়। Analytics write best-effort হওয়ায় metrics storage সাময়িকভাবে ব্যর্থ হলেও commerce বা billing operation rollback হয় না। Super Admin overview-এ গত ৩০ দিনের event total, active tenants এবং funnel counts দেখা যায়।
+
+Super Admin tenant list-এর আগের unbounded implementation বদলে page-scoped query করা হয়েছে: ৫০টি row/page, search by tenant name/owner phone/email, next/previous navigation এবং শুধু বর্তমান page-এর tenant-এর fee/order aggregation। এতে বড় tenant dataset-এ পুরো platform-এর stores, orders ও fees memory-তে তোলার বদলে bounded database work হয়।
+
+Phase 6 validation evidence: `npm run typecheck`, `npm run lint`, `npm test` — ৮টি test pass; temporary PostgreSQL-এ নতুন migration/seed pass এবং analytics persistence summary `total`, `activeTenants`, `signup_completed` ও `store_created` counts সহ pass। Production build final gate-এর অংশ হিসেবে চালানো হয়েছে।
+
+### Remaining PRD gaps after Phase 6
+
+এখনও PRD-complete বলা যাবে না। বড় remaining items হলো responsive/reference-complete marketing pages, onboarding business fields/workspace switcher, full session/2FA/security-center flows, real provider-specific courier adapters, real subscription payment/renewal integration, async report jobs/scheduled reports, customer notification delivery configuration, upload storage + MIME/5MB/WebP validation, custom-domain/TLS operations, impersonation/announcements, API-key management, Bengali/English UI completeness এবং backup/restore/production monitoring/CI performance budgets। এগুলো external provider decisions বা নতুন UI/workflow হওয়ায় পরের phases-এ আলাদা করে করা উচিত।

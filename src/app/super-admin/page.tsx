@@ -5,6 +5,7 @@ import { formatDateTime } from "@/lib/dates";
 import { Badge, Card, CardBody, CardHeader, PageHeader, Stat, Table, Td, Th } from "@/components/ui/shell";
 import { FormButton } from "@/app/admin/_components/form-button";
 import { runBillingSweepAction, syncThemeCatalogAction } from "@/app/super-admin/actions";
+import { analyticsOverview } from "@/lib/services/analytics-service";
 
 /** Platform overview: growth, revenue and the audit trail (PRD §4.5). */
 
@@ -21,10 +22,11 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function SuperAdminPage() {
-  const [overview, billing, audit] = await Promise.all([
+  const [overview, billing, audit, analytics] = await Promise.all([
     platformOverview(),
     platformBillingMetrics(),
     listAuditTrail(15),
+    analyticsOverview(30),
   ]);
 
   return (
@@ -52,6 +54,27 @@ export default async function SuperAdminPage() {
         <Stat label="প্ল্যাটফর্ম ফি (অপরিশোধিত)" value={formatBdt(billing.gmvAndFees.platformFees)} tone="warning" />
         <Stat label="প্রোডাক্ট" value={overview.catalog.products} hint={`কাস্টমার ${overview.catalog.customers}`} />
       </div>
+
+      <Card>
+        <CardHeader title="৩০ দিনের funnel events" description={`${analytics.total}টি event · ${analytics.activeTenants}টি active tenant`} />
+        <CardBody>
+          <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            {[
+              ["Signup", analytics.funnel.signup_completed],
+              ["Store", analytics.funnel.store_created],
+              ["First product", analytics.funnel.first_product_created],
+              ["Published", analytics.funnel.store_published],
+              ["Checkout", analytics.funnel.checkout_started],
+              ["Paid", analytics.funnel.payment_succeeded],
+            ].map(([label, value]) => (
+              <div key={label} className="rounded-lg border border-ink-100 bg-ink-50 px-3 py-2">
+                <p className="text-[11px] text-ink-500">{label}</p>
+                <p className="mt-1 text-lg font-semibold text-ink-900">{value}</p>
+              </div>
+            ))}
+          </div>
+        </CardBody>
+      </Card>
 
       <div className="grid gap-5 lg:grid-cols-[1.1fr_1fr]">
         <Card>

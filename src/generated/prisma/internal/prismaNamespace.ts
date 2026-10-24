@@ -404,6 +404,7 @@ export const ModelName = {
   Session: 'Session',
   OtpChallenge: 'OtpChallenge',
   RateLimitBucket: 'RateLimitBucket',
+  AnalyticsEvent: 'AnalyticsEvent',
   Store: 'Store',
   StoreSettings: 'StoreSettings',
   Theme: 'Theme',
@@ -456,7 +457,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "tenant" | "membership" | "role" | "session" | "otpChallenge" | "rateLimitBucket" | "store" | "storeSettings" | "theme" | "themeVersion" | "storeTheme" | "contentPage" | "domain" | "category" | "product" | "productVariant" | "productImage" | "inventoryMovement" | "asset" | "customer" | "cart" | "cartItem" | "order" | "orderItem" | "orderEvent" | "return" | "courierShipment" | "paymentMethod" | "payment" | "paymentWebhookEvent" | "courierWebhookEvent" | "plan" | "subscription" | "invoice" | "usageCounter" | "feeLedger" | "coupon" | "deliveryZone" | "auditLog" | "notification" | "supportTicket" | "webhookDelivery" | "webhookEndpoint"
+    modelProps: "user" | "tenant" | "membership" | "role" | "session" | "otpChallenge" | "rateLimitBucket" | "analyticsEvent" | "store" | "storeSettings" | "theme" | "themeVersion" | "storeTheme" | "contentPage" | "domain" | "category" | "product" | "productVariant" | "productImage" | "inventoryMovement" | "asset" | "customer" | "cart" | "cartItem" | "order" | "orderItem" | "orderEvent" | "return" | "courierShipment" | "paymentMethod" | "payment" | "paymentWebhookEvent" | "courierWebhookEvent" | "plan" | "subscription" | "invoice" | "usageCounter" | "feeLedger" | "coupon" | "deliveryZone" | "auditLog" | "notification" | "supportTicket" | "webhookDelivery" | "webhookEndpoint"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -975,6 +976,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.RateLimitBucketCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.RateLimitBucketCountAggregateOutputType> | number
+        }
+      }
+    }
+    AnalyticsEvent: {
+      payload: Prisma.$AnalyticsEventPayload<ExtArgs>
+      fields: Prisma.AnalyticsEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AnalyticsEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AnalyticsEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        findFirst: {
+          args: Prisma.AnalyticsEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AnalyticsEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        findMany: {
+          args: Prisma.AnalyticsEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+        }
+        create: {
+          args: Prisma.AnalyticsEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        createMany: {
+          args: Prisma.AnalyticsEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AnalyticsEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+        }
+        delete: {
+          args: Prisma.AnalyticsEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        update: {
+          args: Prisma.AnalyticsEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.AnalyticsEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AnalyticsEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AnalyticsEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.AnalyticsEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AnalyticsEventPayload>
+        }
+        aggregate: {
+          args: Prisma.AnalyticsEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAnalyticsEvent>
+        }
+        groupBy: {
+          args: Prisma.AnalyticsEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalyticsEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AnalyticsEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AnalyticsEventCountAggregateOutputType> | number
         }
       }
     }
@@ -3855,6 +3930,19 @@ export const RateLimitBucketScalarFieldEnum = {
 export type RateLimitBucketScalarFieldEnum = (typeof RateLimitBucketScalarFieldEnum)[keyof typeof RateLimitBucketScalarFieldEnum]
 
 
+export const AnalyticsEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  storeId: 'storeId',
+  actorId: 'actorId',
+  name: 'name',
+  properties: 'properties',
+  occurredAt: 'occurredAt'
+} as const
+
+export type AnalyticsEventScalarFieldEnum = (typeof AnalyticsEventScalarFieldEnum)[keyof typeof AnalyticsEventScalarFieldEnum]
+
+
 export const StoreScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -5126,6 +5214,7 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   otpChallenge?: Prisma.OtpChallengeOmit
   rateLimitBucket?: Prisma.RateLimitBucketOmit
+  analyticsEvent?: Prisma.AnalyticsEventOmit
   store?: Prisma.StoreOmit
   storeSettings?: Prisma.StoreSettingsOmit
   theme?: Prisma.ThemeOmit

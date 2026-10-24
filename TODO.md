@@ -74,6 +74,8 @@ Status: [ ] open · [x] delivered with evidence
 - [ ] Subscription, invoice, fee, refund and settlement reconciliation.
 - [ ] Support tickets and announcements.
 - [ ] Platform metrics: active stores, MRR, ARR, ARPU, churn, GMV, ATLaS fee revenue, conversion funnel, storage, API health.
+- [x] Analytics event taxonomy pipeline: funnel events persisted separately from audit logs and shown in Super Admin overview.
+- [x] Super Admin tenant list bounded with search, page navigation, and page-scoped fee/order aggregation.
 - [ ] Security center: login events, suspicious activity, rate limits, audit logs.
 
 ## 9. REST API & integrations (§11)
@@ -88,7 +90,7 @@ Status: [ ] open · [x] delivered with evidence
 
 ## 10. Platform policies & quality
 - [ ] Bangla and English labels; BDT currency; Asia/Dhaka timezone.
-- [ ] Analytics event taxonomy: signup_completed, store_created, theme_selected, first_product_created, store_published, checkout_started, payment_succeeded, order_created, subscription_started, subscription_renewed, subscription_failed, plan_upgraded.
+- [x] Analytics event taxonomy: signup_completed, store_created, theme_selected, first_product_created, store_published, checkout_started, payment_succeeded, order_created, subscription_started, subscription_renewed, subscription_failed, plan_upgraded.
 - [ ] Appendix B defaults: trial 7 days no card; grace 7 days; retry day 1/3/5; product image max 5MB, WebP compression where supported; API rate limit 60 req/min per user with plan upgrade; soft delete products; financial records immutable.
 - [ ] Upload MIME validation, image size limit; audit logs for admin actions.
 - [x] Seed: Super Admin, demo merchant, 3 polished demo stores with products/orders; deterministic count/theme assertions are enforced.

@@ -58,6 +58,7 @@ export const ModelName = {
   Session: 'Session',
   OtpChallenge: 'OtpChallenge',
   RateLimitBucket: 'RateLimitBucket',
+  AnalyticsEvent: 'AnalyticsEvent',
   Store: 'Store',
   StoreSettings: 'StoreSettings',
   Theme: 'Theme',
@@ -211,6 +212,19 @@ export const RateLimitBucketScalarFieldEnum = {
 } as const
 
 export type RateLimitBucketScalarFieldEnum = (typeof RateLimitBucketScalarFieldEnum)[keyof typeof RateLimitBucketScalarFieldEnum]
+
+
+export const AnalyticsEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  storeId: 'storeId',
+  actorId: 'actorId',
+  name: 'name',
+  properties: 'properties',
+  occurredAt: 'occurredAt'
+} as const
+
+export type AnalyticsEventScalarFieldEnum = (typeof AnalyticsEventScalarFieldEnum)[keyof typeof AnalyticsEventScalarFieldEnum]
 
 
 export const StoreScalarFieldEnum = {

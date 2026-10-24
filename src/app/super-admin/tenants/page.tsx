@@ -9,6 +9,10 @@ import { TenantStatusForm } from "@/app/super-admin/_components/tenant-status-fo
 
 export const metadata = { title: "টেন্যান্ট" };
 
+type TenantsPageProps = {
+  searchParams?: Promise<{ page?: string; q?: string }>;
+};
+
 function planTone(code: string) {
   if (code === "pro") return "brand" as const;
   if (code === "standard") return "info" as const;
@@ -16,8 +20,12 @@ function planTone(code: string) {
   return "neutral" as const;
 }
 
-export default async function TenantsPage() {
-  const tenants = await listTenantsForAdmin();
+export default async function TenantsPage({ searchParams }: TenantsPageProps) {
+  const params = (await searchParams) ?? {};
+  const page = Math.max(Number.parseInt(params.page ?? "1", 10) || 1, 1);
+  const query = params.q?.trim() ?? "";
+  const result = await listTenantsForAdmin({ page, search: query });
+  const tenants = result.rows;
 
   return (
     <div className="space-y-5">
@@ -25,6 +33,18 @@ export default async function TenantsPage() {
         <h1 className="text-xl font-semibold text-ink-900">টেন্যান্ট</h1>
         <p className="text-sm text-ink-500">প্রতিটি workspace-এর প্ল্যান, অর্ডার ও বকেয়া প্ল্যাটফর্ম ফি।</p>
       </div>
+
+      <form method="get" className="flex flex-col gap-2 sm:flex-row">
+        <input
+          name="q"
+          defaultValue={query}
+          placeholder="নাম, ফোন বা ইমেইল দিয়ে খুঁজুন"
+          className="min-h-10 flex-1 rounded-lg border border-ink-200 bg-white px-3 text-sm outline-none focus:border-brand-500"
+        />
+        <button type="submit" className="min-h-10 rounded-lg bg-ink-900 px-4 text-sm font-medium text-white hover:bg-ink-700">
+          খুঁজুন
+        </button>
+      </form>
 
       <div className="rounded-xl border border-ink-200 bg-white">
         <Table>
@@ -77,6 +97,22 @@ export default async function TenantsPage() {
         </Link>{" "}
         দেখুন।
       </p>
+
+      {(result.page > 1 || result.hasMore) && (
+        <div className="flex items-center justify-between text-sm">
+          {result.page > 1 ? (
+            <Link href={`/super-admin/tenants?page=${result.page - 1}&q=${encodeURIComponent(query)}`} className="font-medium text-brand-700 hover:underline">
+              ← আগের পৃষ্ঠা
+            </Link>
+          ) : <span />}
+          <span className="text-ink-500">পৃষ্ঠা {result.page} · মোট {result.total}</span>
+          {result.hasMore ? (
+            <Link href={`/super-admin/tenants?page=${result.page + 1}&q=${encodeURIComponent(query)}`} className="font-medium text-brand-700 hover:underline">
+              পরের পৃষ্ঠা →
+            </Link>
+          ) : <span />}
+        </div>
+      )}
     </div>
   );
 }

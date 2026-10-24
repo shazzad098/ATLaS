@@ -91,28 +91,48 @@ export type TenantRow = {
   pendingFees: string;
 };
 
-export async function listTenantsForAdmin(): Promise<TenantRow[]> {
-  const [tenants, feeRows, orderRows, stores] = await Promise.all([
+export async function listTenantsForAdmin(options: { page?: number; pageSize?: number; search?: string } = {}) {
+  const pageSize = Math.min(Math.max(options.pageSize ?? 50, 10), 100);
+  const page = Math.max(options.page ?? 1, 1);
+  const search = options.search?.trim();
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { owner: { phone: { contains: search } } },
+          { owner: { email: { contains: search, mode: "insensitive" as const } } },
+        ],
+      }
+    : {};
+  const [tenants, total] = await Promise.all([
     prisma.tenant.findMany({
+      where,
       orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
       include: {
         owner: { select: { name: true, phone: true, email: true } },
         subscription: { include: { plan: true } },
         _count: { select: { stores: true, memberships: true } },
       },
     }),
+    prisma.tenant.count({ where }),
+  ]);
+
+  const tenantIds = tenants.map((tenant) => tenant.id);
+  const [feeRows, orderRows, stores] = await Promise.all([
     prisma.feeLedger.groupBy({
       by: ["tenantId"],
-      where: { reversedAt: null, status: "PENDING" },
+      where: { tenantId: { in: tenantIds }, reversedAt: null, status: "PENDING" },
       _sum: { feeAmount: true },
     }),
     prisma.order.groupBy({
       by: ["storeId"],
-      where: { deletedAt: null, status: { in: [...SUCCESSFUL_ORDER_STATUSES] } },
+      where: { store: { tenantId: { in: tenantIds } }, deletedAt: null, status: { in: [...SUCCESSFUL_ORDER_STATUSES] } },
       _count: { _all: true },
       _sum: { grandTotal: true },
     }),
-    prisma.store.findMany({ select: { id: true, tenantId: true } }),
+    prisma.store.findMany({ where: { tenantId: { in: tenantIds } }, select: { id: true, tenantId: true } }),
   ]);
 
   const tenantOfStore = new Map(stores.map((store) => [store.id, store.tenantId]));
@@ -131,7 +151,7 @@ export async function listTenantsForAdmin(): Promise<TenantRow[]> {
     feeRows.map((row) => [row.tenantId, fromPaisa(toPaisa(row._sum.feeAmount ?? 0))]),
   );
 
-  return tenants.map((tenant) => {
+  const rows = tenants.map((tenant) => {
     const orders = ordersByTenant.get(tenant.id) ?? { count: 0, gmv: 0n };
     return {
       id: tenant.id,
@@ -151,6 +171,7 @@ export async function listTenantsForAdmin(): Promise<TenantRow[]> {
       pendingFees: feesByTenant.get(tenant.id) ?? "0.00",
     };
   });
+  return { rows, page, pageSize, total, hasMore: page * pageSize < total };
 }
 
 export async function listPlatformFees(options: { limit?: number; status?: string } = {}) {
