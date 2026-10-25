@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "pnpm": {
+    "onlyBuiltDependencies": ["@prisma/engines", "esbuild", "prisma", "unrs-resolver"]
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",

@@ -8,6 +8,8 @@ const LINKS = [
   { href: "/features", label: "ফিচার", hint: "সব মডিউলের বিস্তারিত" },
   { href: "/pricing", label: "দাম", hint: "প্ল্যান ও ফি তুলনা" },
   { href: "/themes", label: "থিম", hint: "Nokshi · Bazar · Studio" },
+  { href: "/how-it-works", label: "কীভাবে কাজ করে", hint: "ধাপে ধাপে গাইড" },
+  { href: "/help", label: "Help Center", hint: "সাহায্য ও FAQ" },
   { href: "/store/nokshi-demo", label: "ডেমো স্টোর", hint: "লাইভ দোকান ঘুরে দেখুন" },
 ];
 

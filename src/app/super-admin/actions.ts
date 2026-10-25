@@ -10,6 +10,17 @@ import { ensureThemeCatalog } from "@/lib/services/theme-service";
 import { setTenantStatus, updateSupportTicket } from "@/lib/services/platform-service";
 import type { SuperAdminState } from "@/app/super-admin/state";
 
+/** Announcement type matching the Drizzle schema. */
+type AnnouncementInput = {
+  title: string;
+  body: string;
+  audience: "all" | "free" | "paid";
+  level: "info" | "warning" | "success";
+  status: "draft" | "published" | "archived";
+  startsAt?: Date | null;
+  endsAt?: Date | null;
+};
+
 /**
  * Super Admin server actions (PRD §4.5).
  *
@@ -172,5 +183,61 @@ export async function updateTicketAction(
     return { ok: true, message: "টিকেট হালনাগাদ হয়েছে।" };
   } catch (error) {
     return message(error, "টিকেট হালনাগাদ করা যায়নি।");
+  }
+}
+
+export async function createAnnouncementAction(
+  _prev: SuperAdminState,
+  formData: FormData,
+): Promise<SuperAdminState> {
+  try {
+    const user = await requireSuperAdmin();
+
+    const title = text(formData, "title").trim();
+    const body = text(formData, "body").trim();
+    const audience = (text(formData, "audience") || "all") as AnnouncementInput["audience"];
+    const level = (text(formData, "level") || "info") as AnnouncementInput["level"];
+    const status = (text(formData, "status") || "draft") as AnnouncementInput["status"];
+    const startsAtRaw = text(formData, "startsAt");
+    const endsAtRaw = text(formData, "endsAt");
+
+    if (!title) throw new AppError("VALIDATION_FAILED", "শিরোনাম দিন।", 422);
+    if (!body) throw new AppError("VALIDATION_FAILED", "বিবরণ দিন।", 422);
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/internal/announcements`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-internal-secret": process.env.INTERNAL_API_SECRET ?? "dev-secret",
+      },
+      body: JSON.stringify({
+        title,
+        body,
+        audience,
+        level,
+        status,
+        actorId: user.id,
+        startsAt: startsAtRaw || null,
+        endsAt: endsAtRaw || null,
+      }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error((errData as { error?: string }).error ?? "অ্যানাউন্সমেন্ট তৈরি করা যায়নি।");
+    }
+
+    await recordAudit({
+      action: "announcement.created",
+      actorId: user.id,
+      resourceType: "Announcement",
+      metadata: { title, audience, level, status },
+    });
+
+    revalidatePath("/super-admin/announcements");
+    return { ok: true, message: `"${title}" অ্যানাউন্সমেন্ট তৈরি হয়েছে।` };
+  } catch (error) {
+    return message(error, "অ্যানাউন্সমেন্ট তৈরি করা যায়নি।");
   }
 }

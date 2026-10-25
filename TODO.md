@@ -7,8 +7,14 @@ Status: [ ] open · [x] delivered with evidence
 - [ ] Homepage also covers PRD items: value proposition, demo store previews, feature overview, Bangladesh payment/courier story (bKash, Nagad, SSLCommerz, COD; Pathao, Steadfast, RedX, Paperfly), testimonials, CTA, FAQ, footer.
 - [ ] Template Catalog: category, industry, style, plan availability filters, live preview, responsive (desktop/tablet/mobile) preview, theme comparison.
 - [ ] Pricing: monthly/yearly toggle, quota, transaction fee, feature comparison, FAQ — data from plans table.
-- [ ] How it works: create account → create store → choose theme → add products → connect payment → start selling.
-- [ ] Help center, Terms, Privacy, Refund/Cancellation Policy, Contact/Support (creates support ticket), About, Developers (REST API docs).
+- [x] How it works: create account → create store → choose theme → add products → connect payment → start selling. (`/how-it-works` page with 5-step guide + FAQ)
+- [x] Help center (`/help` — category index + popular FAQ + contact CTA)
+- [x] Terms of Service (`/terms` — 12 sections, BDT/BD-law aligned)
+- [x] Privacy Policy (`/privacy` — data collection, tenant isolation, retention, PDPO 2025 aligned)
+- [x] Refund/Cancellation Policy (`/refund-policy` — subscription, platform fee, customer order, gateway)
+- [x] Contact/Support page (`/contact` — creates guest support ticket via `createPublicTicket`)
+- [x] About page (`/about` — mission, values, goals, team)
+- [x] Developers/REST API docs page (`/developers` — all endpoints, auth, webhooks, error format, OpenAPI link)
 
 ## 2. Authentication & account (FR-01, §13)
 - [ ] Email/phone signup; Bangladesh mobile number verification by OTP; email/password or passwordless (OTP) login.
@@ -72,11 +78,12 @@ Status: [ ] open · [x] delivered with evidence
 - [ ] Theme/template CRUD, preview and rollout.
 - [ ] Payment gateway credentials and webhook monitoring.
 - [ ] Subscription, invoice, fee, refund and settlement reconciliation.
-- [ ] Support tickets and announcements.
+- [x] Support tickets and announcements. (tickets page exists; `/super-admin/announcements` page added — create/list/status-change via internal API + Drizzle)
 - [ ] Platform metrics: active stores, MRR, ARR, ARPU, churn, GMV, ATLaS fee revenue, conversion funnel, storage, API health.
 - [x] Analytics event taxonomy pipeline: funnel events persisted separately from audit logs and shown in Super Admin overview.
 - [x] Super Admin tenant list bounded with search, page navigation, and page-scoped fee/order aggregation.
-- [ ] Security center: login events, suspicious activity, rate limits, audit logs.
+- [x] Security center: login events, suspicious activity, rate limits, audit logs. (`/super-admin/audit` — OTP lock, webhook failures, impersonation trail, full audit log filter)
+- [x] Job queue monitoring: `/super-admin/jobs` — status counts, filter by type/status, retry dead jobs, cancel queued jobs (via internal API + Drizzle)
 
 ## 9. REST API & integrations (§11)
 - [ ] `/api/v1` endpoints: auth (request-otp, verify-otp, refresh, logout, me), stores & themes, catalog, commerce, billing, webhooks (payments/couriers), integrations connect, api-keys.

@@ -7,6 +7,7 @@ const NAV = [
   { href: "/features", label: "ফিচার" },
   { href: "/pricing", label: "দাম" },
   { href: "/themes", label: "থিম" },
+  { href: "/how-it-works", label: "কীভাবে কাজ করে" },
   { href: "/store/nokshi-demo", label: "ডেমো স্টোর" },
 ];
 
@@ -17,14 +18,15 @@ const FOOTER_COLUMNS = [
       { href: "/features", label: "ফিচার" },
       { href: "/pricing", label: "দাম" },
       { href: "/themes", label: "থিম" },
+      { href: "/how-it-works", label: "কীভাবে কাজ করে" },
       { href: "/store/nokshi-demo", label: "ডেমো স্টোর" },
     ],
   },
   {
     title: "রিসোর্স",
     links: [
-      { href: "/pricing", label: "প্ল্যান তুলনা" },
-      { href: "/themes", label: "থিম গ্যালারি" },
+      { href: "/help", label: "Help Center" },
+      { href: "/developers", label: "Developers / API" },
       { href: "/demo-sms", label: "ডেমো SMS ইনবক্স" },
       { href: "/store/dhaka-bazar", label: "ঢাকা বাজার ডেমো" },
     ],
@@ -32,10 +34,18 @@ const FOOTER_COLUMNS = [
   {
     title: "কোম্পানি",
     links: [
-      { href: "/", label: "আমাদের সম্পর্কে" },
-      { href: "/login", label: "যোগাযোগ" },
+      { href: "/about", label: "আমাদের সম্পর্কে" },
+      { href: "/contact", label: "যোগাযোগ" },
       { href: "/signup", label: "ফ্রি সাইনআপ" },
       { href: "/account", label: "অ্যাকাউন্ট" },
+    ],
+  },
+  {
+    title: "আইনি",
+    links: [
+      { href: "/terms", label: "ব্যবহারের শর্তাবলী" },
+      { href: "/privacy", label: "প্রাইভেসি পলিসি" },
+      { href: "/refund-policy", label: "রিফান্ড নীতি" },
     ],
   },
 ];
@@ -105,8 +115,8 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-[#e8eeeb] bg-[#f7faf9]">
-        <div className="mx-auto grid max-w-[1160px] gap-10 px-4 py-14 sm:grid-cols-3 sm:px-6 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
-          <div className="space-y-4 sm:col-span-3 lg:col-span-1">
+        <div className="mx-auto grid max-w-[1160px] gap-10 px-4 py-14 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1fr_0.9fr]">
+          <div className="space-y-4 sm:col-span-2 lg:col-span-1">
             <Link href="/" aria-label="ATLaS হোম">
               <BrandMark size="sm" />
             </Link>
@@ -140,8 +150,9 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
           <div className="mx-auto flex max-w-[1160px] flex-wrap items-center justify-between gap-3 px-4 py-5 text-[11.5px] text-ink-500 sm:px-6">
             <p>© {bn(new Date().getFullYear())} ATLaS · সর্বস্বত্ব সংরক্ষিত</p>
             <div className="flex items-center gap-5">
-              <span className="cursor-default">ব্যবহারের শর্তাবলী</span>
-              <span className="cursor-default">প্রাইভেসি পলিসি</span>
+              <Link href="/terms" className="hover:text-[#0B7A5B]">ব্যবহারের শর্তাবলী</Link>
+              <Link href="/privacy" className="hover:text-[#0B7A5B]">প্রাইভেসি পলিসি</Link>
+              <Link href="/refund-policy" className="hover:text-[#0B7A5B]">রিফান্ড নীতি</Link>
             </div>
           </div>
         </div>
