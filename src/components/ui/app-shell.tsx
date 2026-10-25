@@ -14,6 +14,7 @@ import {
   Layers,
   LayoutDashboard,
   LifeBuoy,
+  ListChecks,
   Megaphone,
   Menu,
   Palette,
@@ -47,6 +48,7 @@ import { cn } from "@/lib/cn";
 
 const ICONS = {
   activity: Activity,
+  announcements: Megaphone,
   audit: ShieldCheck,
   auditLog: ScrollText,
   billing: Receipt,
@@ -58,6 +60,7 @@ const ICONS = {
   discounts: Percent,
   fees: Receipt,
   inventory: Warehouse,
+  jobs: ListChecks,
   marketing: Megaphone,
   notifications: Bell,
   orders: ShoppingCart,
@@ -191,7 +194,9 @@ export function AppShell({
             ) : null}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
-                const Icon = ICONS[item.icon];
+                // Unknown keys must never blank the whole panel (a missing map
+                // entry is a runtime crash in React, not a harmless blank icon).
+                const Icon = ICONS[item.icon] ?? LayoutDashboard;
                 const active = isActive(pathname, item.href);
                 return (
                   <li key={item.href}>

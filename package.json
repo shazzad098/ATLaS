@@ -7,7 +7,18 @@
     "onlyBuiltDependencies": ["@prisma/engines", "esbuild", "prisma", "unrs-resolver"]
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/ensure-db.mjs && next dev",
+    "dev:web": "next dev",
+    "api:install": "npm --prefix api install",
+    "api:dev": "npm --prefix api run dev",
+    "api:build": "npm --prefix api run build",
+    "api:start": "npm --prefix api run start",
+    "api:typecheck": "npm --prefix api run typecheck",
+    "api:lint": "npm --prefix api run lint",
+    "api:test": "npm --prefix api test",
+    "redis:start": "npm --prefix api run redis:start",
+    "redis:stop": "npm --prefix api run redis:stop",
+    "redis:status": "npm --prefix api run redis:status",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
@@ -15,9 +26,12 @@
     "check": "tsc --noEmit && eslint .",
     "test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
     "db:generate": "prisma generate",
+    "db:start": "node scripts/ensure-db.mjs",
+    "db:stop": "prisma dev stop atlas",
+    "db:status": "prisma dev ls",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:reset": "prisma migrate reset --force",
+    "db:reset": "prisma migrate reset --force && prisma db seed",
     "db:studio": "prisma studio"
   },
   "dependencies": {
