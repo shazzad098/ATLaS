@@ -14,16 +14,27 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
     },
   },
+  {
+    // Legal/marketing copy is written in Bangla with typographic quotes; forcing
+    // HTML entities there makes the source unreadable and serves no purpose.
+    files: ["src/app/(marketing)/**/*.tsx"],
+    rules: { "react/no-unescaped-entities": "off" },
+  },
   globalIgnores([
     ".next/**",
     "out/**",
     "build/**",
+    "dist/**",
     "next-env.d.ts",
     // Prisma generates this on every `prisma generate`.
     "src/generated/**",
     // Legacy Create-App scaffold is not part of the current Next.js runtime.
     "client/**",
     "server/**",
+    // The NestJS API is linted by its own flat config (`npm run api:lint`).
+    "api/**",
+    // Plain Node helper scripts (ESM) are executed, not bundled.
+    "scripts/**",
   ]),
 ]);
 

@@ -58,7 +58,7 @@ export const env = {
       return optional("SMS_SENDER_ID", "ATLaS");
     },
     get configured() {
-      return Boolean(optional("SMS_PROVIDER") && optional("SMS_API_KEY") && optional("SMS_API_URL"));
+      return Boolean(optional("SMS_PROVIDER") && optional("SMS_API_KEY"));
     },
   },
   email: {
@@ -109,6 +109,9 @@ export const env = {
   get cronSecret() {
     return required("CRON_SECRET");
   },
+  get isProduction() {
+    return process.env.NODE_ENV === "production";
+  },
 };
 
 /**
@@ -133,3 +136,59 @@ export const sandboxMode = {
     return !env.gateways.sslcommerz.storeId;
   },
 };
+
+const MIN_SECRET_LENGTH = 32;
+
+/**
+ * Startup guard for production deploys.
+ *
+ * The app boots fine without most credentials in development, but a production
+ * process that silently falls back to sandbox behaviour is a security incident
+ * waiting to happen (OTP codes echoed to the client, dev secret manager key,
+ * non-rotating secrets). Fails fast with an actionable list instead.
+ *
+ * Called once from `instrumentation.ts` (server) and from the billing cron? —
+ * keep it to instrumentation so a single bad deploy never starts serving.
+ */
+export function assertRuntimeEnv(): void {
+  if (!env.isProduction) return;
+
+  const problems: string[] = [];
+  const check = (name: string, minLength = 1): void => {
+    const value = process.env[name]?.trim();
+    if (!value) problems.push(`${name} is missing`);
+    else if (value.length < minLength) {
+      problems.push(`${name} must be at least ${minLength} characters`);
+    }
+  };
+
+  check("DATABASE_URL");
+  check("AUTH_SECRET", MIN_SECRET_LENGTH);
+  check("OTP_HASH_SECRET", MIN_SECRET_LENGTH);
+  check("SECRETS_KEY", MIN_SECRET_LENGTH);
+  check("CRON_SECRET", 16);
+
+  if (optional("SECRETS_KEY") === "dev-only-32-char-secret-manager-key") {
+    problems.push("SECRETS_KEY still has the development default");
+  }
+
+  if (!env.sms.configured && optional("ALLOW_SANDBOX_SMS") !== "true") {
+    problems.push(
+      "SMS provider is not configured, so OTP login would expose verification codes. " +
+        "Set SMS_PROVIDER + SMS_API_KEY, or ALLOW_SANDBOX_SMS=true for a closed staging environment.",
+    );
+  }
+
+  const appUrl = optional("NEXT_PUBLIC_APP_URL");
+  if (appUrl && !appUrl.startsWith("https://")) {
+    problems.push("NEXT_PUBLIC_APP_URL must use https:// in production");
+  }
+
+  if (optional("INTERNAL_API_SECRET") && optional("INTERNAL_API_SECRET").length < 24) {
+    problems.push("INTERNAL_API_SECRET must be at least 24 characters when set");
+  }
+
+  if (problems.length > 0) {
+    throw new Error(`Invalid production environment:\n - ${problems.join("\n - ")}`);
+  }
+}

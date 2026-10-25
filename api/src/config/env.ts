@@ -103,6 +103,80 @@ export const authEnv = {
   },
 } as const;
 
+/** Optional error reporting. No DSN -> Sentry stays disabled (local dev). */
+export const monitoringEnv = {
+  get dsn(): string {
+    return optional("SENTRY_DSN");
+  },
+  get environment(): string {
+    return optional("SENTRY_ENVIRONMENT", process.env.NODE_ENV ?? "development");
+  },
+  get tracesSampleRate(): number {
+    const raw = optional("SENTRY_TRACES_SAMPLE_RATE", "0.1");
+    const value = Number(raw);
+    return Number.isFinite(value) && value >= 0 && value <= 1 ? value : 0.1;
+  },
+} as const;
+
+/** S3-compatible object storage (Cloudflare R2, AWS S3, MinIO). */
+export const storageEnv = {
+  get endpoint(): string {
+    return optional("S3_ENDPOINT");
+  },
+  get region(): string {
+    return optional("S3_REGION", "auto");
+  },
+  get bucket(): string {
+    return optional("S3_BUCKET");
+  },
+  get accessKeyId(): string {
+    return optional("S3_ACCESS_KEY_ID");
+  },
+  get secretAccessKey(): string {
+    return optional("S3_SECRET_ACCESS_KEY");
+  },
+  /** Public base URL (R2 dev domain / CDN) used to build returned image URLs. */
+  get publicBaseUrl(): string {
+    return optional("S3_PUBLIC_BASE_URL");
+  },
+  get forcePathStyle(): boolean {
+    return optional("S3_FORCE_PATH_STYLE", "false") === "true";
+  },
+  get configured(): boolean {
+    return Boolean(
+      this.endpoint && this.bucket && this.accessKeyId && this.secretAccessKey && this.publicBaseUrl,
+    );
+  },
+} as const;
+
+/**
+ * Fail-fast checks for the API process. Production additionally requires the
+ * pieces the product cannot run without: object storage for merchant images and
+ * Redis for background jobs.
+ */
+export function assertApiRuntimeEnv(): void {
+  const problems: string[] = [];
+
+  if (!optional("DATABASE_URL")) problems.push("DATABASE_URL is required");
+
+  const secret = optional("AUTH_SECRET");
+  if (!secret) problems.push("AUTH_SECRET is required");
+  else if (secret.length < 32) problems.push("AUTH_SECRET must be at least 32 characters");
+
+  if (process.env.NODE_ENV === "production") {
+    if (!storageEnv.configured) {
+      problems.push(
+        "S3_ENDPOINT/S3_BUCKET/S3_ACCESS_KEY_ID/S3_SECRET_ACCESS_KEY/S3_PUBLIC_BASE_URL are required for image uploads",
+      );
+    }
+    if (!queueEnv.enabled) problems.push("REDIS_URL is required for background jobs");
+  }
+
+  if (problems.length > 0) {
+    throw new Error(`Invalid API environment:\n - ${problems.join("\n - ")}`);
+  }
+}
+
 /**
  * Background jobs (BullMQ) read Redis lazily too, so the API still boots when
  * Redis is down — enqueue attempts are logged and dropped instead of failing the

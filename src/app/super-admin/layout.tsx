@@ -48,8 +48,6 @@ export default async function SuperAdminLayout({ children }: { children: React.R
           icon: "tickets",
           badge: openTickets > 0 ? String(openTickets) : undefined,
         },
-        { href: "/super-admin/announcements", label: "অ্যানাউন্সমেন্ট", icon: "announcements" },
-        { href: "/super-admin/jobs", label: "Job Queue", icon: "jobs" },
       ],
     },
   ];

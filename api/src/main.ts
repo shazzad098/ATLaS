@@ -3,11 +3,14 @@ import { BadRequestException, Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as Sentry from "@sentry/nestjs";
 import cookieParser from "cookie-parser";
 import type { ValidationError } from "class-validator";
+import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { ACCESS_COOKIE, CSRF_COOKIE, REFRESH_COOKIE } from "./auth/auth.constants";
-import { apiEnv, authEnv } from "./config/env";
+import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
+import { apiEnv, assertApiRuntimeEnv, authEnv, monitoringEnv } from "./config/env";
 
 /** Turn class-validator's tree into a flat list of messages for API callers. */
 function validationMessages(errors: ValidationError[], parent = ""): string[] {
@@ -20,6 +23,21 @@ function validationMessages(errors: ValidationError[], parent = ""): string[] {
 }
 
 async function bootstrap(): Promise<void> {
+  // Refuse to start with missing/weak secrets (and, in production, without
+  // storage + Redis) instead of failing on the first request.
+  assertApiRuntimeEnv();
+
+  // Error reporting must be initialised before Nest so bootstrap failures are
+  // captured too. Without a DSN Sentry is a no-op.
+  if (monitoringEnv.dsn) {
+    Sentry.init({
+      dsn: monitoringEnv.dsn,
+      environment: monitoringEnv.environment,
+      release: process.env.SENTRY_RELEASE,
+      tracesSampleRate: monitoringEnv.tracesSampleRate,
+    });
+  }
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: false,
   });
@@ -27,6 +45,18 @@ async function bootstrap(): Promise<void> {
   // Behind a reverse proxy in production; keeps req.ip truthful for rate limits.
   app.set("trust proxy", 1);
   app.disable("x-powered-by");
+
+  // Security headers for every API response. CSP is disabled because the
+  // Swagger UI ships inline scripts and the API itself returns JSON only.
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: false,
+    }),
+  );
+
+  // One JSON shape for every error + Sentry capture for 5xx only.
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Every route lives under /api so the Next.js app can proxy or call it directly.
   app.setGlobalPrefix("api");

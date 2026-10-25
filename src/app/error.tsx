@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button";
  */
 
 function isDatabaseDown(error: Error): boolean {
-  const text = `${error.name} ${error.message}`;
-  return /can't reach database server|P1001|ECONNREFUSED|connection refused|database system is starting up/i.test(
+  const text = `${error.name} ${error.message} ${String((error as { cause?: unknown }).cause ?? "")}`;
+  return /can't reach database server|P1001|ECONNREFUSED|connection refused|database system is starting up|DatabaseNotReachable|DriverAdapterError|Connection terminated/i.test(
     text,
   );
 }

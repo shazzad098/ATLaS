@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { AppError } from "@/lib/errors";
+import { rateLimit } from "@/lib/api";
 import { checkPasswordStrength, verifyPassword } from "@/lib/auth/password";
 import { normalizePhone, requestOtp, verifyOtp } from "@/lib/auth/otp";
 import { clearAuthCookies, establishSession, readSession, revokeSession, setAuthCookies } from "@/lib/auth/session";
@@ -36,6 +37,26 @@ async function requestMeta() {
   };
 }
 
+/**
+ * Shared fixed-window limiter (PostgreSQL backed, so it works across instances).
+ * Server actions bypass the `/api/v1` routes, so they must enforce their own
+ * budget — otherwise the UI login is an unthrottled password oracle.
+ */
+async function enforceRateLimit(key: string, perMinute: number): Promise<AuthState | null> {
+  try {
+    await rateLimit(key, perMinute);
+    return null;
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof AppError
+          ? error.message
+          : "অনেকবার চেষ্টা হয়েছে। এক মিনিট পর আবার চেষ্টা করুন।",
+    };
+  }
+}
+
 export async function loginAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const identifier = text(formData, "identifier").trim();
   const password = text(formData, "password");
@@ -43,9 +64,19 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
 
   if (!identifier) return { ok: false, message: "মোবাইল নম্বর বা ইমেইল দিন।" };
 
+  const meta = await requestMeta();
+  const ipLimited = await enforceRateLimit(`auth:login:ip:${meta.ip ?? "unknown"}`, 20);
+  if (ipLimited) return ipLimited;
+
+  const identifierLimited = await enforceRateLimit(
+    `auth:login:id:${identifier.toLowerCase()}`,
+    10,
+  );
+  if (identifierLimited) return identifierLimited;
+
   if (wantsOtp) {
     try {
-      const result = await requestOtp(identifier, { purpose: "LOGIN", ip: (await requestMeta()).ip });
+      const result = await requestOtp(identifier, { purpose: "LOGIN", ip: meta.ip });
       return {
         ok: true,
         step: "otp",
@@ -73,7 +104,7 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
     return { ok: false, message: "এই অ্যাকাউন্টটি এখন সক্রিয় নয়। সহায়তা টিমের সাথে যোগাযোগ করুন।" };
   }
 
-  const tokens = await establishSession(user.id, await requestMeta());
+  const tokens = await establishSession(user.id, meta);
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await setAuthCookies(tokens);
 

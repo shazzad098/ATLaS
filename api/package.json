@@ -30,6 +30,8 @@
     "pretypecheck": "npm run db:generate"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1156.0",
+    "@aws-sdk/s3-request-presigner": "^3.1156.0",
     "@nestjs/common": "^11.2.8",
     "@nestjs/core": "^11.2.8",
     "@nestjs/jwt": "^11.0.2",
@@ -38,12 +40,14 @@
     "@nestjs/swagger": "^11.4.7",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "@sentry/nestjs": "^11.9.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^6.4.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "cookie-parser": "^1.4.7",
     "dotenv": "^18.0.8",
+    "helmet": "^8.3.0",
     "ioredis": "^5.11.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

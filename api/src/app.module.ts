@@ -3,6 +3,7 @@ import { AuthModule } from "./auth/auth.module";
 import { DatabaseModule } from "./database/database.module";
 import { HealthModule } from "./health/health.module";
 import { QueueModule } from "./queue/queue.module";
+import { StorageModule } from "./storage/storage.module";
 
 /**
  * Root module. Feature modules (auth, catalog, orders, billing, …) are wired in
@@ -10,6 +11,6 @@ import { QueueModule } from "./queue/queue.module";
  * keeps its server actions until each surface is migrated.
  */
 @Module({
-  imports: [DatabaseModule, QueueModule, HealthModule, AuthModule],
+  imports: [DatabaseModule, QueueModule, HealthModule, AuthModule, StorageModule],
 })
 export class AppModule {}

@@ -148,6 +148,12 @@ async function deliverOtp(
   expiresAt: Date,
 ): Promise<{ via: "sms" | "log"; devCode?: string }> {
   if (sandboxMode.sms) {
+    // A production process must never echo OTP codes back to the client — that
+    // would let anyone sign in as any phone number. Boot-time validation already
+    // blocks this unless ALLOW_SANDBOX_SMS=true; this is the last line of defence.
+    if (process.env.NODE_ENV === "production" && process.env.ALLOW_SANDBOX_SMS !== "true") {
+      throw new AppError("INTERNAL", "SMS provider is not configured", 503);
+    }
     // No provider configured: the code is logged and mirrored into the demo inbox.
     console.info(`[otp] ${phone} -> ${code} (no SMS provider configured)`);
     recordSandboxSms({ phone, code, purpose, sentAt: new Date(), expiresAt });

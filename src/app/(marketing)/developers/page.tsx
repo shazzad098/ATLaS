@@ -358,7 +358,7 @@ export default function DevelopersPage() {
           <h2 className="mb-4 text-xl font-bold text-ink-900">Error Response Format</h2>
           <div className="grid gap-5 lg:grid-cols-2">
             <div className="rounded-xl border border-[#e8eeeb] bg-[#0a0a0a] p-5 font-mono text-[12.5px] text-[#d4d4d8]">
-              <p className="text-[#6b7280]">// Error response</p>
+              <p className="text-[#6b7280]">{"// Error response"}</p>
               <p className="mt-2">{`{`}</p>
               <p className="pl-4">
                 <span className="text-[#86efac]">&quot;error&quot;</span>:{" "}

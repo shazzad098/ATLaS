@@ -101,28 +101,115 @@ scales beyond one node.
 Job defaults: 3 attempts with exponential backoff, completed jobs kept for 1h (max 1000),
 failed jobs for 24h (max 5000) so a broken job is still inspectable.
 
+### Object storage (S3 / R2)
+
+`POST /api/storage/presign` (JWT, see Swagger) verifies the caller's membership in the store's
+tenant and returns a 5-minute presigned PUT URL, the generated object key (`stores/<storeId>/…`)
+and the final public URL. Type (JPEG/PNG/WebP/GIF) and size (≤ 5 MB) are signed into the URL, so a
+client cannot upload anything else. `GET /api/storage/status` reports whether it is configured; the
+API refuses to boot in production without `S3_*` variables.
+
+### Error monitoring
+
+Set `SENTRY_DSN` to enable Sentry in both processes: the web app through
+`src/instrumentation.ts` (`register` + `onRequestError`), the API through `Sentry.init` plus the
+global exception filter (5xx only). Without a DSN everything is a no-op, so local development and
+CI need no account.
+
 ## Verification commands
 
 ```bash
-npm run typecheck
-npm run lint
-npm test
-npm run build
+npm run typecheck     # web
+npm run lint          # web
+npm test              # web unit suite
+npm run build         # production build
+npm --prefix api test # API unit + e2e (needs Postgres + Redis)
+npm run api:typecheck
+npm run api:lint
+npm run api:build
 ```
 
-`npm test` runs the checked-in regression suite under `src/**/*.test.ts`. The legacy `client/` and `server/` directories are retained as historical scaffold files and are not part of the current Next.js runtime or lint scope.
+`npm test` runs the checked-in regression suite under `src/**/*.test.ts`. The legacy `client/` and
+`server/` directories are retained as historical scaffold files and are not part of the current
+Next.js runtime or lint scope. CI (`.github/workflows/ci.yml`) runs all of the above against
+throwaway Postgres 16 + Redis 7 services on every push and pull request.
 
 ## Production deployment
 
-1. Provision PostgreSQL 16+ and set `DATABASE_URL`.
-2. Set strong, independently generated `AUTH_SECRET`, `OTP_HASH_SECRET` and `CRON_SECRET` values.
-3. Set `NEXT_PUBLIC_APP_URL`, `APP_ROOT_DOMAIN` and storefront domain configuration.
-4. Configure the selected SMS/email/payment/courier providers; do not enable a merchant payment method until its credentials are configured.
-5. Run `npm ci`, `npm run db:generate`, `npm run db:migrate`, and `npm run build`.
-6. Start with `npm run start` behind TLS and a reverse proxy.
-7. Configure a scheduler to `POST /api/internal/cron/billing` with `Authorization: Bearer $CRON_SECRET` at least every 15 minutes. This runs billing lifecycle transitions and expires abandoned online checkouts, releasing stock and coupon reservations.
+### 1. Required environment
 
-All API responses use a consistent envelope. API routes include `x-request-id`, security headers, idempotency support for checkout, database-backed rate limiting and tenant authorization. Payment webhooks require provider signature verification and are claimed idempotently before applying order side effects.
+The process refuses to start when a production variable is missing or unsafe
+(`src/lib/env.ts` → `assertRuntimeEnv`, `api/src/config/env.ts` → `assertApiRuntimeEnv`).
+
+| Variable | Rule |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL 16+, SSL enabled for managed hosts |
+| `AUTH_SECRET` | ≥ 32 random chars, shared by web + API |
+| `OTP_HASH_SECRET` | ≥ 32 random chars |
+| `SECRETS_KEY` | ≥ 32 random chars (never the dev default) |
+| `CRON_SECRET` | ≥ 16 random chars, used by the scheduler bearer token |
+| `NEXT_PUBLIC_APP_URL` | must be `https://…` |
+| `SMS_PROVIDER` + `SMS_API_KEY` | required (otherwise OTP codes would be echoable) |
+| `S3_ENDPOINT`/`S3_BUCKET`/`S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`/`S3_PUBLIC_BASE_URL` | API only; required for merchant image uploads |
+| `REDIS_URL` | API only; required for background jobs |
+| `SENTRY_DSN` | optional, enables error reporting in web + API |
+
+Generate secrets with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+Never commit `.env`; use your platform's secret manager in production.
+
+### 2. Build & run
+
+```bash
+npm ci
+npx prisma generate
+npx prisma migrate deploy        # never `prisma db push` in production
+npm run build
+npm start                        # behind TLS (HSTS is sent in production)
+
+# API (separate process)
+npm --prefix api ci
+npm --prefix api run build
+node api/dist/main.js            # or: npm run api:start
+```
+
+### 3. Docker Compose (reference stack)
+
+```bash
+cp .env.example .env             # fill in the table above + POSTGRES_PASSWORD
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Services: `postgres` (health-checked), `redis` (AOF, `noeviction`), `migrate` (runs
+`prisma migrate deploy` once), `api` (port 4000) and `web` (port 3000). The web and API containers
+run as the unprivileged `node` user.
+
+### 4. Scheduler
+
+`POST /api/internal/cron/billing` with `Authorization: Bearer $CRON_SECRET` at least every 15
+minutes. It runs billing lifecycle transitions, expires abandoned online checkouts (releasing stock
+and coupon reservations) and delivers pending webhooks.
+
+### 5. Error monitoring & storage
+
+- Set `SENTRY_DSN` (web: server instrumentation + `onRequestError`; API: global exception filter,
+  5xx only). Without a DSN both are no-ops.
+- Image uploads: `POST /api/storage/presign` (JWT) returns a 5-minute presigned PUT URL plus the
+  final `publicUrl`; the browser uploads directly to R2/S3. Content type (JPEG/PNG/WebP/GIF) and
+  size (≤ 5 MB) are signed into the URL, and the object key is generated under `stores/<storeId>/`
+  after verifying tenant membership.
+
+### 6. Operational checklist
+
+- Database backups + a tested restore procedure.
+- Uptime probes on `/api/health` (web) and `/api/health/db` + `/api/health/queue` (API).
+- TLS termination and a single trusted proxy hop (both apps read `x-forwarded-for`).
+- Rotate `AUTH_SECRET` (invalidates every session) and provider credentials on a schedule.
+- Keep Redis `noeviction`; BullMQ jobs are lost if eviction removes queue keys.
+
+All API responses use a consistent envelope. API routes include `x-request-id`, security headers,
+idempotency support for checkout, database-backed rate limiting and tenant authorization. Payment
+webhooks require provider signature verification and are claimed idempotently before applying order
+side effects.
 
 ## Important operational notes
 
