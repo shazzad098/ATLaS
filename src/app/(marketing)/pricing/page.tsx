@@ -532,10 +532,10 @@ export default async function PricingPage() {
                   ফ্রি শুরু করুন <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="/store/nokshi-demo"
+                  href="/features"
                   className="inline-flex items-center justify-center rounded-[10px] border border-[#dfe8e4] bg-white px-5 py-2.5 text-[13px] font-semibold text-ink-800 transition hover:bg-[#f4f8f6]"
                 >
-                  ডেমো স্টোর
+                  ফিচার দেখুন
                 </Link>
               </div>
             </div>

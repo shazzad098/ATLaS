@@ -111,12 +111,6 @@ const STEPS = [
   },
 ];
 
-const STORE_BY_THEME: Record<string, string> = {
-  nokshi: "/store/nokshi-demo",
-  bazar: "/store/dhaka-bazar",
-  studio: "/store/studio-tech",
-};
-
 const PLAN_BADGE: Record<string, string> = {
   free: "শুরু এখানেই",
   basic: "বাড়ন্ত ব্যবসা",
@@ -124,14 +118,15 @@ const PLAN_BADGE: Record<string, string> = {
   pro: "সব সুবিধা",
 };
 
-const MOCK_STORES = [
-  { name: "Nokshi", dot: "bg-[#F43F5E]", sales: "৳৪২,৩০০", orders: "২৪ অর্ডার" },
-  { name: "Bazar", dot: "bg-[#10B981]", sales: "৳৩১,৮৫০", orders: "৩৮ অর্ডার" },
-  { name: "Studio", dot: "bg-[#3B82F6]", sales: "৳২৭,৪০০", orders: "১২ অর্ডার" },
+/** Labels only — the marketing illustration never shows invented sales figures. */
+const PREVIEW_MODULES = [
+  { name: "ক্যাটালগ", dot: "bg-[#F43F5E]", value: "পণ্য ও ভ্যারিয়েন্ট", meta: "স্টক ট্র্যাকিং" },
+  { name: "অর্ডার", dot: "bg-[#10B981]", value: "লাইভ স্টেটাস", meta: "মার্চেন্ট + অ্যাডমিন" },
+  { name: "ডেলিভারি", dot: "bg-[#3B82F6]", value: "জোন ও চার্জ", meta: "COD রেকর্ডিং" },
 ];
 
 /* ──────────────────────────────────────────────────────────────
- * Hero product mock
+ * Hero dashboard illustration (no demo data)
  * ────────────────────────────────────────────────────────────── */
 
 function DashboardPreview() {
@@ -158,17 +153,17 @@ function DashboardPreview() {
 
         {/* Store switcher */}
         <div className="mt-2.5 grid grid-cols-3 gap-2">
-          {MOCK_STORES.map((store) => (
-            <div key={store.name} className="rounded-xl border border-[#e9efec] bg-white p-2.5">
+          {PREVIEW_MODULES.map((module) => (
+            <div key={module.name} className="rounded-xl border border-[#e9efec] bg-white p-2.5">
               <div className="flex items-center gap-1.5">
-                <span className={`h-2 w-2 rounded-full ${store.dot}`} />
-                <p className="truncate text-[11px] font-semibold text-ink-900">{store.name}</p>
+                <span className={`h-2 w-2 rounded-full ${module.dot}`} />
+                <p className="truncate text-[11px] font-semibold text-ink-900">{module.name}</p>
                 <span className="ml-auto hidden rounded-full bg-[#E7F7F0] px-1.5 py-0.5 text-[8px] font-semibold text-[#0B8F68] sm:inline">
                   লাইভ
                 </span>
               </div>
-              <p className="mt-1.5 text-[12px] font-bold text-ink-900">{store.sales}</p>
-              <p className="text-[8.5px] text-ink-400">{store.orders}</p>
+              <p className="mt-1.5 truncate text-[11px] font-semibold text-ink-800">{module.value}</p>
+              <p className="text-[8.5px] text-ink-400">{module.meta}</p>
             </div>
           ))}
         </div>
@@ -178,10 +173,10 @@ function DashboardPreview() {
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-[9.5px] font-medium text-ink-400">এই মাসের বিক্রি</p>
-              <p className="mt-0.5 text-[17px] font-bold tracking-tight text-ink-900">৳১,০১,৫৫০</p>
+              <p className="mt-0.5 text-[13px] font-bold tracking-tight text-ink-900">আপনার আসল ডেটা</p>
             </div>
             <span className="rounded-full bg-[#E7F7F0] px-2 py-0.5 text-[9px] font-semibold text-[#0B8F68]">
-              +১৮.৪%
+              লাইভ
             </span>
           </div>
           <svg viewBox="0 0 300 76" className="mt-2 h-[70px] w-full" preserveAspectRatio="none">
@@ -213,9 +208,9 @@ function DashboardPreview() {
         {/* KPIs */}
         <div className="mt-2.5 grid grid-cols-3 gap-2">
           {[
-            { label: "আজকের অর্ডার", value: "১২", delta: "+৩" },
-            { label: "গতকাল", value: "৮", delta: "+২" },
-            { label: "এই মাসের আয়", value: "৳১,০১,৫৫০", delta: "+১৮%" },
+            { label: "নতুন অর্ডার", value: "তাৎক্ষণিক", delta: "লাইভ" },
+            { label: "স্টক", value: "স্বয়ংক্রিয়", delta: "লাইভ" },
+            { label: "ড্যাশবোর্ড", value: "এক ডেটাবেস", delta: "সিঙ্ক" },
           ].map((kpi) => (
             <div key={kpi.label} className="rounded-xl border border-[#e9efec] px-2.5 py-2">
               <p className="truncate text-[8.5px] font-medium text-ink-400">{kpi.label}</p>
@@ -258,23 +253,25 @@ function DashboardPreview() {
             </div>
             <div className="mt-1.5 space-y-1.5">
               {[
-                { id: "#ATL-১০৪২", who: "রফিকুল হাসান", method: "ক্যাশ অন ডেলিভারি", amount: "৳২,৪৫০" },
-                { id: "#ATL-১০৪১", who: "নুসরাত জাহান", method: "bKash", amount: "৳১,৮৯০" },
-                { id: "#ATL-১০৪০", who: "সাদিয়া রহমান", method: "SSLCommerz", amount: "৳৩,২০০" },
-              ].map((order) => (
-                <div key={order.id} className="flex items-center justify-between gap-2">
+                { id: "অর্ডার", who: "স্টোরফ্রন্ট থেকে", method: "তাৎক্ষণিক নোটিফিকেশন", badge: "লাইভ" },
+                { id: "স্টক", who: "অর্ডার হলে", method: "স্বয়ংক্রিয় ইনভেন্টরি", badge: "সিঙ্ক" },
+                { id: "স্টেটাস", who: "মার্চেন্ট প্যানেল", method: "সুপার-অ্যাডমিনেও দেখা যায়", badge: "DB" },
+              ].map((row) => (
+                <div key={row.id} className="flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-1.5">
                     <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#F1F5F3] text-[8px] font-bold text-ink-600">
-                      {order.who.slice(0, 1)}
+                      {row.id.slice(0, 1)}
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-[8.5px] font-semibold text-ink-800">
-                        {order.id} · {order.who}
+                        {row.id} · {row.who}
                       </p>
-                      <p className="truncate text-[7.5px] text-ink-400">{order.method}</p>
+                      <p className="truncate text-[7.5px] text-ink-400">{row.method}</p>
                     </div>
                   </div>
-                  <p className="shrink-0 text-[8.5px] font-semibold text-ink-900">{order.amount}</p>
+                  <span className="shrink-0 rounded-full bg-[#E7F7F0] px-1.5 py-0.5 text-[7.5px] font-semibold text-[#0B8F68]">
+                    {row.badge}
+                  </span>
                 </div>
               ))}
             </div>
@@ -291,17 +288,7 @@ function DashboardPreview() {
             <p className="text-[10px] font-medium">দোকান এখন লাইভ — নতুন অর্ডার আসছে</p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex -space-x-1.5">
-              {["র", "ন", "স"].map((initial) => (
-                <span
-                  key={initial}
-                  className="grid h-5 w-5 place-items-center rounded-full border border-[#082F29] bg-[#0f4a3f] text-[7.5px] font-bold text-emerald-100"
-                >
-                  {initial}
-                </span>
-              ))}
-            </div>
-            <span className="text-[9px] text-white/60">রফিকুল হাসান · Merchant</span>
+            <span className="text-[9px] text-white/60">স্টোরফ্রন্ট · মার্চেন্ট প্যানেল · সুপার-অ্যাডমিন</span>
           </div>
         </div>
       </div>
@@ -314,7 +301,7 @@ function DashboardPreview() {
           </span>
           <div>
             <p className="text-[10.5px] font-semibold text-ink-900">নতুন অর্ডার এসেছে</p>
-            <p className="mt-0.5 text-[9px] text-ink-500">#ATL-১০৪৩ · ৳১,৮৯০ · COD</p>
+            <p className="mt-0.5 text-[9px] text-ink-500">স্টোরফ্রন্ট থেকে · লাইভ নোটিফিকেশন</p>
           </div>
         </div>
       </div>
@@ -356,8 +343,8 @@ export default function LandingPage() {
               <Link href="/signup" className={primaryButton}>
                 শুরু করুন – ফ্রি <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/store/nokshi-demo" className={secondaryButton}>
-                ডেমো স্টোর দেখুন
+              <Link href="/how-it-works" className={secondaryButton}>
+                কীভাবে কাজ করে
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -515,10 +502,10 @@ export default function LandingPage() {
                     থিম দেখুন
                   </Link>
                   <Link
-                    href={STORE_BY_THEME[theme.code] ?? "/store/nokshi-demo"}
+                    href="/signup"
                     className="inline-flex items-center justify-center rounded-lg bg-[#E7F7F0] px-2 py-1.5 text-[10.5px] font-semibold text-[#0B7A5B] transition hover:bg-[#d9f1e7]"
                   >
-                    ডেমো স্টোর
+                    এই থিমে শুরু
                   </Link>
                 </div>
               </div>
@@ -644,10 +631,10 @@ export default function LandingPage() {
                 শুরু করুন – ফ্রি <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/store/nokshi-demo"
+                href="/features"
                 className="inline-flex items-center justify-center gap-1.5 rounded-[10px] border border-white/20 bg-white/5 px-5 py-2.5 text-[13px] font-semibold text-white transition hover:bg-white/10"
               >
-                ডেমো দেখুন
+                ফিচার দেখুন
               </Link>
             </div>
           </div>

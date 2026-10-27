@@ -122,6 +122,56 @@ export function ProductForm({
       .map((image) => ({ url: image.url.trim(), altText: image.altText.trim() })),
   );
 
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  /** Presign via the API, PUT the file straight to S3/R2, then fill the URL. */
+  async function uploadImage(rowKey: string, file: File): Promise<void> {
+    setUploadingKey(rowKey);
+    setUploadError(null);
+    try {
+      const presign = await fetch(`/api/v1/stores/${storeId}/uploads`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ filename: file.name, contentType: file.type, size: file.size }),
+      });
+      const envelope = (await presign.json()) as {
+        data?: { uploadUrl: string; publicUrl: string };
+        error?: { message?: string } | null;
+      };
+
+      if (!presign.ok || !envelope.data) {
+        throw new Error(envelope.error?.message ?? "Upload URL তৈরি হয়নি");
+      }
+
+      let put: Response;
+      try {
+        put = await fetch(envelope.data.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+      } catch {
+        throw new Error("ছবির স্টোরেজে পৌঁছানো যায়নি — S3 সার্ভিস চালু আছে কি না দেখুন।");
+      }
+      if (!put.ok) {
+        throw new Error(`ছবি আপলোড ব্যর্থ হয়েছে (স্টোরেজ ${put.status})`);
+      }
+
+      setImages((rows) =>
+        rows.map((row) => (row.key === rowKey ? { ...row, url: envelope.data!.publicUrl } : row)),
+      );
+    } catch (error) {
+      setUploadError(
+        error instanceof Error && error.message !== "Failed to fetch"
+          ? error.message
+          : "ছবি আপলোড ব্যর্থ হয়েছে — সার্ভিস ও স্টোরেজ সেটিংস দেখুন।",
+      );
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+
   return (
     <form action={submit} className="space-y-5">
       <input type="hidden" name="storeId" value={storeId} />
@@ -278,7 +328,7 @@ export function ProductForm({
       <Card>
         <CardHeader
           title="ছবি"
-          description="পাবলিক image URL দিন"
+          description="আপলোড করুন বা পাবলিক image URL দিন"
           action={
             <Button
               type="button"
@@ -291,6 +341,7 @@ export function ProductForm({
           }
         />
         <CardBody className="space-y-3">
+          {uploadError ? <p className="text-xs text-red-600">{uploadError}</p> : null}
           {images.map((row, index) => (
             <div key={row.key} className="flex gap-3">
               <Input
@@ -308,6 +359,20 @@ export function ProductForm({
                 placeholder="Alt টেক্সট"
                 className="max-w-48"
               />
+              <label className="grid h-9 shrink-0 cursor-pointer place-items-center rounded-lg border border-ink-200 px-3 text-xs font-medium text-ink-600 hover:bg-ink-50">
+                {uploadingKey === row.key ? "আপলোড হচ্ছে…" : "আপলোড"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  disabled={uploadingKey !== null}
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void uploadImage(row.key, file);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
               <button
                 type="button"
                 onClick={() => setImages((rows) => (rows.length > 1 ? rows.filter((_, i) => i !== index) : rows))}

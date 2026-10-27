@@ -37,6 +37,21 @@ describe("buildObjectKey", () => {
 });
 
 describe("StorageService without S3 configuration", () => {
+  const saved = Object.fromEntries(
+    ["S3_ENDPOINT", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY", "S3_PUBLIC_BASE_URL"].map((k) => [k, process.env[k]]),
+  );
+
+  beforeAll(() => {
+    for (const key of Object.keys(saved)) delete process.env[key];
+  });
+
+  afterAll(() => {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  });
+
   it("reports not configured and refuses to presign", async () => {
     const service = new StorageService({} as PrismaService);
 

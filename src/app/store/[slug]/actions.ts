@@ -191,6 +191,10 @@ export async function submitCheckoutAction(_prev: ActionState, formData: FormDat
     return { ok: false, message: "অর্ডার সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।" };
   }
 
-  revalidatePath(storePath(slug, "/cart"));
+  // A new order must appear immediately in the merchant panel and the platform
+  // console, and the customer's order page must show its live status.
+  revalidatePath("/store", "layout");
+  revalidatePath("/admin", "layout");
+  revalidatePath("/super-admin", "layout");
   redirect(redirectTo);
 }

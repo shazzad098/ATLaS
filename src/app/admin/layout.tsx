@@ -10,6 +10,7 @@ import { storePath } from "@/lib/storefront";
 import { prisma } from "@/lib/db";
 import { Alert, Badge, Meter } from "@/components/ui/shell";
 import { AppShell, type AppNavGroup, type NavIcon } from "@/components/ui/app-shell";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { logoutAction } from "@/app/(auth)/actions";
 import { StoreSwitcher } from "@/app/admin/_components/store-switcher";
 
@@ -69,10 +70,10 @@ const NAV_GROUPS: Array<{ title: string; items: NavItem[] }> = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const workspace = await getWorkspace();
-  if (!workspace) redirect("/login");
+  if (!workspace) redirect("/login?next=%2Fadmin");
 
   const store = await getActiveStore(workspace);
-  if (!store) redirect("/onboarding");
+  if (!store) redirect("/onboarding?next=%2Fadmin");
 
   const [snapshot, theme, unread, jar] = await Promise.all([
     loadEntitlementSnapshot(workspace.activeTenant.tenantId),
@@ -208,6 +209,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         footerNote={`${workspace.activeTenant.tenantName} · ${store.name} — সাবস্ক্রিপশন, অর্ডার ও ক্যাটালগ একই ডেটাবেস থেকে।`}
       >
         {children}
+        <AutoRefresh />
       </AppShell>
     </div>
   );

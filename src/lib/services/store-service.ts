@@ -27,6 +27,8 @@ export const storeInputSchema = z.object({
   description: z.string().max(600).default(""),
   themeCode: z.string().max(40).optional(),
   locale: z.enum(["bn", "en"]).default("bn"),
+  /** Owner phone, prefilled from the signup account so publish is never blocked. */
+  contactPhone: z.string().max(30).optional(),
 });
 
 export type StoreInput = z.infer<typeof storeInputSchema>;
@@ -89,8 +91,8 @@ export async function createStore(actor: ActorContext, raw: unknown) {
       data: {
         storeId: created.id,
         locale: input.locale,
-        addressJson: { line1: "", area: "", city: "Dhaka", district: "Dhaka", postcode: "" } as never,
-        contactJson: { phone: "", email: "", whatsapp: "" } as never,
+        addressJson: { line1: "", area: "", city: "", district: "", postcode: "" } as never,
+        contactJson: { phone: input.contactPhone ?? "", email: "", whatsapp: "" } as never,
         seoJson: { title: input.name, description: input.description, ogImage: "" } as never,
         checkoutJson: {
           codAutoConfirm: true,

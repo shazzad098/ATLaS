@@ -279,8 +279,8 @@ export default function FeaturesPage() {
               <Link href="/signup" className={primaryButton}>
                 ফ্রি শুরু করুন <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/store/nokshi-demo" className={secondaryButton}>
-                ডেমো স্টোর <ArrowUpRight className="h-3.5 w-3.5" />
+              <Link href="/how-it-works" className={secondaryButton}>
+                কীভাবে কাজ করে <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>
 

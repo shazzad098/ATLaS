@@ -3,7 +3,7 @@ import { Queue, Worker, type Job } from "bullmq";
 import IORedis from "ioredis";
 import { queueEnv } from "../config/env";
 import { PrismaService } from "../database/prisma.service";
-import type { Prisma } from "../generated/prisma/client";
+import { processQueueJob } from "./processors";
 import type { QueueHealth, QueueJobData } from "./queue.types";
 
 export const QUEUE_NAME = "atlas-events";
@@ -15,12 +15,9 @@ export const QUEUE_NAME = "atlas-events";
  * lost when a request dies — audit rows today, notifications/webhooks/billing
  * sweeps as those modules move to the API.
  *
- * Design notes:
- * - `maxRetriesPerRequest: null` is required by BullMQ for blocking commands.
- * - The worker runs in-process for the single-node MVP. Split it into its own
- *   entry point (`node dist/worker.js`) before scaling the API horizontally.
- * - Redis being unavailable must never break login: `enqueueAudit` swallows and
- *   logs the failure, and `/api/health/queue` reports `error`.
+ * The worker runs in-process by default (single-node MVP). When the API scales
+ * horizontally, set `QUEUE_RUN_WORKER=false` on the web replicas and run the
+ * dedicated `dist/worker.js` process so jobs are processed exactly once.
  */
 @Injectable()
 export class QueueService implements OnModuleDestroy {
@@ -57,13 +54,28 @@ export class QueueService implements OnModuleDestroy {
       },
     });
 
+    if (queueEnv.runWorker) {
+      this.startWorker();
+    } else {
+      this.logger.log(
+        `Queue "${QUEUE_NAME}" ready (producer only — run dist/worker.js to process jobs)`,
+      );
+    }
+  }
+
+  private startWorker(): void {
+    if (!this.connection) return;
     // Blocking commands need their own connection; `duplicate()` inherits options.
     this.workerConnection = this.connection.duplicate();
-    this.worker = new Worker<QueueJobData>(QUEUE_NAME, (job) => this.process(job), {
-      connection: this.workerConnection,
-      prefix: queueEnv.prefix,
-      concurrency: queueEnv.concurrency,
-    });
+    this.worker = new Worker<QueueJobData>(
+      QUEUE_NAME,
+      (job: Job<QueueJobData>) => processQueueJob(this.prisma, job),
+      {
+        connection: this.workerConnection,
+        prefix: queueEnv.prefix,
+        concurrency: queueEnv.concurrency,
+      },
+    );
     this.worker.on("failed", (job, error) => {
       this.logger.error(`Job ${job?.id ?? "unknown"} (${job?.name ?? "?"}) failed: ${error.message}`);
     });
@@ -115,29 +127,5 @@ export class QueueService implements OnModuleDestroy {
     await this.queue?.close();
     this.workerConnection?.disconnect();
     this.connection?.disconnect();
-  }
-
-  private async process(job: Job<QueueJobData>): Promise<void> {
-    switch (job.data.type) {
-      case "audit.record": {
-        const data = job.data;
-        await this.prisma.auditLog.create({
-          data: {
-            action: data.action,
-            actorId: data.actorId ?? null,
-            tenantId: data.tenantId ?? null,
-            resourceType: data.resourceType,
-            resourceId: data.resourceId,
-            metadataJson: (data.metadata ?? {}) as Prisma.InputJsonValue,
-            ip: data.ip ?? null,
-          },
-        });
-        return;
-      }
-      default: {
-        // Unknown job types are dead letters, not silent successes.
-        throw new Error(`Unsupported job payload: ${JSON.stringify(job.data)}`);
-      }
-    }
   }
 }

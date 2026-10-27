@@ -95,13 +95,13 @@ export default function ThemesPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6">
         <div className="space-y-1">
-          <p className="text-lg font-semibold text-ink-900">ডেমো দোকান ঘুরে দেখুন</p>
-          <p className="text-sm text-ink-600">প্রতিটি থিম আসল প্রোডাক্ট ও অর্ডার দিয়ে চালু আছে।</p>
+          <p className="text-lg font-semibold text-ink-900">নিজের দোকানে থিম বসান</p>
+          <p className="text-sm text-ink-600">সাইনআপ করে যেকোনো থিম বেছে নিন — আপনার প্রোডাক্ট ও অর্ডারই দেখাবে।</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <ButtonLink href="/store/nokshi-demo">নকশি (editorial)</ButtonLink>
-          <ButtonLink href="/store/dhaka-bazar" variant="outline">
-            ঢাকা বাজার (dense)
+          <ButtonLink href="/signup">ফ্রি সাইনআপ</ButtonLink>
+          <ButtonLink href="/how-it-works" variant="outline">
+            কীভাবে কাজ করে
           </ButtonLink>
         </div>
       </div>

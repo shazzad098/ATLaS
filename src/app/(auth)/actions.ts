@@ -7,6 +7,12 @@ import { AppError } from "@/lib/errors";
 import { rateLimit } from "@/lib/api";
 import { checkPasswordStrength, verifyPassword } from "@/lib/auth/password";
 import { normalizePhone, requestOtp, verifyOtp } from "@/lib/auth/otp";
+import { onboardingPath, resolveLandingPath } from "@/lib/auth/landing";
+import {
+  clearPendingSignup,
+  readPendingSignup,
+  savePendingSignup,
+} from "@/lib/auth/pending-signup";
 import { clearAuthCookies, establishSession, readSession, revokeSession, setAuthCookies } from "@/lib/auth/session";
 import {
   findUserByIdentifier,
@@ -61,6 +67,7 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
   const identifier = text(formData, "identifier").trim();
   const password = text(formData, "password");
   const wantsOtp = text(formData, "mode") === "otp";
+  const next = text(formData, "next");
 
   if (!identifier) return { ok: false, message: "মোবাইল নম্বর বা ইমেইল দিন।" };
 
@@ -80,6 +87,7 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
       return {
         ok: true,
         step: "otp",
+        identifier: result.phone,
         message: result.devCode
           ? `ডেমো মোডে SMS নেই — আপনার কোড: ${result.devCode}`
           : "OTP পাঠানো হয়েছে।",
@@ -108,14 +116,15 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await setAuthCookies(tokens);
 
-  redirect(await landingPathFor(user.id, user.isSuperAdmin));
+  redirect(await resolveLandingPath(user.id, user.isSuperAdmin, next));
 }
 
 export async function verifyLoginOtpAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const phone = text(formData, "identifier").trim();
   const code = text(formData, "code").trim();
+  const next = text(formData, "next");
 
-  if (!code) return { ok: false, step: "otp", message: "৬ ডিজিটের কোড দিন।" };
+  if (!code) return { ok: false, step: "otp", identifier: phone, message: "৬ ডিজিটের কোড দিন।" };
 
   const result = await verifyOtp(phone, code, { purpose: "LOGIN" });
   if (!result.ok) {
@@ -125,7 +134,7 @@ export async function verifyLoginOtpAction(_prev: AuthState, formData: FormData)
         : result.reason === "LOCKED"
           ? "অনেকবার ভুল হয়েছে। নতুন কোড চেয়ে নিন।"
           : "কোডটি মিলছে না।";
-    return { ok: false, step: "otp", message };
+    return { ok: false, step: "otp", identifier: phone, message };
   }
 
   const user = await prisma.user.findFirst({ where: { phone: normalizePhone(phone), deletedAt: null } });
@@ -137,17 +146,19 @@ export async function verifyLoginOtpAction(_prev: AuthState, formData: FormData)
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await setAuthCookies(tokens);
 
-  redirect(await landingPathFor(user.id, user.isSuperAdmin));
+  redirect(await resolveLandingPath(user.id, user.isSuperAdmin, next));
 }
 
 export async function signupAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const intent = text(formData, "intent") || "request";
-  const name = text(formData, "name").trim();
-  const phone = text(formData, "phone").trim();
-  const email = text(formData, "email").trim();
-  const password = text(formData, "password");
+  const next = text(formData, "next");
 
   if (intent === "request") {
+    const name = text(formData, "name").trim();
+    const phone = text(formData, "phone").trim();
+    const email = text(formData, "email").trim();
+    const password = text(formData, "password");
+
     if (name.length < 2) return { ok: false, message: "আপনার নাম লিখুন।" };
 
     const strength = checkPasswordStrength(password);
@@ -164,9 +175,19 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
 
     try {
       const result = await requestOtp(phone, { purpose: "SIGNUP", ip: (await requestMeta()).ip });
+      // React resets the form after the action returns, so keep the details
+      // (including the password) in an encrypted, httpOnly cookie until the
+      // OTP has been verified.
+      await savePendingSignup({
+        name,
+        phone: result.phone,
+        email: email.toLowerCase(),
+        password,
+      });
       return {
         ok: true,
         step: "otp",
+        phone: result.phone,
         message: result.devCode
           ? `ডেমো মোডে SMS নেই — আপনার কোড: ${result.devCode}`
           : `${result.phone} নম্বরে OTP পাঠানো হয়েছে।`,
@@ -177,27 +198,49 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
     }
   }
 
-  const code = text(formData, "code").trim();
-  if (!code) return { ok: false, step: "otp", message: "OTP কোড দিন।" };
+  const pending = await readPendingSignup();
+  if (!pending) {
+    return {
+      ok: false,
+      step: "credentials",
+      message: "যাচাইয়ের সময় শেষ হয়েছে — ফর্মটি আবার পূরণ করুন।",
+    };
+  }
 
-  const verified = await verifyOtp(phone, code, { purpose: "SIGNUP" });
+  const code = text(formData, "code").trim();
+  if (!code) return { ok: false, step: "otp", phone: pending.phone, message: "OTP কোড দিন।" };
+
+  const verified = await verifyOtp(pending.phone, code, { purpose: "SIGNUP" });
   if (!verified.ok) {
-    return { ok: false, step: "otp", message: "কোডটি মেলেনি বা মেয়াদ শেষ। আবার চেষ্টা করুন।" };
+    return {
+      ok: false,
+      step: "otp",
+      phone: pending.phone,
+      message: "কোডটি মেলেনি বা মেয়াদ শেষ। আবার চেষ্টা করুন।",
+    };
   }
 
   try {
-    const account = await provisionAccount({ phone, name, email: email || null, password });
+    const account = await provisionAccount({
+      phone: pending.phone,
+      name: pending.name,
+      email: pending.email || null,
+      password: pending.password,
+    });
     const tokens = await establishSession(account.userId, await requestMeta());
     await setAuthCookies(tokens);
   } catch (error) {
-    if (error instanceof AppError) return { ok: false, step: "otp", message: error.message };
-    if ((error as { code?: string })?.code === "P2002") {
-      return { ok: false, step: "otp", message: "এই তথ্য দিয়ে আগেই অ্যাকাউন্ট আছে।" };
+    if (error instanceof AppError) {
+      return { ok: false, step: "otp", phone: pending.phone, message: error.message };
     }
-    return { ok: false, step: "otp", message: "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
+    if ((error as { code?: string })?.code === "P2002") {
+      return { ok: false, step: "otp", phone: pending.phone, message: "এই তথ্য দিয়ে আগেই অ্যাকাউন্ট আছে।" };
+    }
+    return { ok: false, step: "otp", phone: pending.phone, message: "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
   }
 
-  redirect("/onboarding");
+  await clearPendingSignup();
+  redirect(onboardingPath(next));
 }
 
 /**
@@ -281,15 +324,4 @@ export async function logoutAction(): Promise<void> {
   if (session?.sessionId) await revokeSession(session.sessionId);
   await clearAuthCookies();
   redirect("/login");
-}
-
-/** After login: super admins go to the platform console, merchants to their admin. */
-async function landingPathFor(userId: string, isSuperAdmin: boolean): Promise<string> {
-  if (isSuperAdmin) return "/super-admin";
-  const store = await prisma.store.findFirst({
-    where: { tenant: { memberships: { some: { userId, status: "ACTIVE" } } }, deletedAt: null },
-    orderBy: { createdAt: "asc" },
-    select: { id: true },
-  });
-  return store ? "/admin" : "/onboarding";
 }

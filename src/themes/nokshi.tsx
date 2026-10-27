@@ -3,19 +3,15 @@ import {
   ArrowRight,
   ArrowUpRight,
   BadgeCheck,
-  Camera,
   Check,
   Mail,
   MapPin,
-  MessageCircle,
   Phone,
-  Play,
   RefreshCw,
   Search,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
-  Star,
   Truck,
 } from "lucide-react";
 import { formatBdt } from "@/lib/money";
@@ -50,16 +46,6 @@ function splitTitle(title: string): [string, string] {
   const comma = title.indexOf(",");
   if (comma === -1) return [title, ""];
   return [title.slice(0, comma + 1), title.slice(comma + 1).trim()];
-}
-
-function Stars({ className = "h-3 w-3" }: { className?: string }) {
-  return (
-    <span className="inline-flex gap-0.5" style={{ color: accent }} aria-hidden>
-      {Array.from({ length: 5 }).map((_, index) => (
-        <Star key={index} className={`${className} fill-current`} />
-      ))}
-    </span>
-  );
 }
 
 function SectionHeading({
@@ -131,7 +117,9 @@ export function Header({ ctx }: SectionProps) {
       <span className="flex flex-col leading-none">
         <span className={`${HEADING} text-[17px] font-bold sm:text-[19px]`}>{ctx.storeName}</span>
         {!minimal ? (
-          <span className="muted mt-1 text-[8.5px] font-medium tracking-[0.2em]">হাতে বোনা · বাংলাদেশ</span>
+          <span className="muted mt-1 text-[8.5px] font-medium tracking-[0.2em]">
+            {ctx.tagline?.slice(0, 38) || "অনলাইন দোকান"}
+          </span>
         ) : null}
       </span>
     </Link>
@@ -250,7 +238,9 @@ export function Hero({ ctx, products = [] }: SectionProps) {
   const { hero } = ctx.config;
   if (!hero.enabled) return null;
 
-  const [firstLine, secondLine] = splitTitle(hero.title);
+  const heroTitle = hero.title.trim() || ctx.storeName;
+  const heroSubtitle = hero.subtitle.trim() || ctx.tagline || "";
+  const [firstLine, secondLine] = splitTitle(heroTitle);
   const featured = products[0] ?? null;
   const image = featured?.imageUrl ?? null;
   const points = ctx.config.trust.items.slice(0, 3);
@@ -275,13 +265,8 @@ export function Hero({ ctx, products = [] }: SectionProps) {
 
       <div className="atlas-shell relative grid gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-14">
         <div className={centered ? "text-center" : ""}>
-          <div className={`flex flex-wrap items-center gap-2 ${centered ? "justify-center" : ""}`}>
-            <Stars />
-            <span className="muted text-[11px] font-medium">৫০০+ সন্তুষ্ট ক্রেতা</span>
-          </div>
-
           <span
-            className="mt-4 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10.5px] font-semibold"
+            className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10.5px] font-semibold"
             style={{
               borderColor: "color-mix(in srgb, var(--store-primary) 22%, transparent)",
               color: primary,
@@ -289,7 +274,7 @@ export function Hero({ ctx, products = [] }: SectionProps) {
             }}
           >
             <Sparkles className="h-3 w-3" style={{ color: accent }} />
-            হাতে বোনা নতুন সংগ্রহ
+            {featured?.categoryName ?? "স্বাগতম"}
           </span>
 
           <h1 className={`${HEADING} mt-3 text-[32px] leading-[1.15] font-bold sm:text-[46px]`}>
@@ -302,9 +287,11 @@ export function Hero({ ctx, products = [] }: SectionProps) {
             ) : null}
           </h1>
 
-          <p className={`muted mt-4 max-w-xl text-[13px] leading-7 sm:text-[13.5px] ${centered ? "mx-auto" : ""}`}>
-            {hero.subtitle}
-          </p>
+          {heroSubtitle ? (
+            <p className={`muted mt-4 max-w-xl text-[13px] leading-7 sm:text-[13.5px] ${centered ? "mx-auto" : ""}`}>
+              {heroSubtitle}
+            </p>
+          ) : null}
 
           <div className={`mt-6 flex flex-wrap items-center gap-2.5 ${centered ? "justify-center" : ""}`}>
             <Link
@@ -312,7 +299,7 @@ export function Hero({ ctx, products = [] }: SectionProps) {
               className="store-btn inline-flex items-center gap-1.5 rounded-full px-5 py-3 text-[12.5px] font-semibold text-white shadow-[0_14px_28px_-16px_rgba(90,20,30,0.9)] transition hover:opacity-90"
               style={{ background: primary }}
             >
-              {hero.ctaLabel} <ArrowRight className="h-4 w-4" />
+              {hero.ctaLabel || "শপ দেখুন"} <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href={storePath(ctx.slug, "/page/contact")}
@@ -356,7 +343,7 @@ export function Hero({ ctx, products = [] }: SectionProps) {
               className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[9.5px] font-bold tracking-wide text-white shadow"
               style={{ background: accent }}
             >
-              হাতে বোনা
+              {featured?.categoryName ?? "পণ্য"}
             </span>
           </div>
 
@@ -408,8 +395,8 @@ export function CategoryGrid({ ctx, title, categories, products = [] }: Category
       <div className="atlas-shell">
         <SectionHeading
           eyebrow="ক্যাটাগরি"
-          title={title || "পছন্দের শাড়ি, কুর্তি ও থ্রি-পিস"}
-          subtitle="আপনার পছন্দের ক্যাটাগরি বেছে নিন — প্রতিটি পিস হাতে বাছাই করা।"
+          title={title || "ক্যাটাগরি"}
+          subtitle="আপনার পছন্দের ক্যাটাগরি বেছে নিন।"
           href={storePath(ctx.slug, "/shop")}
           linkLabel="সব দেখুন"
         />
@@ -459,7 +446,7 @@ export function CategoryGrid({ ctx, title, categories, products = [] }: Category
 
 export function ProductCard({ ctx, product }: ProductCardProps) {
   const discounted = product.comparePriceFrom !== null && product.comparePriceFrom > product.priceFrom;
-  const badge = !product.inStock ? "স্টক নেই" : discounted ? "ছাড়" : "নতুন";
+  const badge = !product.inStock ? "স্টক নেই" : discounted ? "ছাড়" : null;
 
   return (
     <Link href={storePath(ctx.slug, `/product/${product.slug}`)} className="group flex flex-col">
@@ -477,12 +464,14 @@ export function ProductCard({ ctx, product }: ProductCardProps) {
         ) : (
           <div className="muted grid h-full place-items-center text-[11px]">ছবি নেই</div>
         )}
-        <span
-          className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-[9px] font-bold text-white shadow"
-          style={{ background: discounted ? primary : "color-mix(in srgb, var(--store-text) 72%, transparent)" }}
-        >
-          {badge}
-        </span>
+        {badge ? (
+          <span
+            className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-[9px] font-bold text-white shadow"
+            style={{ background: discounted ? primary : "color-mix(in srgb, var(--store-text) 72%, transparent)" }}
+          >
+            {badge}
+          </span>
+        ) : null}
         {!product.inStock ? (
           <span className="absolute inset-0 grid place-items-center bg-black/40 text-[12px] font-semibold text-white">
             স্টক নেই
@@ -495,10 +484,6 @@ export function ProductCard({ ctx, product }: ProductCardProps) {
           <span className="muted text-[9px] font-semibold tracking-[0.16em] uppercase">{product.categoryName}</span>
         ) : null}
         <span className={`${HEADING} mt-0.5 line-clamp-2 text-[13px] leading-6 font-semibold`}>{product.name}</span>
-        <span className="mt-1 flex items-center gap-1.5">
-          <Stars className="h-2.5 w-2.5" />
-          <span className="muted text-[10px]">৫.০</span>
-        </span>
         <span className="mt-auto flex items-baseline gap-1.5 pt-1.5">
           <span className="text-[14px] font-bold" style={{ color: primary }}>
             {formatBdt(product.priceFrom)}
@@ -664,27 +649,11 @@ export function PromoBanner({ ctx, products = [] }: SectionProps) {
               আমাদের গল্প
             </p>
             <h2 className={`${HEADING} text-[24px] leading-tight font-bold sm:text-[30px]`}>
-              প্রতিটি সুতার বুননে লুকিয়ে আছে কারিগরের গল্প
+              {ctx.storeName}
             </h2>
-            <p className="muted mt-3 max-w-xl text-[12.5px] leading-7">
-              {ctx.tagline ??
-                "ছোট পরিসরে হাতে তৈরি পোশাক — সোজা কারিগরের কাছ থেকে আপনার কাছে। প্রতিটি পিস আলাদা, প্রতিটি নকশা একেবারে নিজস্ব।"}
-            </p>
-
-            <div className="mt-6 grid max-w-sm grid-cols-2 gap-4">
-              <div className="rounded-xl border bg-white/70 px-4 py-3" style={{ borderColor: "color-mix(in srgb, var(--store-primary) 12%, transparent)" }}>
-                <p className={`${HEADING} text-[22px] font-bold`} style={{ color: primary }}>
-                  ১০০+
-                </p>
-                <p className="muted mt-0.5 text-[10.5px] font-medium">বছরের বুনন ঐতিহ্য</p>
-              </div>
-              <div className="rounded-xl border bg-white/70 px-4 py-3" style={{ borderColor: "color-mix(in srgb, var(--store-primary) 12%, transparent)" }}>
-                <p className={`${HEADING} text-[22px] font-bold`} style={{ color: primary }}>
-                  ১০০%
-                </p>
-                <p className="muted mt-0.5 text-[10.5px] font-medium">হাতে বোনা কাপড়</p>
-              </div>
-            </div>
+            {ctx.tagline ? (
+              <p className="muted mt-3 max-w-xl text-[12.5px] leading-7">{ctx.tagline}</p>
+            ) : null}
           </div>
 
           <div className="relative">
@@ -693,7 +662,7 @@ export function PromoBanner({ ctx, products = [] }: SectionProps) {
               style={{ borderColor: "color-mix(in srgb, var(--store-primary) 14%, transparent)" }}
             >
               {storyImage ? (
-                <img src={storyImage} alt="কারিগরের হাতে তৈরি" loading="lazy" className="aspect-4/3 w-full object-cover" />
+                <img src={storyImage} alt={ctx.storeName} loading="lazy" className="aspect-4/3 w-full object-cover" />
               ) : (
                 <div className="grid aspect-4/3 place-items-center" style={{ background: background }}>
                   <span className={`${HEADING} text-2xl opacity-40`}>{ctx.storeName}</span>
@@ -702,7 +671,7 @@ export function PromoBanner({ ctx, products = [] }: SectionProps) {
             </div>
             <div className="absolute -bottom-4 right-4 flex items-center gap-2 rounded-full border border-white/70 bg-white/95 px-3.5 py-2 text-[10.5px] font-semibold shadow-lg backdrop-blur">
               <BadgeCheck className="h-4 w-4" style={{ color: primary }} />
-              কারিগরের হাতে তৈরি
+              {ctx.storeName}
             </div>
           </div>
         </div>
@@ -755,7 +724,7 @@ export function TrustBar({ ctx, title }: SectionProps) {
 export function Testimonials({ ctx, title }: SectionProps) {
   const { testimonials } = ctx.config;
   const items = testimonials.items.slice(0, 3);
-  const whatsapp = ctx.contact.whatsapp || ctx.contact.phone;
+  const whatsapp = ctx.contact.whatsapp;
 
   return (
     <>
@@ -765,8 +734,8 @@ export function Testimonials({ ctx, title }: SectionProps) {
             <SectionHeading
               align="center"
               eyebrow="ক্রেতার মতামত"
-              title={title || "আমাদের ক্রেতারা যা বলছেন"}
-              subtitle="প্রতিদিনের ক্রেতাদের অভিজ্ঞতা — যাচাই করা রিভিউ।"
+              title={title || "ক্রেতাদের মতামত"}
+              subtitle="ক্রেতাদের সাথে শেয়ার করা অভিজ্ঞতা।"
             />
 
             <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -776,17 +745,13 @@ export function Testimonials({ ctx, title }: SectionProps) {
                   className="flex h-full flex-col rounded-xl border bg-white/70 p-5"
                   style={{ borderColor: "color-mix(in srgb, var(--store-primary) 12%, transparent)" }}
                 >
-                  <Stars className="h-3 w-3" />
-                  <blockquote className={`${HEADING} mt-3 flex-1 text-[12.5px] leading-6`}>
+                  <blockquote className={`${HEADING} flex-1 text-[12.5px] leading-6`}>
                     “{item.quote}”
                   </blockquote>
                   <figcaption className="mt-4 flex items-center justify-between gap-2 border-t pt-3" style={{ borderColor: "color-mix(in srgb, var(--store-primary) 10%, transparent)" }}>
                     <span>
                       <span className="block text-[11.5px] font-semibold">{item.name}</span>
                       {item.location ? <span className="muted block text-[10px]">{item.location}</span> : null}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold" style={{ color: "#1F7A4D" }}>
-                      <BadgeCheck className="h-3 w-3" /> যাচাইকৃত
                     </span>
                   </figcaption>
                 </figure>
@@ -813,22 +778,24 @@ export function Testimonials({ ctx, title }: SectionProps) {
               <Mail className="h-5 w-5" />
             </span>
             <h2 className={`${HEADING} mt-3 text-[21px] font-bold sm:text-[25px]`}>
-              নতুন কালেকশন ও এক্সক্লুসিভ অফারের খবর
+              দোকানের নতুন খবর ও আপডেট
             </h2>
             <p className="muted mx-auto mt-1.5 max-w-md text-[11.5px] leading-6">
-              প্রথমেই জেনে নিন নতুন সংগ্রহ আর ছাড়ের কথা — আমাদের চ্যানেলে যোগ দিন।
+              নতুন পণ্য বা অফার থাকলে প্রথমেই জানুন।
             </p>
 
             <div className="mx-auto mt-5 flex max-w-md flex-col gap-2 sm:flex-row">
-              <a
-                href={whatsapp ? `https://wa.me/88${whatsapp.replace(/\D/g, "").slice(-11)}` : storePath(ctx.slug, "/page/contact")}
-                target={whatsapp ? "_blank" : undefined}
-                rel={whatsapp ? "noreferrer" : undefined}
-                className="store-btn inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-[12px] font-semibold text-white transition hover:opacity-90"
-                style={{ background: primary }}
-              >
-                <Phone className="h-3.5 w-3.5" /> হোয়াটসঅ্যাপে যোগ দিন
-              </a>
+              {whatsapp ? (
+                <a
+                  href={`https://wa.me/88${whatsapp.replace(/\D/g, "").slice(-11)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="store-btn inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-[12px] font-semibold text-white transition hover:opacity-90"
+                  style={{ background: primary }}
+                >
+                  <Phone className="h-3.5 w-3.5" /> হোয়াটসঅ্যাপে যোগ দিন
+                </a>
+              ) : null}
               <Link
                 href={storePath(ctx.slug, "/page/contact")}
                 className="store-btn inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border bg-white px-5 py-2.5 text-[12px] font-semibold"
@@ -852,11 +819,7 @@ export function Testimonials({ ctx, title }: SectionProps) {
 export function Footer({ ctx }: SectionProps) {
   const { footer } = ctx.config;
   const year = new Date().getFullYear();
-  const socials = [
-    { label: "ফেসবুক", Icon: MessageCircle },
-    { label: "ইনস্টাগ্রাম", Icon: Camera },
-    { label: "ইউটিউব", Icon: Play },
-  ];
+  const footerAddress = [ctx.address.line1, ctx.address.area, ctx.address.city].filter(Boolean).join(", ");
 
   return (
     <footer className="mt-auto text-white" style={{ background: "color-mix(in srgb, var(--store-primary) 88%, #1a0509)" }}>
@@ -864,19 +827,8 @@ export function Footer({ ctx }: SectionProps) {
         <div>
           <p className={`${HEADING} text-[18px] font-bold text-white`}>{ctx.storeName}</p>
           <p className="mt-2 max-w-xs text-[11.5px] leading-6 text-white/75">
-            {footer.about || ctx.tagline || "হাতে বোনা পোশাকের ছোট ব্যাচের সংগ্রহ।"}
+            {footer.about || ctx.tagline || "আপনার অনলাইন দোকান।"}
           </p>
-          <div className="mt-4 flex gap-2">
-            {socials.map(({ label, Icon }) => (
-              <span
-                key={label}
-                title={label}
-                className="grid h-8 w-8 place-items-center rounded-full border border-white/25 text-white/80"
-              >
-                <Icon className="h-3.5 w-3.5" />
-              </span>
-            ))}
-          </div>
         </div>
 
         {footer.columns.map((column) => (
@@ -910,21 +862,12 @@ export function Footer({ ctx }: SectionProps) {
                 <Mail className="h-3.5 w-3.5" /> {ctx.contact.email}
               </li>
             ) : null}
-            <li className="flex items-center gap-2">
-              <MapPin className="h-3.5 w-3.5" /> ঢাকা, বাংলাদেশ
-            </li>
+            {footerAddress ? (
+              <li className="flex items-center gap-2">
+                <MapPin className="h-3.5 w-3.5" /> {footerAddress}
+              </li>
+            ) : null}
           </ul>
-
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {["bKash", "Nagad", "কার্ড", "COD"].map((method) => (
-              <span
-                key={method}
-                className="rounded-md border border-white/20 bg-white/10 px-2 py-0.5 text-[9px] font-semibold text-white/85"
-              >
-                {method}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 

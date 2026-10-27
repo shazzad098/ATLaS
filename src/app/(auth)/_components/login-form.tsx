@@ -18,13 +18,18 @@ import { EMPTY_AUTH_STATE, type AuthState } from "@/app/(auth)/state";
  * rather than trusted from the client.
  */
 
-export function LoginForm({ devHint }: { devHint?: string }) {
+export function LoginForm({ devHint, next = "/admin" }: { devHint?: string; next?: string }) {
   const [mode, setMode] = useState<"password" | "otp">("password");
   const [passwordState, passwordSubmit, passwordPending] = useActionState(loginAction, EMPTY_AUTH_STATE);
   const [otpState, otpSubmit, otpPending] = useActionState(verifyLoginOtpAction, EMPTY_AUTH_STATE);
 
-  const inOtpStep = otpState.step === "otp" || passwordState.step === "otp";
-  const state: AuthState = inOtpStep ? otpState : passwordState;
+  // The first OTP step is produced by the login action, the second by the
+  // verify action. Pick the state that actually owns the OTP step so the phone
+  // number and dev code survive the React 19 form reset.
+  const otpRequested = passwordState.step === "otp";
+  const otpSubmitted = otpState.step === "otp";
+  const inOtpStep = otpRequested || otpSubmitted;
+  const state: AuthState = otpSubmitted ? otpState : passwordState;
   const action = inOtpStep ? otpSubmit : passwordSubmit;
   const pending = otpPending || passwordPending;
 
@@ -38,18 +43,28 @@ export function LoginForm({ devHint }: { devHint?: string }) {
       {state.message ? <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert> : null}
 
       <form action={action} className="space-y-4" key={inOtpStep ? "otp" : "creds"}>
+        <input type="hidden" name="next" value={next} />
         <input type="hidden" name="mode" value={mode} />
 
-        <Field label="মোবাইল নম্বর বা ইমেইল" required>
-          <Input
-            name="identifier"
-            required
-            autoComplete="username"
-            placeholder="017XXXXXXXX"
-            readOnly={inOtpStep}
-            defaultValue={state.step === "otp" ? "" : undefined}
-          />
-        </Field>
+        {inOtpStep ? (
+          <>
+            <input type="hidden" name="identifier" value={state.identifier ?? ""} />
+            <p className="rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-700">
+              OTP পাঠানো হয়েছে{" "}
+              <span className="font-semibold">{state.identifier ?? "আপনার নম্বরে"}</span>
+            </p>
+          </>
+        ) : (
+          <Field label="মোবাইল নম্বর বা ইমেইল" required>
+            <Input
+              name="identifier"
+              required
+              autoComplete="username"
+              placeholder="017XXXXXXXX"
+              defaultValue={state.identifier ?? undefined}
+            />
+          </Field>
+        )}
 
         {inOtpStep ? (
           <Field label="OTP কোড" required hint="SMS-এ পাঠানো ৬ ডিজিটের কোড">
@@ -85,8 +100,11 @@ export function LoginForm({ devHint }: { devHint?: string }) {
 
       <p className="text-center text-sm text-ink-600">
         অ্যাকাউন্ট নেই?{" "}
-        <Link href="/signup" className="font-semibold text-brand-700 hover:underline">
-          বিনামূল্যে শুরু করুন
+        <Link
+          href={`/signup?next=${encodeURIComponent(next)}`}
+          className="font-semibold text-brand-700 hover:underline"
+        >
+          মার্চেন্ট হিসেবে বিনামূল্যে শুরু করুন
         </Link>
       </p>
 

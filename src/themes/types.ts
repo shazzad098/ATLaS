@@ -42,6 +42,12 @@ export type ThemeContext = {
     email: string;
     whatsapp: string;
   };
+  address: {
+    line1: string;
+    area: string;
+    city: string;
+    district: string;
+  };
   announcement: string;
 };
 

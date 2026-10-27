@@ -8,7 +8,7 @@ const NAV = [
   { href: "/pricing", label: "দাম" },
   { href: "/themes", label: "থিম" },
   { href: "/how-it-works", label: "কীভাবে কাজ করে" },
-  { href: "/store/nokshi-demo", label: "ডেমো স্টোর" },
+  { href: "/signup", label: "ফ্রি সাইনআপ" },
 ];
 
 const FOOTER_COLUMNS = [
@@ -19,7 +19,7 @@ const FOOTER_COLUMNS = [
       { href: "/pricing", label: "দাম" },
       { href: "/themes", label: "থিম" },
       { href: "/how-it-works", label: "কীভাবে কাজ করে" },
-      { href: "/store/nokshi-demo", label: "ডেমো স্টোর" },
+      { href: "/signup", label: "ফ্রি সাইনআপ" },
     ],
   },
   {
@@ -28,7 +28,7 @@ const FOOTER_COLUMNS = [
       { href: "/help", label: "Help Center" },
       { href: "/developers", label: "Developers / API" },
       { href: "/demo-sms", label: "ডেমো SMS ইনবক্স" },
-      { href: "/store/dhaka-bazar", label: "ঢাকা বাজার ডেমো" },
+      { href: "/how-it-works", label: "স্টার্ট গাইড" },
     ],
   },
   {
@@ -102,7 +102,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
               লগইন
             </Link>
             <Link
-              href="/login"
+              href="/dashboard"
               className="hidden items-center justify-center rounded-[10px] bg-[#0BA678] px-4 py-2 text-[13px] font-semibold text-white shadow-[0_8px_18px_-10px_rgba(11,166,120,0.95)] transition hover:bg-[#099569] md:inline-flex"
             >
               ড্যাশবোর্ড

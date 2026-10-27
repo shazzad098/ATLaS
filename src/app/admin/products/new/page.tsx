@@ -28,7 +28,7 @@ export default async function NewProductPage() {
           categoryId: "",
           description: "",
           tags: "",
-          status: "DRAFT",
+          status: "ACTIVE",
           lowStockThreshold: 5,
           variants: [],
           images: [],

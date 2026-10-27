@@ -84,6 +84,17 @@ function revalidateAdmin(...paths: string[]) {
   for (const path of paths) revalidatePath(path);
 }
 
+/** Any catalogue/settings change must be visible on the live storefront too. */
+function revalidateStorefront() {
+  revalidatePath("/store", "layout");
+}
+
+/** Merchant changes are visible to the platform console and vice versa. */
+function revalidatePanels() {
+  revalidatePath("/admin", "layout");
+  revalidatePath("/super-admin", "layout");
+}
+
 // ── Store selection & lifecycle ──────────────────────────────────────────────
 
 export async function switchStoreAction(formData: FormData): Promise<void> {
@@ -103,7 +114,8 @@ export async function publishStoreAction(_prev: AdminState, formData: FormData):
   try {
     const { actor } = await ctx("store:publish");
     await publishStore(actor, required(formData, "storeId"));
-    revalidateAdmin("/admin", "/admin/settings", `/store/${text(formData, "slug")}`);
+    revalidateAdmin("/admin", "/admin/settings");
+    revalidateStorefront();
     return { ok: true, message: "দোকান publish হয়েছে।" };
   } catch (error) {
     return message(error, "Publish করা যায়নি।");
@@ -115,6 +127,7 @@ export async function unpublishStoreAction(_prev: AdminState, formData: FormData
     const { actor } = await ctx("store:publish");
     await unpublishStore(actor, required(formData, "storeId"));
     revalidateAdmin("/admin", "/admin/settings");
+    revalidateStorefront();
     return { ok: true, message: "দোকান unpublish করা হয়েছে।" };
   } catch (error) {
     return message(error, "Unpublish করা যায়নি।");
@@ -126,6 +139,8 @@ export async function archiveStoreAction(_prev: AdminState, formData: FormData):
     const { actor } = await ctx("store:write");
     await archiveStore(actor, required(formData, "storeId"));
     revalidateAdmin("/admin");
+    revalidateStorefront();
+    revalidatePanels();
     return { ok: true, message: "দোকান archive করা হয়েছে।" };
   } catch (error) {
     return message(error, "Archive করা যায়নি।");
@@ -171,6 +186,7 @@ export async function updateStoreSettingsAction(_prev: AdminState, formData: For
     });
 
     revalidateAdmin("/admin/settings");
+    revalidateStorefront();
     return { ok: true, message: "সেটিংস সংরক্ষণ হয়েছে।" };
   } catch (error) {
     return message(error, "সেটিংস সংরক্ষণ করা যায়নি।");
@@ -212,6 +228,8 @@ function parseImages(formData: FormData): Array<{ url: string; altText: string }
 }
 
 export async function saveProductAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  let created = false;
+
   try {
     const { actor } = await ctx("catalog:write");
     const storeId = required(formData, "storeId");
@@ -226,7 +244,7 @@ export async function saveProductAction(_prev: AdminState, formData: FormData): 
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean),
-      status: (text(formData, "status") || "DRAFT") as "ACTIVE" | "DRAFT" | "ARCHIVED",
+      status: (text(formData, "status") || "ACTIVE") as "ACTIVE" | "DRAFT" | "ARCHIVED",
       lowStockThreshold: Number.parseInt(text(formData, "lowStockThreshold") || "5", 10) || 5,
       variants: parseVariants(formData),
       images: parseImages(formData),
@@ -236,18 +254,25 @@ export async function saveProductAction(_prev: AdminState, formData: FormData): 
       ? await updateProduct(actor, storeId, productId, payload)
       : await createProduct(actor, storeId, payload);
 
-    revalidateAdmin("/admin/products", `/admin/products/${result.id}`);
-    return { ok: true, message: "পণ্য সংরক্ষণ হয়েছে।" };
+    revalidateAdmin("/admin", "/admin/products", "/admin/inventory", `/admin/products/${result.id}`);
+    revalidateStorefront();
+    created = !productId;
   } catch (error) {
     return message(error, "পণ্য সংরক্ষণ করা যায়নি।");
   }
+
+  // Redirect outside the try/catch: `redirect()` throws a control-flow error
+  // that must never be converted into an inline "NEXT_REDIRECT" message.
+  if (created) redirect("/admin/products");
+  return { ok: true, message: "পণ্য সংরক্ষণ হয়েছে।" };
 }
 
 export async function archiveProductAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
   try {
     const { actor } = await ctx("catalog:write");
     await archiveProduct(actor, required(formData, "storeId"), required(formData, "productId"));
-    revalidateAdmin("/admin/products");
+    revalidateAdmin("/admin", "/admin/products", "/admin/inventory");
+    revalidateStorefront();
     return { ok: true, message: "পণ্য archive করা হয়েছে।" };
   } catch (error) {
     return message(error, "Archive করা যায়নি।");
@@ -261,7 +286,8 @@ export async function adjustStockAction(_prev: AdminState, formData: FormData): 
       delta: Number.parseInt(text(formData, "delta") || "0", 10),
       reason: text(formData, "reason") || "Manual adjustment",
     });
-    revalidateAdmin("/admin/products");
+    revalidateAdmin("/admin", "/admin/products", "/admin/inventory");
+    revalidateStorefront();
     return { ok: true, message: "স্টক হালনাগাদ হয়েছে।" };
   } catch (error) {
     return message(error, "স্টক হালনাগাদ করা যায়নি।");
@@ -288,7 +314,8 @@ export async function saveCategoryAction(_prev: AdminState, formData: FormData):
       await createCategory(actor, storeId, payload);
     }
 
-    revalidateAdmin("/admin/categories");
+    revalidateAdmin("/admin", "/admin/categories");
+    revalidateStorefront();
     return { ok: true, message: "ক্যাটাগরি সংরক্ষণ হয়েছে।" };
   } catch (error) {
     return message(error, "ক্যাটাগরি সংরক্ষণ করা যায়নি।");
@@ -302,7 +329,8 @@ export async function archiveCategoryAction(_prev: AdminState, formData: FormDat
       name: text(formData, "name") || "—",
       status: "ARCHIVED",
     });
-    revalidateAdmin("/admin/categories");
+    revalidateAdmin("/admin", "/admin/categories");
+    revalidateStorefront();
     return { ok: true, message: "ক্যাটাগরি archive করা হয়েছে।" };
   } catch (error) {
     return message(error, "Archive করা যায়নি।");
@@ -320,6 +348,8 @@ export async function updateOrderStatusAction(_prev: AdminState, formData: FormD
       note: text(formData, "note") || undefined,
     });
     revalidateAdmin("/admin/orders", `/admin/orders/${orderId}`);
+    revalidatePanels();
+    revalidateStorefront();
     return { ok: true, message: "অর্ডার হালনাগাদ হয়েছে।" };
   } catch (error) {
     return message(error, "অর্ডার হালনাগাদ করা যায়নি।");
@@ -332,6 +362,8 @@ export async function recordCodAction(_prev: AdminState, formData: FormData): Pr
     const orderId = required(formData, "orderId");
     await recordCodCollection(actor, required(formData, "storeId"), orderId);
     revalidateAdmin("/admin/orders");
+    revalidatePanels();
+    revalidateStorefront();
     return { ok: true, message: "ক্যাশ কালেকশন রেকর্ড হয়েছে।" };
   } catch (error) {
     return message(error, "রেকর্ড করা যায়নি।");
@@ -346,6 +378,8 @@ export async function refundOrderAction(_prev: AdminState, formData: FormData): 
       reason: text(formData, "reason") || "Merchant-initiated refund",
     });
     revalidateAdmin("/admin/orders");
+    revalidatePanels();
+    revalidateStorefront();
     return { ok: true, message: "রিফান্ড প্রক্রিয়া শুরু হয়েছে।" };
   } catch (error) {
     return message(error, "রিফান্ড করা যায়নি।");
@@ -360,6 +394,8 @@ export async function resolveReturnAction(_prev: AdminState, formData: FormData)
       resolution: text(formData, "resolution") || undefined,
     });
     revalidateAdmin("/admin/orders");
+    revalidatePanels();
+    revalidateStorefront();
     return { ok: true, message: "রিটার্ন হালনাগাদ হয়েছে।" };
   } catch (error) {
     return message(error, "হালনাগাদ করা যায়নি।");
@@ -394,6 +430,7 @@ export async function saveDeliveryZoneAction(_prev: AdminState, formData: FormDa
     }
 
     revalidateAdmin("/admin/delivery");
+    revalidateStorefront();
     return { ok: true, message: "ডেলিভারি জোন সংরক্ষণ হয়েছে।" };
   } catch (error) {
     return message(error, "সংরক্ষণ করা যায়নি।");
@@ -405,6 +442,7 @@ export async function deleteDeliveryZoneAction(_prev: AdminState, formData: Form
     const { actor } = await ctx("delivery:write");
     await deleteDeliveryZone(actor, required(formData, "storeId"), required(formData, "zoneId"));
     revalidateAdmin("/admin/delivery");
+    revalidateStorefront();
     return { ok: true, message: "জোন মুছে ফেলা হয়েছে।" };
   } catch (error) {
     return message(error, "মুছে ফেলা যায়নি।");
@@ -434,6 +472,7 @@ export async function togglePaymentMethodAction(_prev: AdminState, formData: For
       ...(Object.keys(credentials).length > 0 ? { credentials } : {}),
     });
     revalidateAdmin("/admin/payments");
+    revalidateStorefront();
     return { ok: true, message: `${provider} ${isEnabled ? "চালু" : "বন্ধ"} করা হয়েছে।` };
   } catch (error) {
     return message(error, "হালনাগাদ করা যায়নি।");
@@ -466,6 +505,7 @@ export async function saveCouponAction(_prev: AdminState, formData: FormData): P
     }
 
     revalidateAdmin("/admin/discounts");
+    revalidateStorefront();
     return { ok: true, message: "কুপন সংরক্ষণ হয়েছে।" };
   } catch (error) {
     return message(error, "কুপন সংরক্ষণ করা যায়নি।");
@@ -477,6 +517,7 @@ export async function archiveCouponAction(_prev: AdminState, formData: FormData)
     const { actor } = await ctx("discounts:write");
     await archiveCoupon(actor, required(formData, "storeId"), required(formData, "couponId"));
     revalidateAdmin("/admin/discounts");
+    revalidateStorefront();
     return { ok: true, message: "কুপন archive করা হয়েছে।" };
   } catch (error) {
     return message(error, "Archive করা যায়নি।");
@@ -490,6 +531,7 @@ export async function selectThemeAction(_prev: AdminState, formData: FormData): 
     const { actor } = await ctx("design:write");
     const result = await selectTheme(actor, required(formData, "storeId"), required(formData, "themeCode"));
     revalidateAdmin("/admin/design");
+    if (!result.draftOnly) revalidateStorefront();
     return {
       ok: true,
       message: result.draftOnly
@@ -532,7 +574,7 @@ export async function publishThemeAction(_prev: AdminState, formData: FormData):
     }
     await publishTheme(actor, storeId, themeVersionId);
     revalidateAdmin("/admin/design", "/design-preview", "/");
-    revalidatePath("/store", "layout");
+    revalidateStorefront();
     return { ok: true, message: "থিম publish হয়েছে — live দোকানে পরিবর্তন দেখা যাচ্ছে।" };
   } catch (error) {
     return message(error, "Publish করা যায়নি।");
@@ -656,6 +698,7 @@ export async function changePlanAction(_prev: AdminState, formData: FormData): P
     }
 
     revalidateAdmin("/admin/billing");
+    revalidatePanels();
     return { ok: true, message: `প্ল্যান ${planCode} সেট হয়েছে।` };
   } catch (error) {
     return message(error, "প্ল্যান পরিবর্তন করা যায়নি।");
@@ -667,6 +710,7 @@ export async function cancelSubscriptionAction(_prev: AdminState, formData: Form
     const { actor } = await ctx("billing:write");
     await cancelSubscription(actor, { atPeriodEnd: formData.get("atPeriodEnd") === "on" });
     revalidateAdmin("/admin/billing");
+    revalidatePanels();
     return { ok: true, message: "সাবস্ক্রিপশন বাতিল করা হয়েছে।" };
   } catch (error) {
     return message(error, "বাতিল করা যায়নি।");
@@ -705,7 +749,10 @@ export async function importProductsAction(_prev: AdminState, formData: FormData
       ? `${result.created}টি নতুন, ${result.updated}টি হালনাগাদ, ${skipped}টি বাদ।`
       : `Dry-run: ${result.results.length}টি row — ${skipped}টিতে সমস্যা। কিছুই লেখা হয়নি।`;
 
-    if (commit) revalidateAdmin("/admin/products", "/admin/inventory");
+    if (commit) {
+      revalidateAdmin("/admin", "/admin/products", "/admin/inventory");
+      revalidateStorefront();
+    }
     return { ok: skipped === 0, message: summary, data: { results: result.results } };
   } catch (error) {
     return message(error, "Import করা যায়নি।");
@@ -747,6 +794,7 @@ export async function createTicketAction(_prev: AdminState, formData: FormData):
       priority: text(formData, "priority") || "NORMAL",
     });
     revalidateAdmin("/admin/support");
+    revalidatePath("/super-admin", "layout");
     return { ok: true, message: "টিকেট তৈরি হয়েছে — টিম শীঘ্রই উত্তর দেবে।" };
   } catch (error) {
     return message(error, "টিকেট তৈরি করা যায়নি।");
@@ -758,6 +806,7 @@ export async function closeTicketAction(_prev: AdminState, formData: FormData): 
     const { actor } = await ctx();
     await closeTicket(actor, required(formData, "ticketId"));
     revalidateAdmin("/admin/support");
+    revalidatePath("/super-admin", "layout");
     return { ok: true, message: "টিকেট বন্ধ করা হয়েছে।" };
   } catch (error) {
     return message(error, "বন্ধ করা যায়নি।");

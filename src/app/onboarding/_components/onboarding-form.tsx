@@ -21,9 +21,11 @@ export type OnboardingTheme = {
 export function OnboardingForm({
   ownerName,
   themes,
+  next = "/admin",
 }: {
   ownerName: string;
   themes: OnboardingTheme[];
+  next?: string;
 }) {
   const [state, submit, pending] = useActionState(createFirstStoreAction, EMPTY_ONBOARDING_STATE);
   const [themeCode, setThemeCode] = useState(themes[0]?.code ?? "nokshi");
@@ -43,6 +45,7 @@ export function OnboardingForm({
       {state.message ? <Alert tone="danger">{state.message}</Alert> : null}
 
       <form action={submit} className="space-y-6">
+        <input type="hidden" name="next" value={next} />
         <div className="space-y-4 rounded-xl border border-ink-200 bg-white p-5">
           <Field label="দোকানের নাম" required hint="যেমন: নকশি বুটিক">
             <Input name="name" required placeholder="আপনার দোকানের নাম" />

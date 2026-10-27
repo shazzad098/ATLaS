@@ -132,10 +132,10 @@ export async function requireActiveStore(): Promise<{ workspace: Workspace; stor
  */
 export async function requireActiveStorePage(): Promise<{ workspace: Workspace; store: StoreSummary }> {
   const workspace = await getWorkspace();
-  if (!workspace) redirect("/login");
+  if (!workspace) redirect("/login?next=%2Fadmin");
 
   const store = await getActiveStore(workspace);
-  if (!store) redirect("/onboarding");
+  if (!store) redirect("/onboarding?next=%2Fadmin");
 
   return { workspace, store };
 }

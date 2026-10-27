@@ -78,6 +78,8 @@ export async function updatePlanAction(
     });
 
     revalidatePath("/super-admin/plans");
+    revalidatePath("/super-admin", "layout");
+    revalidatePath("/admin", "layout");
     return { ok: true, message: `${code} plan হালনাগাদ হয়েছে — entitlement cache রিফ্রেশ হয়েছে।` };
   } catch (error) {
     return message(error, "প্ল্যান সংরক্ষণ করা যায়নি।");
@@ -100,6 +102,9 @@ export async function runBillingSweepAction(
     });
 
     revalidatePath("/super-admin");
+    revalidatePath("/super-admin", "layout");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/store", "layout");
     return {
       ok: true,
       message: `Sweep সম্পন্ন — trial downgrade ${result.trialDowngrades}, invoice ${result.invoicesRaised}, reminder ${result.reminders}, read-only ${result.movedToReadOnly}, suspended ${result.suspended}।`,
@@ -149,6 +154,9 @@ export async function setTenantStatusAction(
     );
 
     revalidatePath("/super-admin/tenants");
+    revalidatePath("/super-admin", "layout");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/store", "layout");
     return { ok: true, message: `Tenant status ${status} করা হয়েছে।` };
   } catch (error) {
     return message(error, "Status পরিবর্তন করা যায়নি।");
@@ -170,6 +178,8 @@ export async function updateTicketAction(
     });
 
     revalidatePath("/super-admin/tickets");
+    revalidatePath("/super-admin", "layout");
+    revalidatePath("/admin/support");
     return { ok: true, message: "টিকেট হালনাগাদ হয়েছে।" };
   } catch (error) {
     return message(error, "টিকেট হালনাগাদ করা যায়নি।");

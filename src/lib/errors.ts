@@ -18,6 +18,7 @@ export type AppErrorCode =
   | "PAYMENT_FAILED"
   | "INTEGRATION_FAILED"
   | "TENANT_MISMATCH"
+  | "SERVICE_UNAVAILABLE"
   | "INTERNAL";
 
 export class AppError extends Error {

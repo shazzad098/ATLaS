@@ -131,10 +131,10 @@ export default function HowItWorksPage() {
               ফ্রিতে শুরু করুন <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
-              href="/store/nokshi-demo"
+              href="/themes"
               className="inline-flex items-center gap-1.5 rounded-[10px] border border-[#dfe8e4] bg-white px-6 py-3 text-[13px] font-semibold text-ink-800 shadow-[0_1px_2px_rgba(13,42,32,0.04)] transition hover:bg-[#f4f8f6]"
             >
-              ডেমো দোকান দেখুন
+              থিম দেখুন
             </Link>
           </div>
         </div>

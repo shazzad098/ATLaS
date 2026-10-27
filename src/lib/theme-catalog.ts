@@ -162,15 +162,14 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
       header: {
         style: "centered",
         showSearch: true,
-        announcement: "সারাদেশে হোম ডেলিভারি · ১০০০৳+ অর্ডারে ফ্রি ডেলিভারি · নতুন সংগ্রহ এসেছে",
+        announcement: "",
         sticky: true,
       },
       hero: {
         enabled: true,
-        title: "নকশি হাতে বোনা, আপনার রুচিতে নতুন সাজ",
-        subtitle:
-          "সীমিত ব্যাচে হাতে বোনা শাড়ি, কুর্তি ও থ্রি-পিস — প্রতিটি পিস বাছাই করা, কারিগরের কাছ থেকে সোজা আপনার কাছে।",
-        ctaLabel: "নতুন সংগ্রহ দেখুন",
+        title: "",
+        subtitle: "",
+        ctaLabel: "শপ দেখুন",
         ctaHref: "/shop",
         align: "left",
       },
@@ -188,44 +187,28 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
         enabled: true,
         title:
           key === "CategoryGrid"
-            ? "পছন্দের শাড়ি, কুর্তি ও থ্রি-পিস"
+            ? "ক্যাটাগরি"
             : key === "ProductGrid"
-              ? "আজকের নির্বাচিত পোশাক"
+              ? "নতুন পণ্য"
               : key === "Testimonials"
-                ? "আমাদের ক্রেতারা যা বলছেন"
+                ? "ক্রেতাদের রিভিউ"
                 : "",
       })),
       promo: {
-        enabled: true,
-        title: "ঈদ আয়োজনে বিশেষ ছাড়",
-        body: "নির্বাচিত শাড়ি ও থ্রি-পিসে ২০% পর্যন্ত ছাড় — স্টক সীমিত, আগে এলে আগে পাবেন।",
-        ctaLabel: "অফার দেখুন",
+        enabled: false,
+        title: "",
+        body: "",
+        ctaLabel: "",
         ctaHref: "/shop",
       },
-      testimonials: {
-        enabled: true,
-        items: [
-          { name: "সাদিয়া রহমান", quote: "কাপড়ের মান আসলেই ভালো, প্যাকেজিংও যত্নসহকারে।", location: "ধানমন্ডি, ঢাকা" },
-          { name: "তাশনিম আক্তার", quote: "ছবির সাথে ঠিক মিলে গেছে। আবার অর্ডার করব।", location: "চট্টগ্রাম" },
-          { name: "নুসরাত জাহান", quote: "হাতে বোনা কাজটা এত নিখুঁত হবে ভাবিনি।", location: "উত্তরা, ঢাকা" },
-        ],
-      },
-      trust: {
-        enabled: true,
-        items: ["সারাদেশে হোম ডেলিভারি", "৭ দিনে সহজ রিটার্ন", "১০০% হাতে বোনা", "২৪/৭ কাস্টমার সাপোর্ট"],
-      },
+      testimonials: { enabled: true, items: [] },
+      trust: { enabled: true, items: [] },
       footer: {
-        about:
-          "নকশি বুটিক — হাতে বোনা শাড়ি, কুর্তি ও থ্রি-পিসের ছোট ব্যাচের সংগ্রহ, সোজা কারিগরের কাছ থেকে।",
+        about: "",
         columns: [
           {
             title: "কেনাকাটা",
-            links: [
-              { label: "সব পণ্য", href: "/shop" },
-              { label: "শাড়ি", href: "/shop?category=sharee" },
-              { label: "কুর্তি", href: "/shop?category=kurti" },
-              { label: "থ্রি-পিস", href: "/shop?category=three-piece" },
-            ],
+            links: [{ label: "সব পণ্য", href: "/shop" }],
           },
           {
             title: "গ্রাহক সেবা",
@@ -237,16 +220,12 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
             ],
           },
         ],
-        note: "© নকশি বুটিক। সর্বস্বত্ব সংরক্ষিত।",
+        note: "",
       },
       navigation: [
         { label: "হোম", href: "/" },
         { label: "শপ", href: "/shop" },
-        { label: "শাড়ি", href: "/shop?category=sharee" },
-        { label: "কুর্তি", href: "/shop?category=kurti" },
-        { label: "থ্রি-পিস", href: "/shop?category=three-piece" },
-        { label: "ওড়না", href: "/shop?category=orna" },
-        { label: "আমাদের সম্পর্কে", href: "/page/contact" },
+        { label: "যোগাযোগ", href: "/page/contact" },
       ],
     },
   },
@@ -276,14 +255,13 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
       header: {
         style: "classic",
         showSearch: true,
-        announcement: "সারাদেশে হোম ডেলিভারি · ৫০০৳+ অর্ডারে ফ্রি ডেলিভারি · নতুন স্টক এসেছে",
+        announcement: "",
         sticky: true,
       },
       hero: {
         enabled: true,
-        title: "আজকের বাজার, আজই বাড়িতে!",
-        subtitle:
-          "সকালের তাজা সবজি, মাছ আর মুদি — হাতে বাছাই করা, বাজারের দামে। একই দিনে ঘরে পৌঁছে দিচ্ছি।",
+        title: "",
+        subtitle: "",
         ctaLabel: "শপিং শুরু করুন",
         ctaHref: "/shop",
         align: "left",
@@ -302,62 +280,28 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
         enabled: true,
         title:
           key === "CategoryGrid"
-            ? "জনপ্রিয় ক্যাটাগরি"
+            ? "ক্যাটাগরি"
             : key === "ProductGrid"
-              ? "সবচেয়ে সেরা ৮ প্রোডাক্টের বাজার"
+              ? "নতুন পণ্য"
               : key === "Testimonials"
-                ? "ক্রেতাদের অভিজ্ঞতা ও মতামত"
+                ? "ক্রেতাদের রিভিউ"
                 : "",
       })),
       promo: {
-        enabled: true,
-        title: "৫০০ টাকার উপরে ফ্রি ডেলিভারি!",
-        body: "মিরপুর, উত্তরা, ধানমন্ডি ও আজিমপুরে প্রযোজ্য। অর্ডারের সময় ডেলিভারি এলাকা মিলিয়ে নিন।",
-        ctaLabel: "শর্ত দেখুন",
-        ctaHref: "/page/delivery",
+        enabled: false,
+        title: "",
+        body: "",
+        ctaLabel: "",
+        ctaHref: "/shop",
       },
-      testimonials: {
-        enabled: true,
-        items: [
-          {
-            name: "রফিকুল ইসলাম",
-            quote: "সবজি একদম টাটকা ছিল, দামও বাজারের মতোই। এখন প্রতিদিন এখান থেকেই বাজার করি।",
-            location: "মিরপুর ১০, ঢাকা",
-          },
-          {
-            name: "নুসরাত জাহান",
-            quote: "সকালে অর্ডার দিয়েছি, দুপুরের মধ্যে হাতে পেয়েছি। প্যাকেজিংও পরিষ্কার ছিল।",
-            location: "উত্তরা, ঢাকা",
-          },
-          {
-            name: "তানভীর হোসেন",
-            quote: "মাছ আর মাংসের মান ভালো, ওজনেও ঠিক। দামও অন্য জায়গার চেয়ে কম মনে হয়েছে।",
-            location: "ধানমন্ডি, ঢাকা",
-          },
-        ],
-      },
-      trust: {
-        enabled: true,
-        items: [
-          "সহজ রিটার্ন পলিসি",
-          "সাশ্রয়ী মূল্যে বাজার",
-          "দ্রুত হোম ডেলিভারি",
-          "নিরাপদ পেমেন্ট",
-        ],
-      },
+      testimonials: { enabled: true, items: [] },
+      trust: { enabled: true, items: [] },
       footer: {
-        about:
-          "ঢাকা বাজার — প্রতিদিনের টাটকা সবজি, মাছ, মুদি ও নিত্যপণ্য, বাজারের সেরা দামে ঘরে পৌঁছে দেওয়া।",
+        about: "",
         columns: [
           {
-            title: "পণ্য ক্যাটাগরি",
-            links: [
-              { label: "সব পণ্য", href: "/shop" },
-              { label: "সবজি", href: "/shop?category=sobji" },
-              { label: "ফল", href: "/shop?category=fol" },
-              { label: "মাছ ও মাংস", href: "/shop?category=mach" },
-              { label: "মুদি", href: "/shop?category=mudi" },
-            ],
+            title: "কেনাকাটা",
+            links: [{ label: "সব পণ্য", href: "/shop" }],
           },
           {
             title: "গ্রাহক সেবা",
@@ -369,14 +313,11 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
             ],
           },
         ],
-        note: "© ঢাকা বাজার। সর্বস্বত্ব সংরক্ষিত।",
+        note: "",
       },
       navigation: [
         { label: "হোম", href: "/" },
         { label: "সব পণ্য", href: "/shop" },
-        { label: "সবজি", href: "/shop?category=sobji" },
-        { label: "মাছ ও মাংস", href: "/shop?category=mach" },
-        { label: "ডেলিভারি", href: "/page/delivery" },
         { label: "যোগাযোগ", href: "/page/contact" },
       ],
     },
@@ -412,36 +353,28 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
       },
       hero: {
         enabled: true,
-        title: "যাচাই করা প্রোডাক্ট, বাড়তি দাম ছাড়া",
-        subtitle: "প্রতিটি ইউনিট হাতে চেক করা — ৬ মাসের ওয়ারেন্টি সহ।",
-        ctaLabel: "কালেকশন দেখুন",
+        title: "",
+        subtitle: "",
+        ctaLabel: "শপ দেখুন",
         ctaHref: "/shop",
         align: "center",
       },
       sections: THEME_SECTION_KEYS.map((key) => ({
         key,
         enabled: true,
-        title: key === "ProductGrid" ? "ফিচারড" : "",
+        title: key === "ProductGrid" ? "নতুন পণ্য" : key === "CategoryGrid" ? "ক্যাটাগরি" : "",
       })),
       promo: {
-        enabled: true,
-        title: "প্রি-অর্ডার সুবিধা",
-        body: "নতুন ব্যাচ আসার আগেই বুক করুন — দাম আগের মতোই থাকবে।",
-        ctaLabel: "প্রি-অর্ডার",
+        enabled: false,
+        title: "",
+        body: "",
+        ctaLabel: "",
         ctaHref: "/shop",
       },
-      testimonials: {
-        enabled: true,
-        items: [
-          { name: "আরিফ হোসেন", quote: "ওয়ারেন্টি ক্লেইম কোনো ঝামেলা ছাড়াই হয়ে গেছে।", location: "সিলেট" },
-        ],
-      },
-      trust: {
-        enabled: true,
-        items: ["৬ মাসের ওয়ারেন্টি", "ক্যাশ অন ডেলিভারি", "অফিসিয়াল ইমপোর্ট"],
-      },
+      testimonials: { enabled: true, items: [] },
+      trust: { enabled: true, items: [] },
       footer: {
-        about: "স্টুডিও — গ্যাজেট ও পার্সোনাল কেয়ার পণ্যের নির্বাচিত সংগ্রহ।",
+        about: "",
         columns: [
           {
             title: "কেনাকাটা",
@@ -452,18 +385,15 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
           },
           {
             title: "সাপোর্ট",
-            links: [
-              { label: "ওয়ারেন্টি", href: "/page/warranty" },
-              { label: "যোগাযোগ", href: "/page/contact" },
-            ],
+            links: [{ label: "যোগাযোগ", href: "/page/contact" }],
           },
         ],
-        note: "© স্টুডিও। সর্বস্বত্ব সংরক্ষিত।",
+        note: "",
       },
       navigation: [
         { label: "হোম", href: "/" },
-        { label: "কালেকশন", href: "/shop" },
-        { label: "ওয়ারেন্টি", href: "/page/warranty" },
+        { label: "শপ", href: "/shop" },
+        { label: "যোগাযোগ", href: "/page/contact" },
       ],
     },
   },

@@ -29,12 +29,14 @@ import {
 import { recordCodCollection } from "@/lib/services/payment-service";
 
 /**
- * ATLaS demo seed (PRD §12 "seed data").
+ * ATLaS seed (PRD §12 "seed data").
  *
- * Idempotent: re-running deletes and rebuilds the three demo tenants, while users,
- * plans and the theme catalog are reconciled in place. Orders are created through
- * the real checkout path so inventory, fees, notifications and the audit trail
- * are all consistent with what a merchant would see in production.
+ * Production mode (default): plans, the theme catalogue and the platform super
+ * admin only. No store, product, order or customer rows are created, and any
+ * legacy demo tenants are removed, so every screen starts from real data.
+ *
+ * Demo mode (`SEED_DEMO_DATA=1`, development only): additionally rebuilds the
+ * three demo tenants used to exercise the storefront themes:
  *
  *   Tenant A — Nokshi Boutique  (free)   12 products, 6 orders
  *   Tenant B — Dhaka Bazar      (free)   16 products, 76 orders → ~65 eligible,
@@ -42,6 +44,8 @@ import { recordCodCollection } from "@/lib/services/payment-service";
  *                                        and generates PRD US-03 overage fees.
  *   Tenant C — Studio Tech      (free)   10 products, 12 orders
  */
+
+const SEED_DEMO_DATA = process.env.SEED_DEMO_DATA === "1";
 
 const DEMO_STORE_SLUGS = ["nokshi-demo", "dhaka-bazar", "studio-tech"];
 
@@ -695,13 +699,22 @@ async function main() {
   console.log("• Theme catalog");
   await ensureThemeCatalog();
 
-  console.log("• Users");
+  console.log("• Super admin");
   const superAdmin = await upsertUser(SUPER_ADMIN, { isSuperAdmin: true });
-  const merchant = await upsertUser(MERCHANT);
 
-  console.log("• Resetting demo tenants");
+  console.log("• Removing legacy demo tenants");
   const removed = await resetDemoTenants();
   if (removed > 0) console.log(`   removed ${removed} existing demo tenant(s)`);
+
+  if (!SEED_DEMO_DATA) {
+    console.log("\n✔ Seed complete — database contains real data only");
+    console.log(`   Super Admin : ${SUPER_ADMIN.phone} / ${SEED_PASSWORD}  (id ${superAdmin.id.slice(0, 8)}…)`);
+    console.log("   Demo data   : skipped (set SEED_DEMO_DATA=1 for development fixtures)");
+    return;
+  }
+
+  console.log("• Demo merchant");
+  const merchant = await upsertUser(MERCHANT);
 
   console.log("• Tenant A — Nokshi Boutique");
   const nokshi = await buildTenant(

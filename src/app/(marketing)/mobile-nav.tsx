@@ -10,7 +10,7 @@ const LINKS = [
   { href: "/themes", label: "থিম", hint: "Nokshi · Bazar · Studio" },
   { href: "/how-it-works", label: "কীভাবে কাজ করে", hint: "ধাপে ধাপে গাইড" },
   { href: "/help", label: "Help Center", hint: "সাহায্য ও FAQ" },
-  { href: "/store/nokshi-demo", label: "ডেমো স্টোর", hint: "লাইভ দোকান ঘুরে দেখুন" },
+  { href: "/signup", label: "ফ্রি সাইনআপ", hint: "৫ মিনিটে নিজের দোকান চালু করুন" },
 ];
 
 /** Mobile navigation: hamburger + slide-down panel. Desktop nav lives in the layout. */
@@ -81,21 +81,30 @@ export function MobileNav() {
                 ))}
               </ul>
 
-              <div className="mt-3 grid grid-cols-2 gap-2 pb-4">
+              <div className="mt-3 grid gap-2 pb-4">
                 <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#dfe8e4] bg-white text-[13px] font-semibold text-ink-800"
-                >
-                  লগইন
-                </Link>
-                <Link
-                  href="/signup"
+                  href="/dashboard"
                   onClick={() => setOpen(false)}
                   className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[10px] bg-[#0BA678] text-[13px] font-semibold text-white shadow-[0_10px_22px_-12px_rgba(11,166,120,0.95)]"
                 >
-                  ফ্রি শুরু করুন <ArrowRight className="h-3.5 w-3.5" />
+                  ড্যাশবোর্ডে যান <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex h-11 items-center justify-center rounded-[10px] border border-[#dfe8e4] bg-white text-[13px] font-semibold text-ink-800"
+                  >
+                    লগইন
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex h-11 items-center justify-center gap-1.5 rounded-[10px] border border-[#dfe8e4] bg-white text-[13px] font-semibold text-ink-800"
+                  >
+                    ফ্রি শুরু করুন <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
               </div>
             </nav>
           </div>

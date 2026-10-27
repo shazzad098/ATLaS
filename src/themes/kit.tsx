@@ -146,6 +146,9 @@ export function Hero({ ctx, variant }: SectionProps & { variant: SectionVariant 
   if (!hero.enabled) return null;
 
   const align = hero.align === "center" ? "items-center text-center" : "items-start text-left";
+  const title = hero.title.trim() || ctx.storeName;
+  const subtitle = hero.subtitle.trim() || ctx.tagline || "";
+  const ctaLabel = hero.ctaLabel || "শপ দেখুন";
 
   if (variant === "minimal") {
     return (
@@ -154,14 +157,14 @@ export function Hero({ ctx, variant }: SectionProps & { variant: SectionVariant 
           <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: "var(--store-primary)" }}>
             {ctx.tagline ?? ctx.storeName}
           </p>
-          <h1 className="max-w-3xl text-3xl font-semibold leading-tight sm:text-5xl">{hero.title}</h1>
-          <p className="muted max-w-xl text-base">{hero.subtitle}</p>
+          <h1 className="max-w-3xl text-3xl font-semibold leading-tight sm:text-5xl">{title}</h1>
+          {subtitle ? <p className="muted max-w-xl text-base">{subtitle}</p> : null}
           <Link
             href={storePath(ctx.slug, hero.ctaHref)}
             className="store-btn mt-2 px-6 py-3 text-sm font-semibold text-white"
             style={{ background: "var(--store-primary)" }}
           >
-            {hero.ctaLabel}
+            {ctaLabel}
           </Link>
         </div>
       </section>
@@ -183,15 +186,15 @@ export function Hero({ ctx, variant }: SectionProps & { variant: SectionVariant 
             variant === "editorial" ? "font-serif" : ""
           }`}
         >
-          {hero.title}
+          {title}
         </h1>
-        <p className="max-w-xl text-base text-white/90">{hero.subtitle}</p>
+        {subtitle ? <p className="max-w-xl text-base text-white/90">{subtitle}</p> : null}
         <Link
           href={storePath(ctx.slug, hero.ctaHref)}
           className="store-btn mt-2 bg-white px-6 py-3 text-sm font-semibold"
           style={{ color: ctx.config.colors.primary }}
         >
-          {hero.ctaLabel}
+          {ctaLabel}
         </Link>
       </div>
     </section>

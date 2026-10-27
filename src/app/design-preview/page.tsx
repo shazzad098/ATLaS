@@ -40,12 +40,11 @@ export default async function DesignPreviewPage() {
     ...context,
     theme: { ...context.theme, code: themeCode, config },
   };
-  const ctx = themeContextFrom(previewContext);
-
   const [{ products }, categories] = await Promise.all([
     listStorefrontProducts(store.id, { perPage: 8 }),
     listStorefrontCategories(store.id),
   ]);
+  const ctx = themeContextFrom(previewContext, categories);
 
   const hasUnpublishedChanges = state.isPublished && state.config
     ? JSON.stringify(state.config) !== JSON.stringify(config)

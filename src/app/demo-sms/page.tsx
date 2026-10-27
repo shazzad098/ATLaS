@@ -83,8 +83,7 @@ export default function DemoSmsPage() {
       )}
 
       <p className="text-center text-xs text-ink-500">
-        ডেমো অ্যাকাউন্ট: <span className="font-medium">01711111111</span> · পাসওয়ার্ড{" "}
-        <span className="font-medium">Atlas#2017</span> ·{" "}
+        OTP কোড শুধু sandbox মোডে এখানে দেখা যায় ·{" "}
         <Link href="/login" className="font-semibold text-brand-700 hover:underline">
           লগইন
         </Link>

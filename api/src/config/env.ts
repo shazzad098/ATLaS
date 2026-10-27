@@ -149,6 +149,40 @@ export const storageEnv = {
   },
 } as const;
 
+/** Email delivery. Pluggable: `resend`, `smtp`, or unset (sandbox logs). */
+export const emailEnv = {
+  get provider(): string {
+    return optional("EMAIL_PROVIDER", "").toLowerCase();
+  },
+  get from(): string {
+    return optional("EMAIL_FROM", "no-reply@atlas.example");
+  },
+  get apiKey(): string {
+    return optional("EMAIL_API_KEY");
+  },
+  get apiUrl(): string {
+    return optional("EMAIL_API_URL", "https://api.resend.com");
+  },
+  get smtpHost(): string {
+    return optional("EMAIL_SMTP_HOST");
+  },
+  get smtpPort(): number {
+    return intFromEnv("EMAIL_SMTP_PORT", 587, 1, 65_535);
+  },
+  get smtpUser(): string {
+    return optional("EMAIL_SMTP_USER");
+  },
+  get smtpPassword(): string {
+    return optional("EMAIL_SMTP_PASSWORD");
+  },
+  get smtpSecure(): boolean {
+    return optional("EMAIL_SMTP_SECURE", "false") === "true";
+  },
+  get configured(): boolean {
+    return this.provider === "resend" ? Boolean(this.apiKey) : this.provider === "smtp" ? Boolean(this.smtpHost) : false;
+  },
+} as const;
+
 /**
  * Fail-fast checks for the API process. Production additionally requires the
  * pieces the product cannot run without: object storage for merchant images and
@@ -194,6 +228,10 @@ export const queueEnv = {
   },
   get concurrency(): number {
     return intFromEnv("QUEUE_CONCURRENCY", 5, 1, 100);
+  },
+  /** Run the worker in this process (true) or defer to dist/worker.js (false). */
+  get runWorker(): boolean {
+    return optional("QUEUE_RUN_WORKER", "true") !== "false";
   },
 } as const;
 

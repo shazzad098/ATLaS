@@ -60,7 +60,7 @@ export class AuthService {
     meta: RequestMeta,
   ): Promise<{ user: SessionUser; tokens: IssuedTokens }> {
     const throttleKey = `login|${meta.ip ?? "unknown"}|${dto.identifier.toLowerCase()}`;
-    this.throttle.consume(throttleKey, authEnv.loginMaxAttempts, authEnv.loginWindowMs);
+    await this.throttle.consume(throttleKey, authEnv.loginMaxAttempts, authEnv.loginWindowMs);
 
     const identifier = dto.identifier.trim();
     const user = await this.prisma.user.findFirst({

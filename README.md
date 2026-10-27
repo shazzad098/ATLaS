@@ -13,10 +13,19 @@ npm run db:seed
 npm run dev
 ```
 
+Seeding is production-safe: it creates plans, the theme catalogue and the super admin only.
+Set `SEED_DEMO_DATA=1` before `npm run db:seed` when you want the three development demo
+stores (Nokshi, Dhaka Bazar, Studio) populated as well.
+
+`npm run dev` starts everything local development needs: the Prisma Postgres database, the
+local S3-compatible server (product images), the Nest API and the Next.js web app. If you prefer
+separate terminals, run `npm run dev:web` and `npm run api:dev` yourself; the API is reused when
+it is already listening on `API_INTERNAL_URL`.
+
 The local database is Prisma's zero-install Postgres (`prisma dev`, server name `atlas`,
 data in `%LOCALAPPDATA%\prisma-dev-nodejs`). It is **not** a background service, so it stops
-on reboot. `npm run dev` now probes `DATABASE_URL` and starts it automatically when the host is
-`localhost`; use `npm run dev:web` to skip that check.
+on reboot. `npm run dev` probes `DATABASE_URL` and starts it automatically when the host is
+`localhost`.
 
 | Command | Purpose |
 | --- | --- |
@@ -29,6 +38,11 @@ on reboot. `npm run dev` now probes `DATABASE_URL` and starts it automatically w
 Run `npm run db:start` and reload — seed data and sessions are preserved.
 
 The application is available at `http://localhost:3000`. Keep `.env` private. For local development without live gateway credentials, payment adapters use the sandbox callback flow.
+
+Product images upload directly to S3 from the browser using a presigned URL. Local development
+runs `s3rver` on `http://127.0.0.1:9000` (auto-started by `npm run dev`; manage it with
+`npm run s3:start` / `npm run s3:stop`). Production points the same `S3_*` variables at
+Cloudflare R2 or AWS S3.
 
 ## API service (`api/`)
 
@@ -100,6 +114,32 @@ scales beyond one node.
 
 Job defaults: 3 attempts with exponential backoff, completed jobs kept for 1h (max 1000),
 failed jobs for 24h (max 5000) so a broken job is still inspectable.
+
+### Catalog & uploads (Nest)
+
+`/api/catalog/*` (JWT) exposes tenant-scoped stores, categories and products (create/list/update),
+mirroring the Next.js catalog service with server-side membership + `catalog:write` permission
+checks. Product image uploads go through `POST /api/storage/presign` (see below); the admin product
+form now has an **আপলোড** button that uploads straight to S3/R2 and fills the public URL.
+
+### Email
+
+`EmailService` (`api/src/notifications/email`) is pluggable: `EMAIL_PROVIDER=resend` (HTTP API),
+`EMAIL_PROVIDER=smtp` (Nodemailer), or unset for a logging sandbox. Returns a uniform
+`{ ok, provider, messageId }` and never throws.
+
+### Worker & rate limiting
+
+The BullMQ worker runs in-process by default; set `QUEUE_RUN_WORKER=false` and run
+`npm run api:worker` (`dist/worker.js`) to scale it independently. Login throttling is Redis-backed
+(atomic fixed-window INCR/EXPIRE) when `REDIS_URL` is set, falling back to an in-memory limiter.
+
+### Tests
+
+`npm test` (web) runs unit + adapter tests (payments: initiate/callback/refund/signature with a
+stubbed fetch) and integration tests (`src/e2e`) for checkout idempotency and order-status
+transitions against the seeded database. The API suite (`npm --prefix api test`) covers auth,
+catalog, storage, queue, throttle and email with Jest + Supertest.
 
 ### Object storage (S3 / R2)
 

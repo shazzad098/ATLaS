@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { readSession } from "@/lib/auth/session";
+import { resolveLandingPath, safeNextPath } from "@/lib/auth/landing";
 import { sandboxMode } from "@/lib/env";
 import { LoginForm } from "@/app/(auth)/_components/login-form";
 
@@ -8,13 +9,22 @@ import { LoginForm } from "@/app/(auth)/_components/login-form";
 
 export const metadata: Metadata = { title: "লগইন" };
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ next?: string | string[] }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const next = safeNextPath(Array.isArray(params.next) ? params.next[0] : params.next);
+
   const session = await readSession();
-  if (session) redirect(session.user.isSuperAdmin ? "/super-admin" : "/admin");
+  if (session) {
+    redirect(await resolveLandingPath(session.user.id, session.user.isSuperAdmin, next));
+  }
 
   const devHint = sandboxMode.sms
-    ? "ডেমো: +8801700000000 (super admin) বা +8801711111111 (merchant) — পাসওয়ার্ড Atlas#2017"
+    ? "ডেভেলপমেন্ট: +8801700000000 (super admin) — পাসওয়ার্ড Atlas#2017"
     : undefined;
 
-  return <LoginForm devHint={devHint} />;
+  return <LoginForm devHint={devHint} next={next} />;
 }

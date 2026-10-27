@@ -16,6 +16,7 @@ import {
 import { applyAllOrderFees, reverseFeesForOrder } from "@/lib/services/fee-service";
 import { releaseCouponReservation } from "@/lib/services/coupon-service";
 import { isSuccessfulSaleStatus } from "@/lib/order-status";
+import { invalidateEntitlements } from "@/lib/entitlements";
 
 /**
  * Orders (FR-04).
@@ -313,6 +314,9 @@ export async function applyTransition(params: {
   });
 
   if (order) {
+    // Quota/overage meters are cached for 30s; a status change that enters or
+    // leaves the successful-sale set must refresh them immediately.
+    invalidateEntitlements(order.store.tenantId);
     await notifyStoreOwner(order, to);
     await emitMerchantWebhook({
       tenantId: order.store.tenantId,

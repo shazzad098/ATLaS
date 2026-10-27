@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { storefrontProduct, storefrontProducts } from "@/lib/services/catalog-service";
 import type { StorefrontCategory, StorefrontProduct } from "@/themes/types";
@@ -55,7 +56,7 @@ export async function listStorefrontProducts(
   };
 }
 
-export async function listStorefrontCategories(storeId: string): Promise<StorefrontCategory[]> {
+export const listStorefrontCategories = cache(async (storeId: string): Promise<StorefrontCategory[]> => {
   const rows = await prisma.category.findMany({
     where: { storeId, status: "ACTIVE" },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
@@ -68,7 +69,7 @@ export async function listStorefrontCategories(storeId: string): Promise<Storefr
     slug: row.slug,
     productCount: row._count.products,
   }));
-}
+});
 
 export type StorefrontProductDetail = Awaited<ReturnType<typeof storefrontProduct>>;
 

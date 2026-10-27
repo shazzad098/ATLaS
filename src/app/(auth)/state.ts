@@ -11,6 +11,10 @@ export type AuthState = {
   step?: "credentials" | "otp";
   /** Shown only while no SMS provider is configured, so beta users can sign in. */
   devCode?: string;
+  /** Identifier the OTP was sent to, echoed back for the OTP step. */
+  identifier?: string;
+  /** Phone number the signup OTP was sent to, echoed back for the OTP step. */
+  phone?: string;
 };
 
 export const EMPTY_AUTH_STATE: AuthState = { ok: false, message: "" };

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStorefrontContext, storefrontAvailability, themeContextFrom } from "@/lib/storefront";
+import { listStorefrontCategories } from "@/lib/storefront-data";
 import { getTheme } from "@/themes";
 import { themeStyle } from "@/themes/css";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 /**
  * Storefront shell (PRD §3.3, FR-07).
@@ -76,7 +78,8 @@ export default async function StorefrontLayout({
     );
   }
 
-  const ctx = themeContextFrom(context);
+  const categories = await listStorefrontCategories(context.store.id);
+  const ctx = themeContextFrom(context, categories);
 
   return (
     <div
@@ -87,6 +90,7 @@ export default async function StorefrontLayout({
       <theme.Header ctx={ctx} />
       <main className="flex-1">{children}</main>
       <theme.Footer ctx={ctx} />
+      <AutoRefresh intervalMs={30_000} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { readSession } from "@/lib/auth/session";
 import { logoutAction } from "@/app/(auth)/actions";
 import { prisma } from "@/lib/db";
 import { AppShell, type AppNavGroup } from "@/components/ui/app-shell";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 /** Platform operator shell (PRD §4.5). Only `isSuperAdmin` users get past the guard. */
 
@@ -93,6 +94,7 @@ export default async function SuperAdminLayout({ children }: { children: React.R
         footerNote="প্ল্যাটফর্ম অপারেশন — সাবস্ক্রিপশন, ফি, থিম ও সিকিউরিটি। প্রতিটি পরিবর্তন audit log-এ সংরক্ষিত থাকে।"
       >
         {children}
+        <AutoRefresh />
       </AppShell>
     </div>
   );

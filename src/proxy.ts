@@ -7,8 +7,8 @@ import type { NextRequest } from "next/server";
  * A merchant's store is reachable three ways, and all three converge on the same
  * `/store/[slug]` route so there is exactly one rendering path:
  *
- *   nokshi-demo.atlas.example/shop   →  /store/nokshi-demo/shop
- *   nokshi-demo.localhost:3000/shop  →  /store/nokshi-demo/shop
+ *   shop-name.atlas.example/shop     →  /store/shop-name/shop
+ *   shop-name.localhost:3000/shop    →  /store/shop-name/shop
  *   shop.example.com/shop            →  /store/_host/shop   (resolved by DB host lookup)
  *
  * Platform hosts (the apex, `www`, and anything reserved) are left untouched so

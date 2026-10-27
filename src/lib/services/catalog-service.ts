@@ -41,7 +41,7 @@ export const productInputSchema = z.object({
   categoryId: z.string().nullable().optional(),
   description: z.string().max(8000).default(""),
   tags: z.array(z.string().max(40)).max(20).default([]),
-  status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).default("DRAFT"),
+  status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).default("ACTIVE"),
   lowStockThreshold: z.number().int().min(0).max(1000).default(5),
   seo: z
     .object({

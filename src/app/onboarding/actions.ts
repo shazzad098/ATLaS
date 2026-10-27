@@ -6,6 +6,7 @@ import { AppError } from "@/lib/errors";
 import { STORE_COOKIE, getWorkspace } from "@/lib/tenant";
 import { createStore } from "@/lib/services/store-service";
 import { getThemeEntry } from "@/lib/theme-catalog";
+import { safeNextPath } from "@/lib/auth/landing";
 import type { OnboardingState } from "@/app/onboarding/state";
 
 /** First-store creation, the last step of signup (FR-02). */
@@ -15,7 +16,7 @@ export async function createFirstStoreAction(
   formData: FormData,
 ): Promise<OnboardingState> {
   const workspace = await getWorkspace();
-  if (!workspace) redirect("/login");
+  if (!workspace) redirect("/dashboard");
 
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
@@ -31,6 +32,7 @@ export async function createFirstStoreAction(
       description,
       themeCode: getThemeEntry(themeCode) ? themeCode : "nokshi",
       locale,
+      contactPhone: workspace.user.phone,
     });
     storeId = store.id;
   } catch (error) {
@@ -41,5 +43,5 @@ export async function createFirstStoreAction(
   const jar = await cookies();
   jar.set(STORE_COOKIE, storeId, { path: "/", sameSite: "lax", httpOnly: true, maxAge: 60 * 60 * 24 * 365 });
 
-  redirect("/admin");
+  redirect(safeNextPath(String(formData.get("next") ?? "")));
 }
