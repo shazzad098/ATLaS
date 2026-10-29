@@ -8,7 +8,6 @@ const NAV = [
   { href: "/pricing", label: "দাম" },
   { href: "/themes", label: "থিম" },
   { href: "/how-it-works", label: "কীভাবে কাজ করে" },
-  { href: "/signup", label: "ফ্রি সাইনআপ" },
 ];
 
 const FOOTER_COLUMNS = [

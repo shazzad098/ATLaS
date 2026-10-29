@@ -88,10 +88,7 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
         ok: true,
         step: "otp",
         identifier: result.phone,
-        message: result.devCode
-          ? `ডেমো মোডে SMS নেই — আপনার কোড: ${result.devCode}`
-          : "OTP পাঠানো হয়েছে।",
-        devCode: result.devCode,
+        message: `${result.phone} নম্বরে OTP পাঠানো হয়েছে।`,
       };
     } catch (error) {
       return { ok: false, message: error instanceof AppError ? error.message : "OTP পাঠানো যায়নি।" };
@@ -171,14 +168,11 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
       where: { phone: normalizePhone(phone), deletedAt: null },
       select: { id: true },
     });
-    if (taken) return { ok: false, message: "এই নম্বরে আগেই অ্যাকাউন্ট আছে — লগইন করুন।" };
+    if (taken) return { ok: false, phone, message: "এই নম্বরে আগেই অ্যাকাউন্ট আছে — অনুগ্রহ করে লগইন করুন।" };
 
     try {
       const result = await requestOtp(phone, { purpose: "SIGNUP", ip: (await requestMeta()).ip });
-      // React resets the form after the action returns, so keep the details
-      // (including the password) in an encrypted, httpOnly cookie until the
-      // OTP has been verified.
-      await savePendingSignup({
+      const signupToken = await savePendingSignup({
         name,
         phone: result.phone,
         email: email.toLowerCase(),
@@ -188,17 +182,59 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
         ok: true,
         step: "otp",
         phone: result.phone,
-        message: result.devCode
-          ? `ডেমো মোডে SMS নেই — আপনার কোড: ${result.devCode}`
-          : `${result.phone} নম্বরে OTP পাঠানো হয়েছে।`,
-        devCode: result.devCode,
+        signupToken,
+        message: `${result.phone} নম্বরে OTP পাঠানো হয়েছে। মোবাইলের মেসেজ দেখে কোডটি দিন।`,
       };
     } catch (error) {
       return { ok: false, message: error instanceof AppError ? error.message : "OTP পাঠানো যায়নি।" };
     }
   }
 
-  const pending = await readPendingSignup();
+  if (intent === "resend") {
+    const signupToken = text(formData, "signupToken");
+    const phoneFromForm = text(formData, "phone");
+    const pending = await readPendingSignup(signupToken || formData, phoneFromForm);
+    if (!pending) {
+      return {
+        ok: false,
+        step: "credentials",
+        message: "যাচাইয়ের সময় শেষ হয়েছে — ফর্মটি আবার পূরণ করুন।",
+      };
+    }
+    try {
+      await requestOtp(pending.phone, { purpose: "SIGNUP", ip: (await requestMeta()).ip });
+      const currentToken = signupToken || (await savePendingSignup(pending));
+      return {
+        ok: true,
+        step: "otp",
+        phone: pending.phone,
+        signupToken: currentToken,
+        message: `${pending.phone} নম্বরে নতুন OTP পাঠানো হয়েছে।`,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        step: "otp",
+        phone: pending.phone,
+        signupToken,
+        message: error instanceof AppError ? error.message : "নতুন OTP পাঠানো যায়নি।",
+      };
+    }
+  }
+
+  if (intent === "back") {
+    const phoneFromForm = text(formData, "phone");
+    await clearPendingSignup(phoneFromForm);
+    return {
+      ok: false,
+      step: "credentials",
+      message: "",
+    };
+  }
+
+  const signupToken = text(formData, "signupToken");
+  const phoneFromForm = text(formData, "phone");
+  const pending = await readPendingSignup(signupToken || formData, phoneFromForm);
   if (!pending) {
     return {
       ok: false,
@@ -208,7 +244,9 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
   }
 
   const code = text(formData, "code").trim();
-  if (!code) return { ok: false, step: "otp", phone: pending.phone, message: "OTP কোড দিন।" };
+  if (!code) {
+    return { ok: false, step: "otp", phone: pending.phone, signupToken, message: "OTP কোড দিন।" };
+  }
 
   const verified = await verifyOtp(pending.phone, code, { purpose: "SIGNUP" });
   if (!verified.ok) {
@@ -216,7 +254,11 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
       ok: false,
       step: "otp",
       phone: pending.phone,
-      message: "কোডটি মেলেনি বা মেয়াদ শেষ। আবার চেষ্টা করুন।",
+      signupToken,
+      message:
+        verified.reason === "LOCKED"
+          ? "অনেকবার ভুল কোড দেওয়া হয়েছে। কিছুক্ষণ পর নতুন করে চেষ্টা করুন।"
+          : "কোডটি মেলেনি বা মেয়াদ শেষ। মোবাইলে আসা সঠিক ৬ ডিজিটের কোডটি দিন।",
     };
   }
 
@@ -231,15 +273,15 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
     await setAuthCookies(tokens);
   } catch (error) {
     if (error instanceof AppError) {
-      return { ok: false, step: "otp", phone: pending.phone, message: error.message };
+      return { ok: false, step: "otp", phone: pending.phone, signupToken, message: error.message };
     }
     if ((error as { code?: string })?.code === "P2002") {
-      return { ok: false, step: "otp", phone: pending.phone, message: "এই তথ্য দিয়ে আগেই অ্যাকাউন্ট আছে।" };
+      return { ok: false, step: "otp", phone: pending.phone, signupToken, message: "এই তথ্য দিয়ে আগেই অ্যাকাউন্ট আছে।" };
     }
-    return { ok: false, step: "otp", phone: pending.phone, message: "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
+    return { ok: false, step: "otp", phone: pending.phone, signupToken, message: "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
   }
 
-  await clearPendingSignup();
+  await clearPendingSignup(pending.phone);
   redirect(onboardingPath(next));
 }
 

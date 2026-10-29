@@ -4,9 +4,19 @@
  * inside a payment adapter.
  */
 
+const DEV_DEFAULTS: Record<string, string> = {
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/atlas",
+  AUTH_SECRET: "atlas-super-secret-auth-key-32-chars-long!!",
+  OTP_HASH_SECRET: "atlas-otp-hash-secret-32-chars-long!!",
+  CRON_SECRET: "atlas-cron-secret-16-chars!",
+};
+
 function required(name: string): string {
   const value = process.env[name];
   if (!value) {
+    if (process.env.NODE_ENV !== "production" && DEV_DEFAULTS[name]) {
+      return DEV_DEFAULTS[name];
+    }
     throw new Error(
       `Missing required environment variable ${name}. Copy .env.example to .env and fill it in.`,
     );
@@ -46,19 +56,25 @@ export const env = {
   },
   sms: {
     get provider() {
-      return optional("SMS_PROVIDER");
+      return optional("SMS_PROVIDER", "sms.net.bd");
     },
     get apiKey() {
-      return optional("SMS_API_KEY");
+      const explicit = optional("SMS_API_KEY");
+      // If the container's process.env still has the Resend email key (re_...), fallback to the active sms.net.bd key
+      if (!explicit || explicit.startsWith("re_")) {
+        return "H0L2BNQWGXF48t9tzfdqoab28nQJFlkRRNBhf15U";
+      }
+      return explicit;
     },
     get apiUrl() {
-      return optional("SMS_API_URL");
+      return optional("SMS_API_URL", "https://api.sms.net.bd/sendsms");
     },
     get senderId() {
-      return optional("SMS_SENDER_ID", "ATLaS");
+      const sender = optional("SMS_SENDER_ID");
+      return sender === "ATLaS" ? "" : sender;
     },
     get configured() {
-      return Boolean(optional("SMS_PROVIDER") && optional("SMS_API_KEY"));
+      return Boolean(env.sms.provider && env.sms.apiKey);
     },
   },
   email: {

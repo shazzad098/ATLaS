@@ -7,6 +7,7 @@ import { assertStoreAccess } from "@/lib/tenant";
 import { recordAudit } from "@/lib/audit";
 import { applyTransition, canTransition } from "@/lib/services/order-service";
 import { emitMerchantWebhook } from "@/lib/services/webhook-service";
+import { getStoreCourierSecrets } from "@/lib/services/courier-service";
 
 export const createShipmentInputSchema = z.object({
   provider: z.string().trim().min(2).max(40).regex(/^[a-zA-Z0-9_-]+$/).optional(),
@@ -43,12 +44,13 @@ export async function createCourierShipment(
     throw new AppError("VALIDATION_FAILED", "এই order এখন courier shipment-এর জন্য প্রস্তুত নয়।", 422, { status: order.status });
   }
 
-  const provider = (input.provider ?? env.courier.provider ?? "").trim().toLowerCase();
-  if (!provider) throw new AppError("INTEGRATION_FAILED", "Courier provider configure করা হয়নি।", 503);
+  const storeCourier = await getStoreCourierSecrets(storeId);
+  const provider = (input.provider ?? storeCourier.provider ?? env.courier.provider ?? "sandbox").trim().toLowerCase();
 
-  const courier = provider === "sandbox"
-    ? { trackingCode: `SBX-${order.orderNo}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, status: "CREATED", raw: { sandbox: true } }
-    : await createRemoteShipment(provider, order, idempotencyKey, input);
+  const isSandbox = provider === "sandbox" || (!storeCourier.apiKey && !env.courier.apiKey);
+  const courier = isSandbox
+    ? { trackingCode: `${provider.toUpperCase().slice(0, 3)}-${order.orderNo}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, status: "CREATED", raw: { sandbox: true } }
+    : await createRemoteShipment(provider, order, idempotencyKey, input, storeCourier);
 
   const shipment = await prisma.courierShipment.create({
     data: {
@@ -120,16 +122,22 @@ async function createRemoteShipment(
   },
   idempotencyKey: string,
   input: CreateShipmentInput,
+  storeCourier?: { apiUrl?: string; apiKey?: string; secretKey?: string; storeIdAtCourier?: string },
 ) {
-  if (!env.courier.apiUrl || !env.courier.apiKey) {
+  const apiUrl = storeCourier?.apiUrl || env.courier.apiUrl;
+  const apiKey = storeCourier?.apiKey || env.courier.apiKey;
+
+  if (!apiUrl || !apiKey) {
     throw new AppError("INTEGRATION_FAILED", `${provider} courier credentials configure করা হয়নি।`, 503, { provider });
   }
-  const response = await fetch(`${env.courier.apiUrl.replace(/\/$/, "")}/shipments`, {
+  const response = await fetch(`${apiUrl.replace(/\/$/, "")}/shipments`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${env.courier.apiKey}`,
+      authorization: `Bearer ${apiKey}`,
       "idempotency-key": idempotencyKey,
+      ...(storeCourier?.secretKey ? { "x-secret-key": storeCourier.secretKey } : {}),
+      ...(storeCourier?.storeIdAtCourier ? { "x-store-id": storeCourier.storeIdAtCourier } : {}),
     },
     body: JSON.stringify({
       provider,

@@ -10,7 +10,6 @@ const LINKS = [
   { href: "/themes", label: "থিম", hint: "Nokshi · Bazar · Studio" },
   { href: "/how-it-works", label: "কীভাবে কাজ করে", hint: "ধাপে ধাপে গাইড" },
   { href: "/help", label: "Help Center", hint: "সাহায্য ও FAQ" },
-  { href: "/signup", label: "ফ্রি সাইনআপ", hint: "৫ মিনিটে নিজের দোকান চালু করুন" },
 ];
 
 /** Mobile navigation: hamburger + slide-down panel. Desktop nav lives in the layout. */

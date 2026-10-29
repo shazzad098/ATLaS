@@ -14,7 +14,15 @@ export const POST = route(async (request: Request, context: ProviderRouteContext
   return ok(outcome, { status: outcome.status === "REJECTED_SIGNATURE" ? 401 : 200 });
 });
 
-export const GET = route(async (_request: Request, context: ProviderRouteContext) => {
+export const GET = route(async (request: Request, context: ProviderRouteContext) => {
   const { provider } = await context.params;
-  return ok({ provider, ready: Boolean(process.env.COURIER_WEBHOOK_SECRET) });
+  const url = new URL(request.url);
+  const storeId = url.searchParams.get("storeId") || url.searchParams.get("store");
+  let ready = Boolean(process.env.COURIER_WEBHOOK_SECRET);
+  if (!ready && storeId) {
+    const { getStoreCourierSecrets } = await import("@/lib/services/courier-service");
+    const secrets = await getStoreCourierSecrets(storeId);
+    ready = Boolean(secrets.webhookSecret || secrets.isEnabled);
+  }
+  return ok({ provider, ready: ready || provider === "sandbox" });
 });

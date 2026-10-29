@@ -39,6 +39,7 @@ import {
 } from "@/lib/services/domain-service";
 import { archiveCoupon, createCoupon, updateCoupon } from "@/lib/services/coupon-service";
 import { inviteStaff, removeStaff, updateStaffRole } from "@/lib/services/staff-service";
+import { saveStoreCourierConfig, testCourierWebhook } from "@/lib/services/courier-service";
 import type { Permission, RoleCode } from "@/lib/rbac";
 import type { AdminState } from "@/app/admin/state";
 
@@ -810,6 +811,56 @@ export async function closeTicketAction(_prev: AdminState, formData: FormData): 
     return { ok: true, message: "টিকেট বন্ধ করা হয়েছে।" };
   } catch (error) {
     return message(error, "বন্ধ করা যায়নি।");
+  }
+}
+
+// ── Courier & Webhooks ────────────────────────────────────────────────────────
+
+export async function saveCourierConfigAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("delivery:write");
+    const storeId = required(formData, "storeId");
+    const provider = required(formData, "provider");
+    const isEnabled = formData.get("isEnabled") === "on" || formData.get("isEnabled") === "true";
+    const autoBooking = formData.get("autoBooking") === "on" || formData.get("autoBooking") === "true";
+    const apiKey = text(formData, "apiKey");
+    const secretKey = text(formData, "secretKey");
+    const apiUrl = text(formData, "apiUrl");
+    const storeIdAtCourier = text(formData, "storeIdAtCourier");
+    const webhookSecret = text(formData, "webhookSecret");
+
+    await saveStoreCourierConfig(actor, storeId, {
+      provider,
+      isEnabled,
+      autoBooking,
+      apiKey,
+      secretKey,
+      apiUrl,
+      storeIdAtCourier,
+      webhookSecret,
+    });
+
+    revalidateAdmin("/admin/delivery");
+    return { ok: true, message: "কুরিয়ার ও ওয়েবহুক সেটিংস সফলভাবে সংরক্ষিত হয়েছে।" };
+  } catch (error) {
+    return message(error, "কুরিয়ার সেটিংস সংরক্ষণ করা যায়নি।");
+  }
+}
+
+export async function sendTestCourierWebhookAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("delivery:write");
+    const storeId = required(formData, "storeId");
+    const status = text(formData, "status") || "SHIPPED";
+
+    const result = await testCourierWebhook(actor, storeId, { status });
+    revalidateAdmin("/admin/delivery");
+    return {
+      ok: true,
+      message: `টেস্ট ওয়েবহুক পাঠানো হয়েছে! ট্র্যাকিং কোড: ${result.trackingCode} (স্ট্যাটাস: ${result.status})`,
+    };
+  } catch (error) {
+    return message(error, "টেস্ট ওয়েবহুক পাঠানো সম্ভব হয়নি।");
   }
 }
 

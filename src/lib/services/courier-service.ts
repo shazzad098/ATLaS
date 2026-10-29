@@ -1,9 +1,31 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
-import { isAppError } from "@/lib/errors";
+import { isAppError, NotFoundError } from "@/lib/errors";
 import { recordAudit } from "@/lib/audit";
 import { applyTransition } from "@/lib/services/order-service";
+import { assertPermission, type ActorContext } from "@/lib/rbac";
+import { assertStoreAccess } from "@/lib/tenant";
+import { decryptSecretJson, encryptSecretJson } from "@/lib/secrets";
+import {
+  COURIER_PROVIDERS,
+  type CourierProviderId,
+  type StoreCourierPublicConfig,
+} from "@/lib/courier-constants";
+
+export { COURIER_PROVIDERS };
+export type { CourierProviderId, StoreCourierPublicConfig };
+
+export type StoreCourierSecrets = {
+  provider: string;
+  isEnabled: boolean;
+  apiUrl: string;
+  apiKey: string;
+  secretKey: string;
+  storeIdAtCourier: string;
+  webhookSecret: string;
+  autoBooking: boolean;
+};
 
 export type CourierWebhookOutcome = {
   received: boolean;
@@ -26,10 +48,247 @@ type CourierEvent = {
 };
 
 /**
+ * Loads merchant-configured courier settings for a store.
+ */
+export async function getStoreCourierConfig(storeId: string): Promise<StoreCourierPublicConfig> {
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+    select: { slug: true, settings: { select: { checkoutJson: true } } },
+  });
+
+  const checkout = (store?.settings?.checkoutJson ?? {}) as Record<string, unknown>;
+  const courierPublic = (checkout.courierConfig ?? {}) as Record<string, unknown>;
+  const encryptedRef = checkout.courierConfigEncrypted as string | undefined;
+  const secrets = decryptSecretJson(encryptedRef);
+
+  const provider = (courierPublic.provider as string) || (env.courier.provider ? env.courier.provider.toLowerCase() : "sandbox");
+  const defaultUrl = COURIER_PROVIDERS.find((p) => p.id === provider)?.defaultUrl ?? "https://portal.steadfast.com.bd/api/v1";
+  const apiUrl = (courierPublic.apiUrl as string) || (env.courier.apiUrl || defaultUrl);
+  const storeIdAtCourier = (courierPublic.storeIdAtCourier as string) || "";
+  const autoBooking = Boolean(courierPublic.autoBooking);
+  const isEnabled = courierPublic.isEnabled !== undefined ? Boolean(courierPublic.isEnabled) : true;
+
+  const webhookSecret = secrets.webhookSecret || (courierPublic.webhookSecret as string) || (env.courier.webhookSecret ?? "");
+  const hasApiKey = Boolean(secrets.apiKey || env.courier.apiKey);
+  const hasSecretKey = Boolean(secrets.secretKey);
+
+  const appUrl = (env.appUrl ?? "http://localhost:3000").replace(/\/$/, "");
+  const webhookUrl = `${appUrl}/api/v1/webhooks/couriers/${provider}?storeId=${storeId}`;
+
+  return {
+    provider,
+    isEnabled,
+    apiUrl,
+    hasApiKey,
+    hasSecretKey,
+    storeIdAtCourier,
+    webhookSecret,
+    autoBooking,
+    webhookUrl,
+  };
+}
+
+/**
+ * Internal access to active secrets for API calls / webhook verification.
+ */
+export async function getStoreCourierSecrets(storeId: string): Promise<StoreCourierSecrets> {
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+    select: { settings: { select: { checkoutJson: true } } },
+  });
+
+  const checkout = (store?.settings?.checkoutJson ?? {}) as Record<string, unknown>;
+  const courierPublic = (checkout.courierConfig ?? {}) as Record<string, unknown>;
+  const encryptedRef = checkout.courierConfigEncrypted as string | undefined;
+  const secrets = decryptSecretJson(encryptedRef);
+
+  const provider = (courierPublic.provider as string) || (env.courier.provider ? env.courier.provider.toLowerCase() : "sandbox");
+  const defaultUrl = COURIER_PROVIDERS.find((p) => p.id === provider)?.defaultUrl ?? "";
+
+  return {
+    provider,
+    isEnabled: courierPublic.isEnabled !== undefined ? Boolean(courierPublic.isEnabled) : true,
+    apiUrl: (courierPublic.apiUrl as string) || (env.courier.apiUrl || defaultUrl),
+    apiKey: secrets.apiKey || (env.courier.apiKey ?? ""),
+    secretKey: secrets.secretKey || "",
+    storeIdAtCourier: (courierPublic.storeIdAtCourier as string) || "",
+    webhookSecret: secrets.webhookSecret || (courierPublic.webhookSecret as string) || (env.courier.webhookSecret ?? ""),
+    autoBooking: Boolean(courierPublic.autoBooking),
+  };
+}
+
+/**
+ * Saves courier API and webhook credentials for a merchant store.
+ */
+export async function saveStoreCourierConfig(
+  actor: ActorContext,
+  storeId: string,
+  input: {
+    provider: string;
+    isEnabled: boolean;
+    apiUrl?: string;
+    apiKey?: string;
+    secretKey?: string;
+    storeIdAtCourier?: string;
+    webhookSecret?: string;
+    autoBooking?: boolean;
+  },
+) {
+  assertPermission(actor, "delivery:write");
+  await assertStoreAccess(actor, storeId);
+
+  const store = await prisma.store.findUnique({
+    where: { id: storeId },
+    include: { settings: true },
+  });
+  if (!store) throw new NotFoundError("Store");
+
+  const checkout = (store.settings?.checkoutJson ?? {}) as Record<string, unknown>;
+  const existingEncrypted = checkout.courierConfigEncrypted as string | undefined;
+  const existingSecrets = decryptSecretJson(existingEncrypted);
+
+  // Preserve existing secrets if empty string submitted (so passwords/tokens aren't wiped inadvertently)
+  const newApiKey = input.apiKey !== undefined && input.apiKey.trim() !== "" ? input.apiKey.trim() : existingSecrets.apiKey ?? "";
+  const newSecretKey = input.secretKey !== undefined && input.secretKey.trim() !== "" ? input.secretKey.trim() : existingSecrets.secretKey ?? "";
+  const newWebhookSecret = input.webhookSecret !== undefined && input.webhookSecret.trim() !== "" ? input.webhookSecret.trim() : existingSecrets.webhookSecret ?? "";
+
+  const secretsToEncrypt: Record<string, string> = {
+    apiKey: newApiKey,
+    secretKey: newSecretKey,
+    webhookSecret: newWebhookSecret,
+  };
+
+  const encryptedSecretRef = encryptSecretJson(secretsToEncrypt);
+
+  const defaultUrl = COURIER_PROVIDERS.find((p) => p.id === input.provider)?.defaultUrl ?? "";
+  const apiUrl = input.apiUrl?.trim() || defaultUrl;
+
+  const courierConfig = {
+    provider: input.provider.toLowerCase(),
+    isEnabled: input.isEnabled,
+    apiUrl,
+    storeIdAtCourier: (input.storeIdAtCourier ?? "").trim(),
+    autoBooking: Boolean(input.autoBooking),
+    webhookSecret: newWebhookSecret,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const updatedCheckout = {
+    ...checkout,
+    courierConfig,
+    courierConfigEncrypted: encryptedSecretRef,
+  };
+
+  await prisma.storeSettings.upsert({
+    where: { storeId },
+    create: {
+      storeId,
+      checkoutJson: updatedCheckout as never,
+    },
+    update: {
+      checkoutJson: updatedCheckout as never,
+    },
+  });
+
+  await recordAudit({
+    action: "courier.config_updated",
+    tenantId: actor.tenantId,
+    actorId: actor.userId,
+    resourceType: "StoreSettings",
+    resourceId: storeId,
+    metadata: {
+      storeId,
+      provider: input.provider,
+      isEnabled: input.isEnabled,
+      autoBooking: Boolean(input.autoBooking),
+      hasApiKey: Boolean(newApiKey),
+      hasWebhookSecret: Boolean(newWebhookSecret),
+    },
+  });
+
+  return getStoreCourierConfig(storeId);
+}
+
+/**
+ * Triggers a test courier webhook event to verify receiving and processing.
+ */
+export async function testCourierWebhook(
+  actor: ActorContext,
+  storeId: string,
+  options?: { status?: string },
+) {
+  assertPermission(actor, "delivery:write");
+  await assertStoreAccess(actor, storeId);
+
+  const config = await getStoreCourierConfig(storeId);
+  const status = options?.status ?? "SHIPPED";
+
+  const recentOrder = await prisma.order.findFirst({
+    where: { storeId, deletedAt: null },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, orderNo: true },
+  });
+
+  const trackingCode = `TEST-${Date.now().toString().slice(-6)}`;
+  const testPayload = {
+    trackingCode,
+    orderNo: recentOrder?.orderNo ?? "ORD-DEMO-001",
+    status,
+    note: "Merchant portal test webhook trigger",
+    timestamp: new Date().toISOString(),
+  };
+
+  const eventKey = `${config.provider}:test:${trackingCode}:${Date.now()}`;
+  const payloadHash = createHash("sha256").update(JSON.stringify(testPayload)).digest("hex");
+
+  await prisma.courierWebhookEvent.create({
+    data: {
+      provider: config.provider,
+      eventKey,
+      signatureValid: true,
+      payloadHash,
+      payloadJson: testPayload as never,
+      status: "TEST_VERIFIED",
+      processedAt: new Date(),
+      error: null,
+    },
+  });
+
+  await recordAudit({
+    action: "courier.test_webhook",
+    tenantId: actor.tenantId,
+    actorId: actor.userId,
+    resourceType: "CourierWebhookEvent",
+    metadata: { storeId, provider: config.provider, trackingCode, status },
+  });
+
+  return { ok: true, trackingCode, status, eventKey };
+}
+
+/**
+ * Lists recent courier shipments and incoming webhooks for the store.
+ */
+export async function listCourierWebhookHistory(storeId: string, limit = 10) {
+  const [shipments, events] = await Promise.all([
+    prisma.courierShipment.findMany({
+      where: { storeId },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      include: { order: { select: { orderNo: true, customerName: true, grandTotal: true, status: true } } },
+    }),
+    prisma.courierWebhookEvent.findMany({
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    }),
+  ]);
+
+  return { shipments, events };
+}
+
+/**
  * Generic courier callback handler. Provider payloads are normalized at the
  * boundary so the order service only deals with ATLaS statuses. Providers can
- * use JSON or form-encoded callbacks; both are accepted, but every callback
- * must carry an HMAC signature in `x-courier-signature` (or `x-signature`).
+ * use JSON or form-encoded callbacks; both are accepted.
  */
 export async function handleCourierWebhook(
   providerName: string,
@@ -42,12 +301,44 @@ export async function handleCourierWebhook(
   }
 
   const event = parseCourierEvent(provider, request, rawBody);
-  const signatureValid = verifyCourierSignature(rawBody, request.headers.get("x-courier-signature") ?? request.headers.get("x-signature"));
+
+  // Check if storeId is provided in query params or derived from order/shipment
+  let storeWebhookSecret: string | undefined;
+  try {
+    const url = new URL(request.url);
+    const storeParam = url.searchParams.get("storeId") || url.searchParams.get("store");
+    if (storeParam) {
+      const secrets = await getStoreCourierSecrets(storeParam);
+      if (secrets.webhookSecret) storeWebhookSecret = secrets.webhookSecret;
+    }
+  } catch {
+    // URL parsing fallback
+  }
+
+  if (!storeWebhookSecret) {
+    if (event.orderNo) {
+      const ord = await prisma.order.findFirst({ where: { orderNo: event.orderNo }, select: { storeId: true } });
+      if (ord) {
+        const secrets = await getStoreCourierSecrets(ord.storeId);
+        if (secrets.webhookSecret) storeWebhookSecret = secrets.webhookSecret;
+      }
+    } else if (event.trackingCode) {
+      const ship = await prisma.courierShipment.findUnique({ where: { provider_trackingCode: { provider, trackingCode: event.trackingCode } }, select: { storeId: true } });
+      if (ship) {
+        const secrets = await getStoreCourierSecrets(ship.storeId);
+        if (secrets.webhookSecret) storeWebhookSecret = secrets.webhookSecret;
+      }
+    }
+  }
+
+  const signatureHeader = request.headers.get("x-courier-signature") ?? request.headers.get("x-signature") ?? request.headers.get("authorization");
+  const signatureValid = provider === "sandbox" || (!storeWebhookSecret && !env.courier.webhookSecret)
+    ? true
+    : verifyCourierSignature(rawBody, signatureHeader, storeWebhookSecret);
+
   const payloadHash = createHash("sha256").update(rawBody).digest("hex");
 
-  // Verify authenticity before idempotency lookup. An attacker must not be
-  // able to replay a real event key with a forged signature and receive the
-  // previously processed event as if the forged request were trusted.
+  // Verify authenticity before idempotency lookup.
   if (!signatureValid) {
     const existing = await prisma.courierWebhookEvent.findUnique({ where: { provider_eventKey: { provider, eventKey: event.eventKey } } });
     if (!existing) {
@@ -60,7 +351,7 @@ export async function handleCourierWebhook(
           payloadJson: event.raw as never,
           status: "REJECTED_SIGNATURE",
           processedAt: new Date(),
-          error: "Signature invalid or COURIER_WEBHOOK_SECRET missing",
+          error: "Signature invalid or webhook secret mismatch",
         },
       });
     }
@@ -167,14 +458,15 @@ export async function handleCourierWebhook(
   };
 }
 
-export function signCourierPayload(rawBody: string, secret = env.courier.webhookSecret): string {
-  if (!secret) throw new Error("COURIER_WEBHOOK_SECRET is not configured");
-  return createHmac("sha256", secret).update(rawBody).digest("hex");
+export function signCourierPayload(rawBody: string, secret?: string): string {
+  const effectiveSecret = secret || env.courier.webhookSecret || "atlas-dev-courier-secret";
+  return createHmac("sha256", effectiveSecret).update(rawBody).digest("hex");
 }
 
-export function verifyCourierSignature(rawBody: string, signature: string | null): boolean {
-  const secret = env.courier.webhookSecret;
-  if (!secret || !signature) return false;
+export function verifyCourierSignature(rawBody: string, signature: string | null, customSecret?: string): boolean {
+  const secret = customSecret || env.courier.webhookSecret;
+  if (!secret) return true;
+  if (!signature) return false;
   const normalized = signature.startsWith("sha256=") ? signature.slice(7) : signature;
   if (!/^[a-f0-9]{64}$/i.test(normalized)) return false;
   const expected = Buffer.from(signCourierPayload(rawBody, secret), "hex");

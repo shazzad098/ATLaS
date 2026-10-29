@@ -1,0 +1,7 @@
+{
+  "name": "ATLaS",
+  "description": "Multi-tenant Bangladesh-focused SaaS e-commerce store builder with Next.js, React, TypeScript, and PostgreSQL.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

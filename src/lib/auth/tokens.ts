@@ -67,20 +67,22 @@ export function generateCsrfToken(): string {
 }
 
 export function accessCookieOptions() {
+  const isHttps = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https") ?? false;
   return {
     httpOnly: true,
-    sameSite: "lax" as const,
-    secure: !env.isDev,
+    sameSite: (isHttps ? "none" : "lax") as "none" | "lax",
+    secure: isHttps || !env.isDev,
     path: "/",
     maxAge: ACCESS_TTL_SECONDS,
   };
 }
 
 export function refreshCookieOptions() {
+  const isHttps = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https") ?? false;
   return {
     httpOnly: true,
-    sameSite: "lax" as const,
-    secure: !env.isDev,
+    sameSite: (isHttps ? "none" : "lax") as "none" | "lax",
+    secure: isHttps || !env.isDev,
     path: "/",
     maxAge: REFRESH_TTL_SECONDS,
   };
@@ -88,10 +90,11 @@ export function refreshCookieOptions() {
 
 /** Readable by JS so the double-submit CSRF pattern works (PRD §13). */
 export function csrfCookieOptions() {
+  const isHttps = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https") ?? false;
   return {
     httpOnly: false,
-    sameSite: "lax" as const,
-    secure: !env.isDev,
+    sameSite: (isHttps ? "none" : "lax") as "none" | "lax",
+    secure: isHttps || !env.isDev,
     path: "/",
     maxAge: REFRESH_TTL_SECONDS,
   };

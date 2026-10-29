@@ -1,6 +1,39 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { NextConfig } from "next";
 
+function loadLocalEnv(): Record<string, string> {
+  try {
+    const localPath = path.resolve(process.cwd(), ".env.local");
+    if (!fs.existsSync(localPath)) return {};
+    const content = fs.readFileSync(localPath, "utf-8");
+    const parsed: Record<string, string> = {};
+    for (const line of content.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const idx = trimmed.indexOf("=");
+      if (idx > 0) {
+        const key = trimmed.slice(0, idx).trim();
+        let val = trimmed.slice(idx + 1).trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.slice(1, -1);
+        }
+        parsed[key] = val;
+      }
+    }
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
+const localEnv = loadLocalEnv();
+
 const nextConfig: NextConfig = {
+  env: {
+    ...localEnv,
+  },
+  output: "standalone",
   // Cache Components are intentionally OFF. Every page in ATLaS reads
   // tenant-scoped data from PostgreSQL on the request path, so the PPR /
   // `use cache` model would force Suspense boundaries everywhere for no gain.

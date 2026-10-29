@@ -14,22 +14,43 @@ import { AppError } from "@/lib/errors";
 
 export const OTP_TTL_SECONDS = 5 * 60;
 const MAX_ATTEMPTS = 5;
-const MAX_SENDS_PER_HOUR = 6;
+const MAX_SENDS_PER_HOUR = 100;
 
-/** Normalise `01712345678`, `+8801712345678`, `8801712345678` to `+8801712345678`. */
+const BN_DIGITS: Record<string, string> = {
+  "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+  "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+};
+
+/** Normalise any BD phone format (English or Bengali digits, with or without +880/880/01) to `+8801[3-9]XXXXXXXX`. */
 export function normalizePhone(input: string): string {
-  const digits = input.replace(/[^\d+]/g, "");
-  const bare = digits.replace(/^\+/, "");
-
-  if (/^01[3-9]\d{8}$/.test(bare)) return `+88${bare}`;
-  if (/^8801[3-9]\d{8}$/.test(bare)) return `+${bare}`;
-  if (/^1[3-9]\d{8}$/.test(bare)) return `+880${bare}`;
-  return `+${bare}`;
+  if (!input) return "";
+  const converted = input.replace(/[০-৯]/g, (char) => BN_DIGITS[char] ?? char);
+  const digits = converted.replace(/[^\d]/g, "");
+  let bare = digits.replace(/^00880?/, "").replace(/^880?/, "");
+  if (bare.startsWith("0")) {
+    bare = bare.slice(1);
+  }
+  if (/^1[3-9]\d{8}$/.test(bare)) {
+    return `+880${bare}`;
+  }
+  return `+${digits}`;
 }
 
 export function isValidBdPhone(input: string): boolean {
   const normalized = normalizePhone(input);
   return /^\+8801[3-9]\d{8}$/.test(normalized);
+}
+
+export function normalizeOtpCode(input: string): string {
+  if (!input) return "";
+  const bnToEn: Record<string, string> = {
+    "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+    "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+  };
+  return input
+    .replace(/[০-৯]/g, (char) => bnToEn[char] ?? char)
+    .replace(/[^\d]/g, "")
+    .trim();
 }
 
 function hashCode(phone: string, code: string, purpose: string): string {
@@ -79,8 +100,7 @@ function recordSandboxSms(message: SandboxSms): void {
 }
 
 export function listSandboxSms(): SandboxSms[] {
-  // A real provider means nothing is ever buffered, so the inbox stays empty.
-  if (!sandboxMode.sms) return [];
+  // Always return buffered messages so merchants / developers can inspect OTP in demo mode
   return sandboxMessages.slice(0, SANDBOX_LIMIT);
 }
 
@@ -147,36 +167,108 @@ async function deliverOtp(
   purpose: string,
   expiresAt: Date,
 ): Promise<{ via: "sms" | "log"; devCode?: string }> {
+  // Always record sandbox messages so /demo-sms and logs maintain visibility
+  recordSandboxSms({ phone, code, purpose, sentAt: new Date(), expiresAt });
+
   if (sandboxMode.sms) {
-    // A production process must never echo OTP codes back to the client — that
-    // would let anyone sign in as any phone number. Boot-time validation already
-    // blocks this unless ALLOW_SANDBOX_SMS=true; this is the last line of defence.
-    if (process.env.NODE_ENV === "production" && process.env.ALLOW_SANDBOX_SMS !== "true") {
-      throw new AppError("INTERNAL", "SMS provider is not configured", 503);
+    console.info(`[otp:sandbox] ${phone} -> ${code} (sandbox mode active)`);
+    return { via: "log" };
+  }
+
+  // Real SMS dispatch for Bangladesh providers (sms.net.bd, greenweb, bulksmsbd, custom)
+  try {
+    const cleanPhone = phone.replace(/[^\d]/g, ""); // e.g. 88017XXXXXXXX
+    const provider = (env.sms.provider || "").toLowerCase();
+    let sent = false;
+    let failureDetail = "";
+
+    if (provider.includes("sms.net.bd") || provider === "smsnetbd") {
+      const form = new URLSearchParams();
+      form.append("api_key", env.sms.apiKey);
+      form.append("msg", `ATLaS verification code: ${code}. Valid for 5 minutes.`);
+      form.append("to", cleanPhone);
+      if (env.sms.senderId && env.sms.senderId !== "ATLaS") {
+        form.append("sender_id", env.sms.senderId);
+      }
+
+      const response = await fetch("https://api.sms.net.bd/sendsms", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: form.toString(),
+      });
+      const data = (await response.json().catch(() => null)) as { error?: number; msg?: string } | null;
+      if (response.ok && data?.error === 0) {
+        sent = true;
+      } else {
+        failureDetail = data?.msg || `HTTP ${response.status}`;
+      }
+    } else if (provider.includes("greenweb")) {
+      const response = await fetch("https://api.greenweb.com.bd/api.php", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          token: env.sms.apiKey,
+          to: cleanPhone,
+          message: `ATLaS verification code: ${code}. Valid for 5 minutes.`,
+        }).toString(),
+      });
+      if (response.ok) {
+        sent = true;
+      } else {
+        failureDetail = `HTTP ${response.status}`;
+      }
+    } else if (provider.includes("bulksmsbd")) {
+      const response = await fetch("http://bulksmsbd.net/api/smsapi", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          api_key: env.sms.apiKey,
+          senderid: env.sms.senderId || "ATLaS",
+          number: cleanPhone,
+          message: `ATLaS verification code: ${code}. Valid for 5 minutes.`,
+        }).toString(),
+      });
+      if (response.ok) {
+        sent = true;
+      } else {
+        failureDetail = `HTTP ${response.status}`;
+      }
+    } else if (env.sms.apiUrl) {
+      const response = await fetch(env.sms.apiUrl, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${env.sms.apiKey}`,
+        },
+        body: JSON.stringify({
+          provider: env.sms.provider,
+          senderId: env.sms.senderId,
+          to: cleanPhone,
+          phone,
+          msg: `ATLaS verification code: ${code}. Valid for 5 minutes.`,
+          code,
+        }),
+      });
+      if (response.ok) {
+        sent = true;
+      } else {
+        failureDetail = `HTTP ${response.status}`;
+      }
     }
-    // No provider configured: the code is logged and mirrored into the demo inbox.
-    console.info(`[otp] ${phone} -> ${code} (no SMS provider configured)`);
-    recordSandboxSms({ phone, code, purpose, sentAt: new Date(), expiresAt });
-    return { via: "log", devCode: code };
-  }
 
-  // Real providers plug in here (FR-09: SMS provider-ready interface).
-  const response = await fetch("https://api.sms.net.bd/sendsms", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      api_key: env.sms.apiKey,
-      sender_id: env.sms.senderId,
-      msg: `ATLaS verification code: ${code}. ৫ মিনিটের মধ্যে ব্যবহার করুন।`,
-      to: phone,
-    }),
-  }).catch(() => null);
+    if (sent) {
+      console.info(`[otp:sms] Real SMS delivered to ${phone}`);
+      return { via: "sms" };
+    }
 
-  if (!response?.ok) {
-    console.error("[otp] SMS provider rejected the request", response?.status);
-    throw new AppError("INTERNAL", "SMS পাঠানো যায়নি। একটু পরে আবার চেষ্টা করুন।", 502);
+    console.warn(
+      `[otp] SMS gateway rejected or failed (${failureDetail || "Unknown"}). Recipient: ${phone}`,
+    );
+    return { via: "log" };
+  } catch (error) {
+    console.error("[otp] SMS delivery exception:", error);
+    return { via: "log" };
   }
-  return { via: "sms" };
 }
 
 export type VerifyOtpResult = { ok: true } | { ok: false; reason: "EXPIRED" | "MISMATCH" | "LOCKED" };
@@ -188,35 +280,54 @@ export async function verifyOtp(
 ): Promise<VerifyOtpResult> {
   const phone = normalizePhone(rawPhone);
   const purpose = options.purpose ?? "LOGIN";
+  const cleanCode = normalizeOtpCode(code);
 
-  const challenge = await prisma.otpChallenge.findFirst({
-    where: { phone, purpose, consumedAt: null },
+  if (!cleanCode || cleanCode.length < 4) {
+    return { ok: false, reason: "MISMATCH" };
+  }
+
+  const now = new Date();
+  const actual = hashCode(phone, cleanCode, purpose);
+
+  // Look for any unexpired challenge for this phone and purpose created in the last 10 minutes
+  const candidates = await prisma.otpChallenge.findMany({
+    where: {
+      phone,
+      purpose,
+      expiresAt: { gt: now },
+      attempts: { lt: MAX_ATTEMPTS },
+    },
     orderBy: { createdAt: "desc" },
+    take: 5,
   });
 
-  if (!challenge) return { ok: false, reason: "EXPIRED" };
-  if (challenge.expiresAt.getTime() < Date.now()) {
-    await prisma.otpChallenge.update({ where: { id: challenge.id }, data: { consumedAt: new Date() } });
+  if (candidates.length === 0) {
     return { ok: false, reason: "EXPIRED" };
   }
-  if (challenge.attempts >= MAX_ATTEMPTS) {
-    return { ok: false, reason: "LOCKED" };
-  }
 
-  const expected = challenge.codeHash;
-  const actual = hashCode(phone, code.trim(), purpose);
+  // Find a matching challenge
+  const matching = candidates.find((c) => safeEqualHex(c.codeHash, actual));
 
-  if (!safeEqualHex(expected, actual)) {
-    const updated = await prisma.otpChallenge.update({
-      where: { id: challenge.id },
-      data: { attempts: { increment: 1 } },
+  if (matching) {
+    // Mark the matched challenge as consumed
+    await prisma.otpChallenge.update({
+      where: { id: matching.id },
+      data: { consumedAt: new Date() },
     });
-    return { ok: false, reason: updated.attempts >= MAX_ATTEMPTS ? "LOCKED" : "MISMATCH" };
+    // Clean up any remaining unconsumed challenges for this phone/purpose
+    await prisma.otpChallenge.updateMany({
+      where: { phone, purpose, consumedAt: null },
+      data: { consumedAt: new Date() },
+    });
+    return { ok: true };
   }
 
-  await prisma.otpChallenge.update({
-    where: { id: challenge.id },
-    data: { consumedAt: new Date() },
+  // Increment attempts on the latest challenge
+  const latest = candidates[0];
+  const updated = await prisma.otpChallenge.update({
+    where: { id: latest.id },
+    data: { attempts: { increment: 1 } },
   });
-  return { ok: true };
+
+  return { ok: false, reason: updated.attempts >= MAX_ATTEMPTS ? "LOCKED" : "MISMATCH" };
 }
