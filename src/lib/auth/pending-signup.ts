@@ -1,81 +1,84 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
+import { env } from "@/lib/env";
 
 /**
- * Pending merchant signup.
- *
- * The signup form is two steps (details → OTP), and React 19 resets uncontrolled
- * fields after a Server Action returns. The details therefore cannot live in the
- * form between steps, and the password must never be echoed back in the page
- * payload. This module keeps them in a short-lived, encrypted, httpOnly cookie
- * that only the server can read.
+ * Pending merchant signup data is kept in an authenticated, encrypted token.
+ * The token is passed in a hidden form field, so signup does not depend on
+ * process-local memory or third-party cookies in serverless deployments.
  */
-
 const COOKIE = "atlas_signup_pending";
 const TTL_SECONDS = 15 * 60;
 
-export type PendingSignup = {
+type PendingSignup = {
   name: string;
   phone: string;
   email: string;
   password: string;
 };
 
-// Memory store fallback for iframe environments where third-party cookies are blocked
-type PendingEntry = {
-  data: PendingSignup;
-  expiresAt: number;
-};
-const globalStore = globalThis as unknown as { atlasPendingSignups?: Map<string, PendingEntry> };
-const memoryStore = (globalStore.atlasPendingSignups ??= new Map<string, PendingEntry>());
-
-function cleanExpiredEntries(): void {
-  const now = Date.now();
-  for (const [key, entry] of memoryStore.entries()) {
-    if (entry.expiresAt < now) {
-      memoryStore.delete(key);
-    }
-  }
-}
+type PendingSignupPayload = PendingSignup & { expiresAt: number };
 
 function encryptionKey(): Buffer {
-  const secret = process.env.AUTH_SECRET || "atlas-super-secret-auth-key-32-chars-long!!";
-  return createHash("sha256").update(`signup:${secret}`).digest();
+  return createHash("sha256").update(`signup:${env.authSecret}`).digest();
+}
+
+function cleanPhone(value: string): string {
+  return value.replace(/[^\d+]/g, "");
 }
 
 export function encryptPendingSignup(input: PendingSignup): string {
+  const payload: PendingSignupPayload = {
+    ...input,
+    expiresAt: Date.now() + TTL_SECONDS * 1000,
+  };
   const iv = randomBytes(12);
   const cipher = createCipheriv("aes-256-gcm", encryptionKey(), iv);
-  const payload = Buffer.concat([cipher.update(JSON.stringify(input), "utf8"), cipher.final()]);
+  const encrypted = Buffer.concat([
+    cipher.update(JSON.stringify(payload), "utf8"),
+    cipher.final(),
+  ]);
 
-  return [iv, cipher.getAuthTag(), payload]
+  return [iv, cipher.getAuthTag(), encrypted]
     .map((part) => part.toString("base64url"))
     .join(".");
 }
 
 export function decryptPendingSignup(token: string): PendingSignup | null {
   if (!token || typeof token !== "string") return null;
-  const [ivPart, tagPart, payloadPart] = token.split(".");
-  if (!ivPart || !tagPart || !payloadPart) return null;
+  const parts = token.split(".");
+  if (parts.length !== 3 || parts.some((part) => !part)) return null;
 
   try {
-    const decipher = createDecipheriv(
-      "aes-256-gcm",
-      encryptionKey(),
-      Buffer.from(ivPart, "base64url"),
-    );
-    decipher.setAuthTag(Buffer.from(tagPart, "base64url"));
-    const json = Buffer.concat([
-      decipher.update(Buffer.from(payloadPart, "base64url")),
+    const [ivPart, tagPart, encryptedPart] = parts;
+    const iv = Buffer.from(ivPart, "base64url");
+    const tag = Buffer.from(tagPart, "base64url");
+    const encrypted = Buffer.from(encryptedPart, "base64url");
+
+    if (iv.length !== 12 || tag.length !== 16 || encrypted.length === 0) return null;
+
+    const decipher = createDecipheriv("aes-256-gcm", encryptionKey(), iv);
+    decipher.setAuthTag(tag);
+    const plaintext = Buffer.concat([
+      decipher.update(encrypted),
       decipher.final(),
     ]).toString("utf8");
 
-    const parsed = JSON.parse(json) as Partial<PendingSignup>;
-    if (!parsed.name || !parsed.phone || !parsed.password) return null;
+    const parsed = JSON.parse(plaintext) as Partial<PendingSignupPayload>;
+    if (
+      typeof parsed.name !== "string" || parsed.name.length < 2 ||
+      typeof parsed.phone !== "string" || !parsed.phone ||
+      typeof parsed.password !== "string" || !parsed.password ||
+      typeof parsed.email !== "string" ||
+      typeof parsed.expiresAt !== "number" || parsed.expiresAt <= Date.now()
+    ) {
+      return null;
+    }
+
     return {
       name: parsed.name,
       phone: parsed.phone,
-      email: parsed.email ?? "",
+      email: parsed.email,
       password: parsed.password,
     };
   } catch {
@@ -86,26 +89,19 @@ export function decryptPendingSignup(token: string): PendingSignup | null {
 export async function savePendingSignup(input: PendingSignup): Promise<string> {
   const token = encryptPendingSignup(input);
 
-  // Store in memory cache by normalized phone
-  cleanExpiredEntries();
-  const cleanPhone = input.phone.replace(/[^\d+]/g, "");
-  memoryStore.set(cleanPhone, {
-    data: input,
-    expiresAt: Date.now() + TTL_SECONDS * 1000,
-  });
-
-  // Also try to set cookie (with SameSite=None and Secure=true for iframes)
+  // The hidden signupToken is the primary transport. The cookie is only a
+  // fallback for browser flows where a form field is unavailable.
   try {
     const jar = await cookies();
     jar.set(COOKIE, token, {
       httpOnly: true,
-      sameSite: "none",
-      secure: true,
+      sameSite: "lax",
+      secure: env.isProduction,
       path: "/",
       maxAge: TTL_SECONDS,
     });
   } catch {
-    // Cookie failure in non-standard context is non-fatal since token/memory exists
+    // The encrypted hidden form token remains sufficient.
   }
 
   return token;
@@ -115,66 +111,46 @@ export async function readPendingSignup(
   tokenOrSource?: string | FormData | null,
   phoneHint?: string,
 ): Promise<PendingSignup | null> {
-  cleanExpiredEntries();
+  let submittedToken: string | null = null;
+  let submittedPhone = phoneHint ?? "";
 
-  // 1. Check direct encrypted token
-  if (typeof tokenOrSource === "string" && tokenOrSource.trim().length > 0) {
-    const decrypted = decryptPendingSignup(tokenOrSource.trim());
-    if (decrypted) return decrypted;
+  if (typeof tokenOrSource === "string" && tokenOrSource.trim()) {
+    submittedToken = tokenOrSource.trim();
+  } else if (tokenOrSource && typeof tokenOrSource === "object" && "get" in tokenOrSource) {
+    const token = tokenOrSource.get("signupToken");
+    const phone = tokenOrSource.get("phone");
+    if (typeof token === "string" && token.trim()) submittedToken = token.trim();
+    if (typeof phone === "string" && phone.trim()) submittedPhone = phone.trim();
   }
 
-  // 2. Check FormData
-  if (tokenOrSource && typeof tokenOrSource === "object" && "get" in tokenOrSource) {
-    const fromForm = tokenOrSource.get("signupToken");
-    if (typeof fromForm === "string" && fromForm.trim().length > 0) {
-      const decrypted = decryptPendingSignup(fromForm.trim());
-      if (decrypted) return decrypted;
-    }
-    const phoneFromForm = tokenOrSource.get("phone");
-    if (typeof phoneFromForm === "string" && phoneFromForm.trim().length > 0) {
-      phoneHint = phoneHint || phoneFromForm.trim();
+  if (submittedToken) {
+    const pending = decryptPendingSignup(submittedToken);
+    if (pending && (!submittedPhone || cleanPhone(pending.phone) === cleanPhone(submittedPhone))) {
+      return pending;
     }
   }
 
-  // 3. Check memory store by phone hint
-  if (phoneHint) {
-    const cleanPhone = phoneHint.replace(/[^\d+]/g, "");
-    const cached = memoryStore.get(cleanPhone);
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
-    }
-  }
-
-  // 4. Check cookie
   try {
     const jar = await cookies();
-    const raw = jar.get(COOKIE)?.value;
-    if (raw) {
-      const decrypted = decryptPendingSignup(raw);
-      if (decrypted) return decrypted;
+    const cookieToken = jar.get(COOKIE)?.value;
+    if (cookieToken) {
+      const pending = decryptPendingSignup(cookieToken);
+      if (pending && (!submittedPhone || cleanPhone(pending.phone) === cleanPhone(submittedPhone))) {
+        return pending;
+      }
     }
   } catch {
-    // ignore cookie read error
-  }
-
-  // 5. If only one recent entry in memory store, return it
-  if (memoryStore.size === 1) {
-    const entry = memoryStore.values().next().value;
-    if (entry && entry.expiresAt > Date.now()) {
-      return entry.data;
-    }
+    // No cookie access: the hidden form token is the intended primary path.
   }
 
   return null;
 }
 
-export async function clearPendingSignup(phoneHint?: string): Promise<void> {
-  if (phoneHint) {
-    const cleanPhone = phoneHint.replace(/[^\d+]/g, "");
-    memoryStore.delete(cleanPhone);
-  }
+export async function clearPendingSignup(_phoneHint?: string): Promise<void> {
   try {
     const jar = await cookies();
     jar.delete(COOKIE);
-  } catch {}
+  } catch {
+    // Nothing else needs clearing; no process-local signup cache is used.
+  }
 }

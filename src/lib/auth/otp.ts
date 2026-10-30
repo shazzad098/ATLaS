@@ -1,4 +1,4 @@
-import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { env, sandboxMode } from "@/lib/env";
 import { AppError } from "@/lib/errors";
@@ -26,14 +26,16 @@ export function normalizePhone(input: string): string {
   if (!input) return "";
   const converted = input.replace(/[০-৯]/g, (char) => BN_DIGITS[char] ?? char);
   const digits = converted.replace(/[^\d]/g, "");
-  let bare = digits.replace(/^00880?/, "").replace(/^880?/, "");
-  if (bare.startsWith("0")) {
-    bare = bare.slice(1);
+
+  let national = digits;
+  if (national.startsWith("00880")) national = national.slice(5);
+  else if (national.startsWith("880")) national = national.slice(3);
+  else if (national.startsWith("0")) national = national.slice(1);
+
+  if (/^1[3-9]\d{8}$/.test(national)) {
+    return `+880${national}`;
   }
-  if (/^1[3-9]\d{8}$/.test(bare)) {
-    return `+880${bare}`;
-  }
-  return `+${digits}`;
+  return digits ? `+${digits}` : "";
 }
 
 export function isValidBdPhone(input: string): boolean {
@@ -57,6 +59,12 @@ function hashCode(phone: string, code: string, purpose: string): string {
   return createHmac("sha256", env.otpHashSecret)
     .update(`${phone}:${purpose}:${code}`)
     .digest("hex");
+}
+
+// A non-secret identifier for diagnosing inconsistent OTP_HASH_SECRET values
+// across server instances. Never log the secret, OTP, or OTP hash itself.
+function otpKeyId(): string {
+  return createHash("sha256").update(env.otpHashSecret).digest("hex").slice(0, 12);
 }
 
 function safeEqualHex(a: string, b: string): boolean {
@@ -133,24 +141,29 @@ export async function requestOtp(
     );
   }
 
-  // Any earlier live challenge for this purpose is superseded.
-  await prisma.otpChallenge.updateMany({
-    where: { phone, purpose, consumedAt: null },
-    data: { consumedAt: new Date() },
-  });
-
   const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
   const expiresAt = new Date(Date.now() + OTP_TTL_SECONDS * 1000);
 
-  await prisma.otpChallenge.create({
-    data: {
-      phone,
-      purpose,
-      codeHash: hashCode(phone, code, purpose),
-      expiresAt,
-      ip: options.ip,
-    },
+  // Supersede the previous challenge and create the new one atomically. This
+  // avoids leaving multiple valid codes when resend/request calls overlap.
+  await prisma.$transaction(async (tx) => {
+    await tx.otpChallenge.updateMany({
+      where: { phone, purpose, consumedAt: null },
+      data: { consumedAt: new Date() },
+    });
+
+    await tx.otpChallenge.create({
+      data: {
+        phone,
+        purpose,
+        codeHash: hashCode(phone, code, purpose),
+        expiresAt,
+        ip: options.ip,
+      },
+    });
   });
+
+  console.info(`[otp] challenge created; purpose=${purpose}; phone=***${phone.slice(-4)}; keyId=${otpKeyId()}`);
 
   const delivered = await deliverOtp(phone, code, purpose, expiresAt);
   return {
@@ -167,18 +180,19 @@ async function deliverOtp(
   purpose: string,
   expiresAt: Date,
 ): Promise<{ via: "sms" | "log"; devCode?: string }> {
-  // Always record sandbox messages so /demo-sms and logs maintain visibility
-  recordSandboxSms({ phone, code, purpose, sentAt: new Date(), expiresAt });
+  const provider = (env.sms.provider || "").toLowerCase();
+  const hasProviderConfig = Boolean(provider || env.sms.apiUrl);
 
-  if (sandboxMode.sms) {
-    console.info(`[otp:sandbox] ${phone} -> ${code} (sandbox mode active)`);
-    return { via: "log" };
+  // Keep raw OTPs only in sandbox/demo mode. Never expose live production OTPs
+  // through the in-memory /demo-sms outbox.
+  if (sandboxMode.sms || !hasProviderConfig) {
+    recordSandboxSms({ phone, code, purpose, sentAt: new Date(), expiresAt });
+    console.info(`[otp:sandbox] OTP recorded for demo inbox: ${phone}`);
+    return { via: "log", devCode: code };
   }
 
-  // Real SMS dispatch for Bangladesh providers (sms.net.bd, greenweb, bulksmsbd, custom)
   try {
     const cleanPhone = phone.replace(/[^\d]/g, ""); // e.g. 88017XXXXXXXX
-    const provider = (env.sms.provider || "").toLowerCase();
     let sent = false;
     let failureDetail = "";
 
@@ -257,7 +271,7 @@ async function deliverOtp(
     }
 
     if (sent) {
-      console.info(`[otp:sms] Real SMS delivered to ${phone}`);
+      console.info(`[otp:sms] Real SMS accepted by provider for ${phone}`);
       return { via: "sms" };
     }
 
@@ -282,52 +296,87 @@ export async function verifyOtp(
   const purpose = options.purpose ?? "LOGIN";
   const cleanCode = normalizeOtpCode(code);
 
-  if (!cleanCode || cleanCode.length < 4) {
+  if (!isValidBdPhone(phone) || !/^\d{6}$/.test(cleanCode)) {
     return { ok: false, reason: "MISMATCH" };
   }
 
-  const now = new Date();
-  const actual = hashCode(phone, cleanCode, purpose);
-
-  // Look for any unexpired challenge for this phone and purpose created in the last 10 minutes
-  const candidates = await prisma.otpChallenge.findMany({
-    where: {
-      phone,
-      purpose,
-      expiresAt: { gt: now },
-      attempts: { lt: MAX_ATTEMPTS },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 5,
+  // Only the newest challenge is valid. requestOtp atomically consumes all
+  // older challenges before creating a new one.
+  const challenge = await prisma.otpChallenge.findFirst({
+    where: { phone, purpose, consumedAt: null },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
 
-  if (candidates.length === 0) {
+  if (!challenge || challenge.expiresAt <= new Date()) {
+    console.info(`[otp] verification expired/no challenge; purpose=${purpose}; phone=***${phone.slice(-4)}; keyId=${otpKeyId()}`);
     return { ok: false, reason: "EXPIRED" };
   }
 
-  // Find a matching challenge
-  const matching = candidates.find((c) => safeEqualHex(c.codeHash, actual));
+  if (challenge.attempts >= MAX_ATTEMPTS) {
+    return { ok: false, reason: "LOCKED" };
+  }
 
-  if (matching) {
-    // Mark the matched challenge as consumed
-    await prisma.otpChallenge.update({
-      where: { id: matching.id },
+  const submittedHash = hashCode(phone, cleanCode, purpose);
+  const matches = safeEqualHex(challenge.codeHash, submittedHash);
+
+  if (!matches) {
+    console.info(
+      `[otp] verification mismatch; purpose=${purpose}; phone=***${phone.slice(-4)}; ` +
+      `attempts=${challenge.attempts}; createdAt=${challenge.createdAt.toISOString()}; keyId=${otpKeyId()}`,
+    );
+  }
+
+  if (matches) {
+    // Compare-and-set: only one concurrent request can consume this challenge.
+    const consumed = await prisma.otpChallenge.updateMany({
+      where: {
+        id: challenge.id,
+        consumedAt: null,
+        expiresAt: { gt: new Date() },
+        attempts: challenge.attempts,
+      },
       data: { consumedAt: new Date() },
     });
-    // Clean up any remaining unconsumed challenges for this phone/purpose
+
+    if (consumed.count !== 1) {
+      return { ok: false, reason: "EXPIRED" };
+    }
+
+    // Invalidate any other active challenge for this phone/purpose.
     await prisma.otpChallenge.updateMany({
       where: { phone, purpose, consumedAt: null },
       data: { consumedAt: new Date() },
     });
+
     return { ok: true };
   }
 
-  // Increment attempts on the latest challenge
-  const latest = candidates[0];
-  const updated = await prisma.otpChallenge.update({
-    where: { id: latest.id },
+  // Atomically charge one failed attempt to this exact challenge.
+  const attemptUpdate = await prisma.otpChallenge.updateMany({
+    where: {
+      id: challenge.id,
+      consumedAt: null,
+      expiresAt: { gt: new Date() },
+      attempts: challenge.attempts,
+    },
     data: { attempts: { increment: 1 } },
   });
 
-  return { ok: false, reason: updated.attempts >= MAX_ATTEMPTS ? "LOCKED" : "MISMATCH" };
+  if (attemptUpdate.count !== 1) {
+    const current = await prisma.otpChallenge.findUnique({
+      where: { id: challenge.id },
+      select: { attempts: true, consumedAt: true, expiresAt: true },
+    });
+
+    if (current && current.attempts >= MAX_ATTEMPTS) {
+      return { ok: false, reason: "LOCKED" };
+    }
+    return { ok: false, reason: "EXPIRED" };
+  }
+
+  const nextAttempts = challenge.attempts + 1;
+  return {
+    ok: false,
+    reason: nextAttempts >= MAX_ATTEMPTS ? "LOCKED" : "MISMATCH",
+  };
 }

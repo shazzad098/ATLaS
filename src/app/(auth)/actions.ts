@@ -258,7 +258,9 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
       message:
         verified.reason === "LOCKED"
           ? "অনেকবার ভুল কোড দেওয়া হয়েছে। কিছুক্ষণ পর নতুন করে চেষ্টা করুন।"
-          : "কোডটি মেলেনি বা মেয়াদ শেষ। মোবাইলে আসা সঠিক ৬ ডিজিটের কোডটি দিন।",
+          : verified.reason === "EXPIRED"
+            ? "OTP-এর মেয়াদ শেষ হয়েছে বা নতুন OTP পাঠানো হয়েছে। নতুন কোড চেয়ে আবার চেষ্টা করুন।"
+            : "OTP কোডটি সঠিক নয়। SMS-এ আসা সর্বশেষ ৬ সংখ্যার কোডটি দিন।",
     };
   }
 

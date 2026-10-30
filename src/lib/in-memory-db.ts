@@ -327,7 +327,47 @@ export class InMemoryCollection implements ModelDelegate {
 
   async groupBy(args?: any): Promise<any[]> {
     const items = await this.findMany({ where: args?.where });
-    return items;
+    const fields = args?.by ?? [];
+    const groups = new Map<string, { key: Record<string, any>; items: any[] }>();
+
+    for (const item of items) {
+      const key = Object.fromEntries(fields.map((field: string) => [field, item[field] ?? null]));
+      const groupKey = JSON.stringify(key, (_field, value) =>
+        typeof value === "bigint" ? value.toString() : value instanceof Date ? value.toISOString() : value,
+      );
+      const group = groups.get(groupKey) ?? { key, items: [] };
+      group.items.push(item);
+      groups.set(groupKey, group);
+    }
+
+    return Array.from(groups.values(), ({ key, items: groupItems }) => {
+      const row: Record<string, any> = { ...key };
+
+      if (args?._count) {
+        const counts: Record<string, number> = {};
+        if (args._count === true || args._count._all) {
+          counts._all = groupItems.length;
+        }
+        if (typeof args._count === "object") {
+          for (const [field, included] of Object.entries(args._count)) {
+            if (field !== "_all" && included) {
+              counts[field] = groupItems.filter((item) => item[field] !== null && item[field] !== undefined).length;
+            }
+          }
+        }
+        row._count = counts;
+      }
+
+      if (args?._sum) {
+        const sums: Record<string, number> = {};
+        for (const field of Object.keys(args._sum)) {
+          sums[field] = groupItems.reduce((total, item) => total + (Number(item[field]) || 0), 0);
+        }
+        row._sum = sums;
+      }
+
+      return row;
+    });
   }
 }
 

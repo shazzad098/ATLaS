@@ -46,10 +46,10 @@ export function SignupForm({ next = "/admin" }: { next?: string }) {
         <input type="hidden" name="next" value={next} />
         <input type="hidden" name="intent" value={inOtpStep ? "verify" : "request"} />
         <input type="hidden" name="signupToken" value={state.signupToken ?? ""} />
-        <input type="hidden" name="phone" value={state.phone ?? ""} />
 
         {inOtpStep ? (
           <>
+            <input type="hidden" name="phone" value={state.phone ?? ""} />
             <div className="flex items-center justify-between rounded-lg border border-ink-200 bg-ink-50 px-3 py-2 text-sm text-ink-700">
               <span>
                 নম্বর: <span className="font-semibold text-ink-900">{state.phone ?? "আপনার নম্বরে"}</span>
@@ -72,7 +72,9 @@ export function SignupForm({ next = "/admin" }: { next?: string }) {
                 name="code"
                 required
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={6}
+                pattern="[0-9০-৯]{6}"
                 placeholder="123456"
                 autoFocus
               />
