@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "npm run db:start",
+    "predev:web": "npm run db:start",
     "dev": "next dev -p 3000 -H 0.0.0.0",
     "dev:web": "next dev",
     "api:install": "npm --prefix api install",
