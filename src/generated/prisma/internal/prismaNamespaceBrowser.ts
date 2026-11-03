@@ -57,6 +57,9 @@ export const ModelName = {
   Role: 'Role',
   Session: 'Session',
   OtpChallenge: 'OtpChallenge',
+  TwoFactorChallenge: 'TwoFactorChallenge',
+  TwoFactorRecoveryCode: 'TwoFactorRecoveryCode',
+  ImpersonationSession: 'ImpersonationSession',
   Store: 'Store',
   StoreSettings: 'StoreSettings',
   Theme: 'Theme',
@@ -71,6 +74,9 @@ export const ModelName = {
   InventoryMovement: 'InventoryMovement',
   Asset: 'Asset',
   Customer: 'Customer',
+  ProductReview: 'ProductReview',
+  ReviewComment: 'ReviewComment',
+  WishlistItem: 'WishlistItem',
   Cart: 'Cart',
   CartItem: 'CartItem',
   Order: 'Order',
@@ -87,10 +93,19 @@ export const ModelName = {
   FeeLedger: 'FeeLedger',
   Coupon: 'Coupon',
   DeliveryZone: 'DeliveryZone',
+  DeliveryMethod: 'DeliveryMethod',
+  Shipment: 'Shipment',
   AuditLog: 'AuditLog',
   Notification: 'Notification',
+  NotificationDelivery: 'NotificationDelivery',
   SupportTicket: 'SupportTicket',
-  WebhookDelivery: 'WebhookDelivery'
+  WebhookDelivery: 'WebhookDelivery',
+  WebhookEndpoint: 'WebhookEndpoint',
+  ApiKey: 'ApiKey',
+  DailyStoreMetric: 'DailyStoreMetric',
+  ExportJob: 'ExportJob',
+  ExportSchedule: 'ExportSchedule',
+  AnalyticsEvent: 'AnalyticsEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -119,6 +134,9 @@ export const UserScalarFieldEnum = {
   isSuperAdmin: 'isSuperAdmin',
   phoneVerifiedAt: 'phoneVerifiedAt',
   lastLoginAt: 'lastLoginAt',
+  twoFactorSecret: 'twoFactorSecret',
+  twoFactorEnabled: 'twoFactorEnabled',
+  twoFactorConfirmedAt: 'twoFactorConfirmedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
@@ -196,6 +214,46 @@ export const OtpChallengeScalarFieldEnum = {
 } as const
 
 export type OtpChallengeScalarFieldEnum = (typeof OtpChallengeScalarFieldEnum)[keyof typeof OtpChallengeScalarFieldEnum]
+
+
+export const TwoFactorChallengeScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  attempts: 'attempts',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  ip: 'ip',
+  createdAt: 'createdAt'
+} as const
+
+export type TwoFactorChallengeScalarFieldEnum = (typeof TwoFactorChallengeScalarFieldEnum)[keyof typeof TwoFactorChallengeScalarFieldEnum]
+
+
+export const TwoFactorRecoveryCodeScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  codeHash: 'codeHash',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type TwoFactorRecoveryCodeScalarFieldEnum = (typeof TwoFactorRecoveryCodeScalarFieldEnum)[keyof typeof TwoFactorRecoveryCodeScalarFieldEnum]
+
+
+export const ImpersonationSessionScalarFieldEnum = {
+  id: 'id',
+  superAdminId: 'superAdminId',
+  tenantId: 'tenantId',
+  storeId: 'storeId',
+  reason: 'reason',
+  reference: 'reference',
+  startedAt: 'startedAt',
+  expiresAt: 'expiresAt',
+  endedAt: 'endedAt'
+} as const
+
+export type ImpersonationSessionScalarFieldEnum = (typeof ImpersonationSessionScalarFieldEnum)[keyof typeof ImpersonationSessionScalarFieldEnum]
 
 
 export const StoreScalarFieldEnum = {
@@ -302,6 +360,13 @@ export const DomainScalarFieldEnum = {
   tlsStatus: 'tlsStatus',
   isPrimary: 'isPrimary',
   verifiedAt: 'verifiedAt',
+  routingTarget: 'routingTarget',
+  dnsLastCheckedAt: 'dnsLastCheckedAt',
+  dnsError: 'dnsError',
+  tlsIssuedAt: 'tlsIssuedAt',
+  tlsLastCheckedAt: 'tlsLastCheckedAt',
+  tlsAttempts: 'tlsAttempts',
+  tlsError: 'tlsError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -396,6 +461,7 @@ export const AssetScalarFieldEnum = {
   id: 'id',
   storeId: 'storeId',
   objectKey: 'objectKey',
+  url: 'url',
   mimeType: 'mimeType',
   sizeBytes: 'sizeBytes',
   checksum: 'checksum',
@@ -412,6 +478,8 @@ export const CustomerScalarFieldEnum = {
   name: 'name',
   phone: 'phone',
   email: 'email',
+  passwordHash: 'passwordHash',
+  lastLoginAt: 'lastLoginAt',
   addressJson: 'addressJson',
   consentJson: 'consentJson',
   status: 'status',
@@ -422,6 +490,47 @@ export const CustomerScalarFieldEnum = {
 } as const
 
 export type CustomerScalarFieldEnum = (typeof CustomerScalarFieldEnum)[keyof typeof CustomerScalarFieldEnum]
+
+
+export const ProductReviewScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  productId: 'productId',
+  customerId: 'customerId',
+  orderId: 'orderId',
+  rating: 'rating',
+  title: 'title',
+  body: 'body',
+  authorName: 'authorName',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductReviewScalarFieldEnum = (typeof ProductReviewScalarFieldEnum)[keyof typeof ProductReviewScalarFieldEnum]
+
+
+export const ReviewCommentScalarFieldEnum = {
+  id: 'id',
+  reviewId: 'reviewId',
+  customerId: 'customerId',
+  authorName: 'authorName',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type ReviewCommentScalarFieldEnum = (typeof ReviewCommentScalarFieldEnum)[keyof typeof ReviewCommentScalarFieldEnum]
+
+
+export const WishlistItemScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  customerId: 'customerId',
+  productId: 'productId',
+  createdAt: 'createdAt'
+} as const
+
+export type WishlistItemScalarFieldEnum = (typeof WishlistItemScalarFieldEnum)[keyof typeof WishlistItemScalarFieldEnum]
 
 
 export const CartScalarFieldEnum = {
@@ -465,6 +574,7 @@ export const OrderScalarFieldEnum = {
   discountTotal: 'discountTotal',
   shippingTotal: 'shippingTotal',
   taxTotal: 'taxTotal',
+  taxJson: 'taxJson',
   grandTotal: 'grandTotal',
   currency: 'currency',
   couponCode: 'couponCode',
@@ -563,6 +673,7 @@ export const PaymentWebhookEventScalarFieldEnum = {
   id: 'id',
   provider: 'provider',
   eventKey: 'eventKey',
+  storeId: 'storeId',
   signatureValid: 'signatureValid',
   payloadHash: 'payloadHash',
   payloadJson: 'payloadJson',
@@ -610,6 +721,10 @@ export const SubscriptionScalarFieldEnum = {
   cancelAtPeriodEnd: 'cancelAtPeriodEnd',
   cancelledAt: 'cancelledAt',
   lastPaymentFailedAt: 'lastPaymentFailedAt',
+  trialUsedAt: 'trialUsedAt',
+  pendingPlanCode: 'pendingPlanCode',
+  pendingBillingPeriod: 'pendingBillingPeriod',
+  pendingInvoiceId: 'pendingInvoiceId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -706,6 +821,43 @@ export const DeliveryZoneScalarFieldEnum = {
 export type DeliveryZoneScalarFieldEnum = (typeof DeliveryZoneScalarFieldEnum)[keyof typeof DeliveryZoneScalarFieldEnum]
 
 
+export const DeliveryMethodScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  provider: 'provider',
+  courierStoreId: 'courierStoreId',
+  isEnabled: 'isEnabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DeliveryMethodScalarFieldEnum = (typeof DeliveryMethodScalarFieldEnum)[keyof typeof DeliveryMethodScalarFieldEnum]
+
+
+export const ShipmentScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  orderId: 'orderId',
+  provider: 'provider',
+  consignmentId: 'consignmentId',
+  trackingCode: 'trackingCode',
+  status: 'status',
+  isSandbox: 'isSandbox',
+  codAmount: 'codAmount',
+  recipientName: 'recipientName',
+  recipientPhone: 'recipientPhone',
+  recipientAddress: 'recipientAddress',
+  recipientCity: 'recipientCity',
+  note: 'note',
+  eventsJson: 'eventsJson',
+  lastSyncedAt: 'lastSyncedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ShipmentScalarFieldEnum = (typeof ShipmentScalarFieldEnum)[keyof typeof ShipmentScalarFieldEnum]
+
+
 export const AuditLogScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -735,6 +887,24 @@ export const NotificationScalarFieldEnum = {
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
+export const NotificationDeliveryScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  orderId: 'orderId',
+  channel: 'channel',
+  recipient: 'recipient',
+  type: 'type',
+  status: 'status',
+  provider: 'provider',
+  error: 'error',
+  payloadJson: 'payloadJson',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt'
+} as const
+
+export type NotificationDeliveryScalarFieldEnum = (typeof NotificationDeliveryScalarFieldEnum)[keyof typeof NotificationDeliveryScalarFieldEnum]
+
+
 export const SupportTicketScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -754,6 +924,7 @@ export type SupportTicketScalarFieldEnum = (typeof SupportTicketScalarFieldEnum)
 export const WebhookDeliveryScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
+  webhookEndpointId: 'webhookEndpointId',
   eventType: 'eventType',
   endpoint: 'endpoint',
   payloadJson: 'payloadJson',
@@ -767,6 +938,114 @@ export const WebhookDeliveryScalarFieldEnum = {
 } as const
 
 export type WebhookDeliveryScalarFieldEnum = (typeof WebhookDeliveryScalarFieldEnum)[keyof typeof WebhookDeliveryScalarFieldEnum]
+
+
+export const WebhookEndpointScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  url: 'url',
+  secret: 'secret',
+  eventsJson: 'eventsJson',
+  status: 'status',
+  failureCount: 'failureCount',
+  lastDeliveryAt: 'lastDeliveryAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WebhookEndpointScalarFieldEnum = (typeof WebhookEndpointScalarFieldEnum)[keyof typeof WebhookEndpointScalarFieldEnum]
+
+
+export const ApiKeyScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  prefix: 'prefix',
+  hash: 'hash',
+  scopesJson: 'scopesJson',
+  createdBy: 'createdBy',
+  lastUsedAt: 'lastUsedAt',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+export const DailyStoreMetricScalarFieldEnum = {
+  id: 'id',
+  storeId: 'storeId',
+  date: 'date',
+  orders: 'orders',
+  paidOrders: 'paidOrders',
+  deliveredOrders: 'deliveredOrders',
+  cancelledOrders: 'cancelledOrders',
+  grossPaisa: 'grossPaisa',
+  refundPaisa: 'refundPaisa',
+  taxPaisa: 'taxPaisa',
+  shippingPaisa: 'shippingPaisa',
+  unitsSold: 'unitsSold',
+  newCustomers: 'newCustomers',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DailyStoreMetricScalarFieldEnum = (typeof DailyStoreMetricScalarFieldEnum)[keyof typeof DailyStoreMetricScalarFieldEnum]
+
+
+export const ExportJobScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  storeId: 'storeId',
+  type: 'type',
+  status: 'status',
+  filtersJson: 'filtersJson',
+  requestedBy: 'requestedBy',
+  fileContent: 'fileContent',
+  rowCount: 'rowCount',
+  error: 'error',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type ExportJobScalarFieldEnum = (typeof ExportJobScalarFieldEnum)[keyof typeof ExportJobScalarFieldEnum]
+
+
+export const ExportScheduleScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  storeId: 'storeId',
+  type: 'type',
+  frequency: 'frequency',
+  recipientsJson: 'recipientsJson',
+  active: 'active',
+  nextRunAt: 'nextRunAt',
+  lastRunAt: 'lastRunAt',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExportScheduleScalarFieldEnum = (typeof ExportScheduleScalarFieldEnum)[keyof typeof ExportScheduleScalarFieldEnum]
+
+
+export const AnalyticsEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  storeId: 'storeId',
+  name: 'name',
+  path: 'path',
+  referrer: 'referrer',
+  userAgent: 'userAgent',
+  sessionId: 'sessionId',
+  metadataJson: 'metadataJson',
+  occurredAt: 'occurredAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AnalyticsEventScalarFieldEnum = (typeof AnalyticsEventScalarFieldEnum)[keyof typeof AnalyticsEventScalarFieldEnum]
 
 
 export const SortOrder = {

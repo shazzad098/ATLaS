@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
+import { getAvailableDemoStoreSlugs } from "@/lib/demo-stores";
 import { Badge, Card, CardBody } from "@/components/ui/shell";
 
 /** How it works (PRD §4.1): account → store → theme → products → payment → live. */
@@ -8,6 +9,8 @@ export const metadata = {
   title: "কীভাবে কাজ করে",
   description: "ATLaS-এ ছয় ধাপে দোকান খুলুন — সাইনআপ থেকে প্রথম অর্ডার পর্যন্ত।",
 };
+
+export const dynamic = "force-dynamic";
 
 const STEPS = [
   {
@@ -67,7 +70,8 @@ const FAQ = [
   },
 ];
 
-export default function HowItWorksPage() {
+export default async function HowItWorksPage() {
+  const demoSlugs = await getAvailableDemoStoreSlugs();
   return (
     <div className="mx-auto max-w-6xl space-y-14 px-4 py-12">
       <div className="max-w-2xl space-y-3">
@@ -80,9 +84,11 @@ export default function HowItWorksPage() {
         </p>
         <div className="flex flex-wrap gap-3 pt-1">
           <ButtonLink href="/signup">ফ্রি শুরু করুন</ButtonLink>
-          <ButtonLink href="/store/nokshi-demo" variant="outline">
-            ডেমো দোকান দেখুন
-          </ButtonLink>
+          {demoSlugs.has("nokshi-demo") ? (
+            <ButtonLink href="/store/nokshi-demo" variant="outline">
+              ডেমো দোকান দেখুন
+            </ButtonLink>
+          ) : null}
         </div>
       </div>
 

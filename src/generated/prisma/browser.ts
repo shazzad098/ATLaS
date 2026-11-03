@@ -49,6 +49,27 @@ export type Session = Prisma.SessionModel
  */
 export type OtpChallenge = Prisma.OtpChallengeModel
 /**
+ * Model TwoFactorChallenge
+ * Short-lived second-factor challenge issued after the first factor succeeds.
+ * Only the SHA-256 hash of the browser token is stored, so a database leak
+ * cannot be replayed; attempts and expiry are enforced server-side.
+ */
+export type TwoFactorChallenge = Prisma.TwoFactorChallengeModel
+/**
+ * Model TwoFactorRecoveryCode
+ * One-time recovery codes. Hashed with an application secret and consumed
+ * atomically, so a code works exactly once even under concurrent requests.
+ */
+export type TwoFactorRecoveryCode = Prisma.TwoFactorRecoveryCodeModel
+/**
+ * Model ImpersonationSession
+ * Time-boxed Super Admin impersonation (FR-02, PRD §4.5, §13).
+ * A reason and support reference are mandatory, the session expires after 60
+ * minutes, and it is read-only for merchant data. Start and end both land in
+ * the audit log.
+ */
+export type ImpersonationSession = Prisma.ImpersonationSessionModel
+/**
  * Model Store
  * 
  */
@@ -118,6 +139,22 @@ export type Asset = Prisma.AssetModel
  * 
  */
 export type Customer = Prisma.CustomerModel
+/**
+ * Model ProductReview
+ * A buyer's review of one product. One review per customer per product; the
+ * optional `orderId` marks it as a verified purchase.
+ */
+export type ProductReview = Prisma.ProductReviewModel
+/**
+ * Model ReviewComment
+ * Buyer comments on a review (threaded under `reviewId`).
+ */
+export type ReviewComment = Prisma.ReviewCommentModel
+/**
+ * Model WishlistItem
+ * Saved products for a signed-in buyer.
+ */
+export type WishlistItem = Prisma.WishlistItemModel
 /**
  * Model Cart
  * 
@@ -199,6 +236,16 @@ export type Coupon = Prisma.CouponModel
  */
 export type DeliveryZone = Prisma.DeliveryZoneModel
 /**
+ * Model DeliveryMethod
+ * 
+ */
+export type DeliveryMethod = Prisma.DeliveryMethodModel
+/**
+ * Model Shipment
+ * 
+ */
+export type Shipment = Prisma.ShipmentModel
+/**
  * Model AuditLog
  * 
  */
@@ -209,6 +256,12 @@ export type AuditLog = Prisma.AuditLogModel
  */
 export type Notification = Prisma.NotificationModel
 /**
+ * Model NotificationDelivery
+ * Customer-facing email/SMS delivery log (FR-09). Provider failures never
+ * block checkout, but they must be visible to the merchant/operator.
+ */
+export type NotificationDelivery = Prisma.NotificationDeliveryModel
+/**
  * Model SupportTicket
  * 
  */
@@ -218,3 +271,39 @@ export type SupportTicket = Prisma.SupportTicketModel
  * 
  */
 export type WebhookDelivery = Prisma.WebhookDeliveryModel
+/**
+ * Model WebhookEndpoint
+ * Merchant-owned outbound webhook destination (FR-11). The signing secret is
+ * shown once at creation and then only used server-side.
+ */
+export type WebhookEndpoint = Prisma.WebhookEndpointModel
+/**
+ * Model ApiKey
+ * Hashed, scoped API credential. The raw key is returned once on creation.
+ */
+export type ApiKey = Prisma.ApiKeyModel
+/**
+ * Model DailyStoreMetric
+ * Daily rollup used by the reports dashboard and retention/analytics queries.
+ * Kept separate from live orders so historical reporting stays cheap even
+ * after raw events age out.
+ */
+export type DailyStoreMetric = Prisma.DailyStoreMetricModel
+/**
+ * Model ExportJob
+ * Queued CSV export. The worker writes the generated file into `fileContent`
+ * and the admin download route streams it; this keeps request latency bounded
+ * on large stores and gives every export an auditable status.
+ */
+export type ExportJob = Prisma.ExportJobModel
+/**
+ * Model ExportSchedule
+ * Pro-plan recurring export (daily/weekly). The cron turns each due schedule
+ * into an ExportJob so failures and retries share one code path.
+ */
+export type ExportSchedule = Prisma.ExportScheduleModel
+/**
+ * Model AnalyticsEvent
+ * Product/checkout/analytics event stream (FR-09). Store-scoped and append-only.
+ */
+export type AnalyticsEvent = Prisma.AnalyticsEventModel

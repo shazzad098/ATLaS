@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/db";
 import { fromPaisa, toPaisa } from "@/lib/money";
 import { recordAudit } from "@/lib/audit";
-import { NotFoundError } from "@/lib/errors";
+import { AppError, NotFoundError } from "@/lib/errors";
+import { THEME_CATALOG } from "@/lib/theme-catalog";
+import { addDays, nextPeriodEnd } from "@/lib/dates";
+import { isValidBdPhone, normalizePhone } from "@/lib/auth/phone";
+import { ROLE_CODES, SYSTEM_ROLES } from "@/lib/rbac";
+import type { Prisma } from "@/generated/prisma/client";
 
 /**
  * Super Admin platform reads (PRD §4.5, §8).
@@ -80,9 +85,52 @@ export type TenantRow = {
   pendingFees: string;
 };
 
-export async function listTenantsForAdmin(): Promise<TenantRow[]> {
+export type TenantListOptions = {
+  q?: string;
+  status?: string;
+  plan?: string;
+  /** recent | name | gmv | orders | fees */
+  sort?: string;
+  page?: number;
+  perPage?: number;
+};
+
+export type TenantListResult = {
+  rows: TenantRow[];
+  total: number;
+  page: number;
+  pageCount: number;
+  perPage: number;
+};
+
+const TENANT_STATUSES = ["ACTIVE", "READ_ONLY", "SUSPENDED", "CANCELLED"] as const;
+
+export async function listTenantsForAdmin(
+  options: TenantListOptions = {},
+): Promise<TenantListResult> {
+  const q = options.q?.trim() ?? "";
+  const status = TENANT_STATUSES.includes(options.status as (typeof TENANT_STATUSES)[number])
+    ? (options.status as (typeof TENANT_STATUSES)[number])
+    : undefined;
+  const plan = options.plan?.trim() || undefined;
+  const page = Math.max(1, options.page ?? 1);
+  const perPage = Math.min(200, Math.max(1, options.perPage ?? 10));
+
+  const where: Prisma.TenantWhereInput = {};
+  if (status) where.status = status;
+  if (plan) where.subscription = { plan: { code: plan } };
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { owner: { name: { contains: q, mode: "insensitive" } } },
+      { owner: { phone: { contains: q } } },
+      { subscription: { plan: { name: { contains: q, mode: "insensitive" } } } },
+    ];
+  }
+
   const [tenants, feeRows, orderRows, stores] = await Promise.all([
     prisma.tenant.findMany({
+      where,
       orderBy: { createdAt: "desc" },
       include: {
         owner: { select: { name: true, phone: true, email: true } },
@@ -120,7 +168,7 @@ export async function listTenantsForAdmin(): Promise<TenantRow[]> {
     feeRows.map((row) => [row.tenantId, fromPaisa(toPaisa(row._sum.feeAmount ?? 0))]),
   );
 
-  return tenants.map((tenant) => {
+  const rows: TenantRow[] = tenants.map((tenant) => {
     const orders = ordersByTenant.get(tenant.id) ?? { count: 0, gmv: 0n };
     return {
       id: tenant.id,
@@ -140,6 +188,273 @@ export async function listTenantsForAdmin(): Promise<TenantRow[]> {
       pendingFees: feesByTenant.get(tenant.id) ?? "0.00",
     };
   });
+
+  switch (options.sort) {
+    case "name":
+      rows.sort((a, b) => a.name.localeCompare(b.name, "bn"));
+      break;
+    case "gmv":
+      rows.sort((a, b) => Number(b.gmv) - Number(a.gmv));
+      break;
+    case "orders":
+      rows.sort((a, b) => b.orderCount - a.orderCount);
+      break;
+    case "fees":
+      rows.sort((a, b) => Number(b.pendingFees) - Number(a.pendingFees));
+      break;
+    default:
+      rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  const total = rows.length;
+  const pageCount = Math.max(1, Math.ceil(total / perPage));
+  const safePage = Math.min(page, pageCount);
+
+  return {
+    rows: rows.slice((safePage - 1) * perPage, safePage * perPage),
+    total,
+    page: safePage,
+    pageCount,
+    perPage,
+  };
+}
+
+function growthPercent(current: number, previous: number): number | null {
+  if (previous === 0) return current > 0 ? null : 0;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
+export type TenantDirectoryStats = {
+  tenants: { total: number; active: number; newThisMonth: number; growth: number | null };
+  stores: { total: number; newThisMonth: number; growth: number | null; maxPerTenant: number };
+  gmv: { total: string; orders: number; growth: number | null };
+  subscriptions: { active: number; activePercent: number; plans: number };
+};
+
+/** KPI strip for the tenant directory. All windows are the last 30 days. */
+export async function tenantDirectoryStats(): Promise<TenantDirectoryStats> {
+  const now = new Date();
+  const windowStart = addDays(now, -30);
+  const previousStart = addDays(now, -60);
+
+  const [
+    tenantsTotal,
+    tenantsActive,
+    tenants30,
+    tenantsPrev,
+    storesTotal,
+    stores30,
+    storesPrev,
+    storeCounts,
+    orderAgg,
+    gmv30,
+    gmvPrev,
+    activeSubs,
+    plans,
+  ] = await Promise.all([
+    prisma.tenant.count(),
+    prisma.tenant.count({ where: { status: "ACTIVE" } }),
+    prisma.tenant.count({ where: { createdAt: { gte: windowStart } } }),
+    prisma.tenant.count({ where: { createdAt: { gte: previousStart, lt: windowStart } } }),
+    prisma.store.count({ where: { deletedAt: null } }),
+    prisma.store.count({ where: { deletedAt: null, createdAt: { gte: windowStart } } }),
+    prisma.store.count({ where: { deletedAt: null, createdAt: { gte: previousStart, lt: windowStart } } }),
+    prisma.store.groupBy({
+      by: ["tenantId"],
+      where: { deletedAt: null },
+      _count: { _all: true },
+    }),
+    prisma.order.aggregate({
+      where: { deletedAt: null, status: { notIn: ["CANCELLED", "REFUNDED"] } },
+      _sum: { grandTotal: true },
+      _count: { _all: true },
+    }),
+    prisma.order.aggregate({
+      where: {
+        deletedAt: null,
+        status: { notIn: ["CANCELLED", "REFUNDED"] },
+        placedAt: { gte: windowStart },
+      },
+      _sum: { grandTotal: true },
+    }),
+    prisma.order.aggregate({
+      where: {
+        deletedAt: null,
+        status: { notIn: ["CANCELLED", "REFUNDED"] },
+        placedAt: { gte: previousStart, lt: windowStart },
+      },
+      _sum: { grandTotal: true },
+    }),
+    prisma.subscription.count({
+      where: { status: { in: ["ACTIVE", "TRIALING", "GRACE_PERIOD"] } },
+    }),
+    prisma.plan.count({ where: { status: "ACTIVE" } }),
+  ]);
+
+  return {
+    tenants: {
+      total: tenantsTotal,
+      active: tenantsActive,
+      newThisMonth: tenants30,
+      growth: growthPercent(tenants30, tenantsPrev),
+    },
+    stores: {
+      total: storesTotal,
+      newThisMonth: stores30,
+      growth: growthPercent(stores30, storesPrev),
+      maxPerTenant: storeCounts.reduce((max, row) => Math.max(max, row._count._all), 0),
+    },
+    gmv: {
+      total: fromPaisa(toPaisa(orderAgg._sum?.grandTotal ?? 0)),
+      orders: orderAgg._count?._all ?? 0,
+      growth: growthPercent(
+        Number(toPaisa(gmv30._sum?.grandTotal ?? 0)),
+        Number(toPaisa(gmvPrev._sum?.grandTotal ?? 0)),
+      ),
+    },
+    subscriptions: {
+      active: activeSubs,
+      activePercent: tenantsTotal ? Math.round((activeSubs / tenantsTotal) * 100) : 0,
+      plans,
+    },
+  };
+}
+
+/** Selectable plans for the create-tenant dialog and the plan filter. */
+export async function listPlanOptions() {
+  return prisma.plan.findMany({
+    where: { status: "ACTIVE" },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    select: { code: true, name: true, sortOrder: true },
+  });
+}
+
+export type CreateTenantInput = {
+  tenantName: string;
+  ownerName: string;
+  ownerPhone: string;
+  planCode: string;
+};
+
+/**
+ * Creates a merchant workspace from the Super Admin surface.
+ *
+ * The owner account is keyed by phone (the same identity merchant OTP login
+ * uses), system roles are materialised for the tenant, and a subscription is
+ * opened on the chosen plan (paid plans start as a trial; free is active).
+ */
+export async function createTenantWorkspace(
+  actorId: string,
+  input: CreateTenantInput,
+): Promise<{ tenantId: string; ownerId: string }> {
+  const tenantName = input.tenantName.trim();
+  const ownerName = input.ownerName.trim();
+  const phone = normalizePhone(input.ownerPhone);
+
+  if (tenantName.length < 2) {
+    throw new AppError("VALIDATION_FAILED", "ওয়ার্কস্পেসের নাম কমপক্ষে ২ অক্ষরের হতে হবে।", 422, {
+      field: "tenantName",
+    });
+  }
+  if (ownerName.length < 2) {
+    throw new AppError("VALIDATION_FAILED", "মালিকের নাম কমপক্ষে ২ অক্ষরের হতে হবে।", 422, {
+      field: "ownerName",
+    });
+  }
+  if (!isValidBdPhone(phone)) {
+    throw new AppError("VALIDATION_FAILED", "সঠিক বাংলাদেশি মোবাইল নম্বর দিন।", 422, {
+      field: "ownerPhone",
+    });
+  }
+
+  const plan = await prisma.plan.findUnique({ where: { code: input.planCode } });
+  if (!plan) throw new NotFoundError("Plan");
+
+  const existing = await prisma.user.findUnique({ where: { phone } });
+  if (existing && existing.status !== "ACTIVE") {
+    throw new AppError("CONFLICT", "এই মোবাইল নম্বরের account বর্তমানে সক্রিয় নয়।", 409);
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const owner =
+      existing ??
+      (await tx.user.create({
+        data: {
+          name: ownerName,
+          phone,
+          status: "ACTIVE",
+          phoneVerifiedAt: new Date(),
+        },
+      }));
+
+    const tenant = await tx.tenant.create({
+      data: {
+        name: tenantName,
+        ownerUserId: owner.id,
+        status: "ACTIVE",
+        timezone: "Asia/Dhaka",
+        currency: "BDT",
+      },
+    });
+
+    const roleIds = new Map<string, string>();
+    for (const code of ROLE_CODES) {
+      const role = await tx.role.create({
+        data: {
+          tenantId: tenant.id,
+          code,
+          name: SYSTEM_ROLES[code].name,
+          permissionsJson: SYSTEM_ROLES[code].permissions as never,
+          isSystem: true,
+        },
+      });
+      roleIds.set(code, role.id);
+    }
+
+    await tx.membership.create({
+      data: {
+        tenantId: tenant.id,
+        userId: owner.id,
+        roleId: roleIds.get("OWNER")!,
+        status: "ACTIVE",
+        acceptedAt: new Date(),
+      },
+    });
+
+    const now = new Date();
+    const trialEnd =
+      Number(plan.price) > 0 && plan.trialDays > 0 ? addDays(now, plan.trialDays) : null;
+
+    await tx.subscription.create({
+      data: {
+        tenantId: tenant.id,
+        planId: plan.id,
+        status: trialEnd ? "TRIALING" : "ACTIVE",
+        trialEnd,
+        currentPeriodStart: now,
+        currentPeriodEnd: nextPeriodEnd(now),
+        billingPeriod: "MONTHLY",
+      },
+    });
+
+    return { tenant, owner };
+  });
+
+  await recordAudit({
+    action: "platform.tenant_created",
+    actorId,
+    tenantId: result.tenant.id,
+    resourceType: "Tenant",
+    resourceId: result.tenant.id,
+    metadata: {
+      ownerId: result.owner.id,
+      ownerPhone: phone,
+      planCode: plan.code,
+      tenantName,
+    },
+  });
+
+  return { tenantId: result.tenant.id, ownerId: result.owner.id };
 }
 
 export async function listPlatformFees(options: { limit?: number; status?: string } = {}) {
@@ -267,4 +582,45 @@ export async function listWebhookDeliveries(limit = 30) {
     take: limit,
     include: { tenant: { select: { name: true } } },
   });
+}
+
+/**
+ * Shell data for the Super Admin chrome: nav badges, cluster health and the
+ * notification dot. A database hiccup must not blank the whole shell, so the
+ * fallback reports `ok: false` instead of throwing.
+ */
+export type SuperAdminShellData = {
+  counts: { tenants: number; themesLive: number };
+  health: { ok: boolean; latencyMs: number };
+  audits24h: number;
+};
+
+export async function superAdminShellData(): Promise<SuperAdminShellData> {
+  const started = performance.now();
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  try {
+    const [tenants, retired, audits24h] = await Promise.all([
+      prisma.tenant.count(),
+      prisma.theme.findMany({ where: { status: { not: "ACTIVE" } }, select: { code: true } }),
+      prisma.auditLog.count({ where: { createdAt: { gte: since } } }),
+    ]);
+
+    const retiredCodes = new Set(retired.map((row) => row.code));
+    return {
+      counts: {
+        tenants,
+        themesLive: THEME_CATALOG.filter((theme) => !retiredCodes.has(theme.code)).length,
+      },
+      health: { ok: true, latencyMs: Math.round(performance.now() - started) },
+      audits24h,
+    };
+  } catch (error) {
+    console.error("[super-admin] shell data unavailable", error);
+    return {
+      counts: { tenants: 0, themesLive: THEME_CATALOG.length },
+      health: { ok: false, latencyMs: Math.round(performance.now() - started) },
+      audits24h: 0,
+    };
+  }
 }

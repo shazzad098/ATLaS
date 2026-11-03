@@ -28,6 +28,7 @@ export type PaymentWebhookEventMinAggregateOutputType = {
   id: string | null
   provider: $Enums.PaymentProvider | null
   eventKey: string | null
+  storeId: string | null
   signatureValid: boolean | null
   payloadHash: string | null
   processedAt: Date | null
@@ -40,6 +41,7 @@ export type PaymentWebhookEventMaxAggregateOutputType = {
   id: string | null
   provider: $Enums.PaymentProvider | null
   eventKey: string | null
+  storeId: string | null
   signatureValid: boolean | null
   payloadHash: string | null
   processedAt: Date | null
@@ -52,6 +54,7 @@ export type PaymentWebhookEventCountAggregateOutputType = {
   id: number
   provider: number
   eventKey: number
+  storeId: number
   signatureValid: number
   payloadHash: number
   payloadJson: number
@@ -67,6 +70,7 @@ export type PaymentWebhookEventMinAggregateInputType = {
   id?: true
   provider?: true
   eventKey?: true
+  storeId?: true
   signatureValid?: true
   payloadHash?: true
   processedAt?: true
@@ -79,6 +83,7 @@ export type PaymentWebhookEventMaxAggregateInputType = {
   id?: true
   provider?: true
   eventKey?: true
+  storeId?: true
   signatureValid?: true
   payloadHash?: true
   processedAt?: true
@@ -91,6 +96,7 @@ export type PaymentWebhookEventCountAggregateInputType = {
   id?: true
   provider?: true
   eventKey?: true
+  storeId?: true
   signatureValid?: true
   payloadHash?: true
   payloadJson?: true
@@ -177,6 +183,7 @@ export type PaymentWebhookEventGroupByOutputType = {
   id: string
   provider: $Enums.PaymentProvider
   eventKey: string
+  storeId: string | null
   signatureValid: boolean
   payloadHash: string
   payloadJson: runtime.JsonValue
@@ -211,6 +218,7 @@ export type PaymentWebhookEventWhereInput = {
   id?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
   provider?: Prisma.EnumPaymentProviderFilter<"PaymentWebhookEvent"> | $Enums.PaymentProvider
   eventKey?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
+  storeId?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
   signatureValid?: Prisma.BoolFilter<"PaymentWebhookEvent"> | boolean
   payloadHash?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
   payloadJson?: Prisma.JsonFilter<"PaymentWebhookEvent">
@@ -218,12 +226,14 @@ export type PaymentWebhookEventWhereInput = {
   status?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
   error?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentWebhookEvent"> | Date | string
+  store?: Prisma.XOR<Prisma.StoreNullableScalarRelationFilter, Prisma.StoreWhereInput> | null
 }
 
 export type PaymentWebhookEventOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventKey?: Prisma.SortOrder
+  storeId?: Prisma.SortOrderInput | Prisma.SortOrder
   signatureValid?: Prisma.SortOrder
   payloadHash?: Prisma.SortOrder
   payloadJson?: Prisma.SortOrder
@@ -231,6 +241,7 @@ export type PaymentWebhookEventOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  store?: Prisma.StoreOrderByWithRelationInput
 }
 
 export type PaymentWebhookEventWhereUniqueInput = Prisma.AtLeast<{
@@ -241,6 +252,7 @@ export type PaymentWebhookEventWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.PaymentWebhookEventWhereInput | Prisma.PaymentWebhookEventWhereInput[]
   provider?: Prisma.EnumPaymentProviderFilter<"PaymentWebhookEvent"> | $Enums.PaymentProvider
   eventKey?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
+  storeId?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
   signatureValid?: Prisma.BoolFilter<"PaymentWebhookEvent"> | boolean
   payloadHash?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
   payloadJson?: Prisma.JsonFilter<"PaymentWebhookEvent">
@@ -248,12 +260,14 @@ export type PaymentWebhookEventWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
   error?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PaymentWebhookEvent"> | Date | string
+  store?: Prisma.XOR<Prisma.StoreNullableScalarRelationFilter, Prisma.StoreWhereInput> | null
 }, "id" | "provider_eventKey">
 
 export type PaymentWebhookEventOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventKey?: Prisma.SortOrder
+  storeId?: Prisma.SortOrderInput | Prisma.SortOrder
   signatureValid?: Prisma.SortOrder
   payloadHash?: Prisma.SortOrder
   payloadJson?: Prisma.SortOrder
@@ -273,6 +287,7 @@ export type PaymentWebhookEventScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"PaymentWebhookEvent"> | string
   provider?: Prisma.EnumPaymentProviderWithAggregatesFilter<"PaymentWebhookEvent"> | $Enums.PaymentProvider
   eventKey?: Prisma.StringWithAggregatesFilter<"PaymentWebhookEvent"> | string
+  storeId?: Prisma.StringNullableWithAggregatesFilter<"PaymentWebhookEvent"> | string | null
   signatureValid?: Prisma.BoolWithAggregatesFilter<"PaymentWebhookEvent"> | boolean
   payloadHash?: Prisma.StringWithAggregatesFilter<"PaymentWebhookEvent"> | string
   payloadJson?: Prisma.JsonWithAggregatesFilter<"PaymentWebhookEvent">
@@ -293,12 +308,14 @@ export type PaymentWebhookEventCreateInput = {
   status?: string
   error?: string | null
   createdAt?: Date | string
+  store?: Prisma.StoreCreateNestedOneWithoutPaymentWebhookEventsInput
 }
 
 export type PaymentWebhookEventUncheckedCreateInput = {
   id?: string
   provider: $Enums.PaymentProvider
   eventKey: string
+  storeId?: string | null
   signatureValid?: boolean
   payloadHash: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -319,12 +336,14 @@ export type PaymentWebhookEventUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  store?: Prisma.StoreUpdateOneWithoutPaymentWebhookEventsNestedInput
 }
 
 export type PaymentWebhookEventUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
   eventKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
   payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -338,6 +357,7 @@ export type PaymentWebhookEventCreateManyInput = {
   id?: string
   provider: $Enums.PaymentProvider
   eventKey: string
+  storeId?: string | null
   signatureValid?: boolean
   payloadHash: string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -364,6 +384,7 @@ export type PaymentWebhookEventUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   provider?: Prisma.EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
   eventKey?: Prisma.StringFieldUpdateOperationsInput | string
+  storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   signatureValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
   payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
   payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -371,6 +392,16 @@ export type PaymentWebhookEventUncheckedUpdateManyInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PaymentWebhookEventListRelationFilter = {
+  every?: Prisma.PaymentWebhookEventWhereInput
+  some?: Prisma.PaymentWebhookEventWhereInput
+  none?: Prisma.PaymentWebhookEventWhereInput
+}
+
+export type PaymentWebhookEventOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type PaymentWebhookEventProviderEventKeyCompoundUniqueInput = {
@@ -382,6 +413,7 @@ export type PaymentWebhookEventCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventKey?: Prisma.SortOrder
+  storeId?: Prisma.SortOrder
   signatureValid?: Prisma.SortOrder
   payloadHash?: Prisma.SortOrder
   payloadJson?: Prisma.SortOrder
@@ -395,6 +427,7 @@ export type PaymentWebhookEventMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventKey?: Prisma.SortOrder
+  storeId?: Prisma.SortOrder
   signatureValid?: Prisma.SortOrder
   payloadHash?: Prisma.SortOrder
   processedAt?: Prisma.SortOrder
@@ -407,6 +440,7 @@ export type PaymentWebhookEventMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   provider?: Prisma.SortOrder
   eventKey?: Prisma.SortOrder
+  storeId?: Prisma.SortOrder
   signatureValid?: Prisma.SortOrder
   payloadHash?: Prisma.SortOrder
   processedAt?: Prisma.SortOrder
@@ -415,12 +449,176 @@ export type PaymentWebhookEventMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
+export type PaymentWebhookEventCreateNestedManyWithoutStoreInput = {
+  create?: Prisma.XOR<Prisma.PaymentWebhookEventCreateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput> | Prisma.PaymentWebhookEventCreateWithoutStoreInput[] | Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput[]
+  connectOrCreate?: Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput | Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput[]
+  createMany?: Prisma.PaymentWebhookEventCreateManyStoreInputEnvelope
+  connect?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+}
+
+export type PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput = {
+  create?: Prisma.XOR<Prisma.PaymentWebhookEventCreateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput> | Prisma.PaymentWebhookEventCreateWithoutStoreInput[] | Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput[]
+  connectOrCreate?: Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput | Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput[]
+  createMany?: Prisma.PaymentWebhookEventCreateManyStoreInputEnvelope
+  connect?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+}
+
+export type PaymentWebhookEventUpdateManyWithoutStoreNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentWebhookEventCreateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput> | Prisma.PaymentWebhookEventCreateWithoutStoreInput[] | Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput[]
+  connectOrCreate?: Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput | Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput[]
+  upsert?: Prisma.PaymentWebhookEventUpsertWithWhereUniqueWithoutStoreInput | Prisma.PaymentWebhookEventUpsertWithWhereUniqueWithoutStoreInput[]
+  createMany?: Prisma.PaymentWebhookEventCreateManyStoreInputEnvelope
+  set?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  disconnect?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  delete?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  connect?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  update?: Prisma.PaymentWebhookEventUpdateWithWhereUniqueWithoutStoreInput | Prisma.PaymentWebhookEventUpdateWithWhereUniqueWithoutStoreInput[]
+  updateMany?: Prisma.PaymentWebhookEventUpdateManyWithWhereWithoutStoreInput | Prisma.PaymentWebhookEventUpdateManyWithWhereWithoutStoreInput[]
+  deleteMany?: Prisma.PaymentWebhookEventScalarWhereInput | Prisma.PaymentWebhookEventScalarWhereInput[]
+}
+
+export type PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput = {
+  create?: Prisma.XOR<Prisma.PaymentWebhookEventCreateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput> | Prisma.PaymentWebhookEventCreateWithoutStoreInput[] | Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput[]
+  connectOrCreate?: Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput | Prisma.PaymentWebhookEventCreateOrConnectWithoutStoreInput[]
+  upsert?: Prisma.PaymentWebhookEventUpsertWithWhereUniqueWithoutStoreInput | Prisma.PaymentWebhookEventUpsertWithWhereUniqueWithoutStoreInput[]
+  createMany?: Prisma.PaymentWebhookEventCreateManyStoreInputEnvelope
+  set?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  disconnect?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  delete?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  connect?: Prisma.PaymentWebhookEventWhereUniqueInput | Prisma.PaymentWebhookEventWhereUniqueInput[]
+  update?: Prisma.PaymentWebhookEventUpdateWithWhereUniqueWithoutStoreInput | Prisma.PaymentWebhookEventUpdateWithWhereUniqueWithoutStoreInput[]
+  updateMany?: Prisma.PaymentWebhookEventUpdateManyWithWhereWithoutStoreInput | Prisma.PaymentWebhookEventUpdateManyWithWhereWithoutStoreInput[]
+  deleteMany?: Prisma.PaymentWebhookEventScalarWhereInput | Prisma.PaymentWebhookEventScalarWhereInput[]
+}
+
+export type PaymentWebhookEventCreateWithoutStoreInput = {
+  id?: string
+  provider: $Enums.PaymentProvider
+  eventKey: string
+  signatureValid?: boolean
+  payloadHash: string
+  payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  processedAt?: Date | string | null
+  status?: string
+  error?: string | null
+  createdAt?: Date | string
+}
+
+export type PaymentWebhookEventUncheckedCreateWithoutStoreInput = {
+  id?: string
+  provider: $Enums.PaymentProvider
+  eventKey: string
+  signatureValid?: boolean
+  payloadHash: string
+  payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  processedAt?: Date | string | null
+  status?: string
+  error?: string | null
+  createdAt?: Date | string
+}
+
+export type PaymentWebhookEventCreateOrConnectWithoutStoreInput = {
+  where: Prisma.PaymentWebhookEventWhereUniqueInput
+  create: Prisma.XOR<Prisma.PaymentWebhookEventCreateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput>
+}
+
+export type PaymentWebhookEventCreateManyStoreInputEnvelope = {
+  data: Prisma.PaymentWebhookEventCreateManyStoreInput | Prisma.PaymentWebhookEventCreateManyStoreInput[]
+  skipDuplicates?: boolean
+}
+
+export type PaymentWebhookEventUpsertWithWhereUniqueWithoutStoreInput = {
+  where: Prisma.PaymentWebhookEventWhereUniqueInput
+  update: Prisma.XOR<Prisma.PaymentWebhookEventUpdateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedUpdateWithoutStoreInput>
+  create: Prisma.XOR<Prisma.PaymentWebhookEventCreateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedCreateWithoutStoreInput>
+}
+
+export type PaymentWebhookEventUpdateWithWhereUniqueWithoutStoreInput = {
+  where: Prisma.PaymentWebhookEventWhereUniqueInput
+  data: Prisma.XOR<Prisma.PaymentWebhookEventUpdateWithoutStoreInput, Prisma.PaymentWebhookEventUncheckedUpdateWithoutStoreInput>
+}
+
+export type PaymentWebhookEventUpdateManyWithWhereWithoutStoreInput = {
+  where: Prisma.PaymentWebhookEventScalarWhereInput
+  data: Prisma.XOR<Prisma.PaymentWebhookEventUpdateManyMutationInput, Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreInput>
+}
+
+export type PaymentWebhookEventScalarWhereInput = {
+  AND?: Prisma.PaymentWebhookEventScalarWhereInput | Prisma.PaymentWebhookEventScalarWhereInput[]
+  OR?: Prisma.PaymentWebhookEventScalarWhereInput[]
+  NOT?: Prisma.PaymentWebhookEventScalarWhereInput | Prisma.PaymentWebhookEventScalarWhereInput[]
+  id?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
+  provider?: Prisma.EnumPaymentProviderFilter<"PaymentWebhookEvent"> | $Enums.PaymentProvider
+  eventKey?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
+  storeId?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
+  signatureValid?: Prisma.BoolFilter<"PaymentWebhookEvent"> | boolean
+  payloadHash?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
+  payloadJson?: Prisma.JsonFilter<"PaymentWebhookEvent">
+  processedAt?: Prisma.DateTimeNullableFilter<"PaymentWebhookEvent"> | Date | string | null
+  status?: Prisma.StringFilter<"PaymentWebhookEvent"> | string
+  error?: Prisma.StringNullableFilter<"PaymentWebhookEvent"> | string | null
+  createdAt?: Prisma.DateTimeFilter<"PaymentWebhookEvent"> | Date | string
+}
+
+export type PaymentWebhookEventCreateManyStoreInput = {
+  id?: string
+  provider: $Enums.PaymentProvider
+  eventKey: string
+  signatureValid?: boolean
+  payloadHash: string
+  payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  processedAt?: Date | string | null
+  status?: string
+  error?: string | null
+  createdAt?: Date | string
+}
+
+export type PaymentWebhookEventUpdateWithoutStoreInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+  eventKey?: Prisma.StringFieldUpdateOperationsInput | string
+  signatureValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
+  payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PaymentWebhookEventUncheckedUpdateWithoutStoreInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+  eventKey?: Prisma.StringFieldUpdateOperationsInput | string
+  signatureValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
+  payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type PaymentWebhookEventUncheckedUpdateManyWithoutStoreInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  provider?: Prisma.EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+  eventKey?: Prisma.StringFieldUpdateOperationsInput | string
+  signatureValid?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
+  payloadJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  processedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 
 
 export type PaymentWebhookEventSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   provider?: boolean
   eventKey?: boolean
+  storeId?: boolean
   signatureValid?: boolean
   payloadHash?: boolean
   payloadJson?: boolean
@@ -428,12 +626,14 @@ export type PaymentWebhookEventSelect<ExtArgs extends runtime.Types.Extensions.I
   status?: boolean
   error?: boolean
   createdAt?: boolean
+  store?: boolean | Prisma.PaymentWebhookEvent$storeArgs<ExtArgs>
 }, ExtArgs["result"]["paymentWebhookEvent"]>
 
 export type PaymentWebhookEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   provider?: boolean
   eventKey?: boolean
+  storeId?: boolean
   signatureValid?: boolean
   payloadHash?: boolean
   payloadJson?: boolean
@@ -441,12 +641,14 @@ export type PaymentWebhookEventSelectCreateManyAndReturn<ExtArgs extends runtime
   status?: boolean
   error?: boolean
   createdAt?: boolean
+  store?: boolean | Prisma.PaymentWebhookEvent$storeArgs<ExtArgs>
 }, ExtArgs["result"]["paymentWebhookEvent"]>
 
 export type PaymentWebhookEventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   provider?: boolean
   eventKey?: boolean
+  storeId?: boolean
   signatureValid?: boolean
   payloadHash?: boolean
   payloadJson?: boolean
@@ -454,12 +656,14 @@ export type PaymentWebhookEventSelectUpdateManyAndReturn<ExtArgs extends runtime
   status?: boolean
   error?: boolean
   createdAt?: boolean
+  store?: boolean | Prisma.PaymentWebhookEvent$storeArgs<ExtArgs>
 }, ExtArgs["result"]["paymentWebhookEvent"]>
 
 export type PaymentWebhookEventSelectScalar = {
   id?: boolean
   provider?: boolean
   eventKey?: boolean
+  storeId?: boolean
   signatureValid?: boolean
   payloadHash?: boolean
   payloadJson?: boolean
@@ -469,15 +673,30 @@ export type PaymentWebhookEventSelectScalar = {
   createdAt?: boolean
 }
 
-export type PaymentWebhookEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "eventKey" | "signatureValid" | "payloadHash" | "payloadJson" | "processedAt" | "status" | "error" | "createdAt", ExtArgs["result"]["paymentWebhookEvent"]>
+export type PaymentWebhookEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "provider" | "eventKey" | "storeId" | "signatureValid" | "payloadHash" | "payloadJson" | "processedAt" | "status" | "error" | "createdAt", ExtArgs["result"]["paymentWebhookEvent"]>
+export type PaymentWebhookEventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  store?: boolean | Prisma.PaymentWebhookEvent$storeArgs<ExtArgs>
+}
+export type PaymentWebhookEventIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  store?: boolean | Prisma.PaymentWebhookEvent$storeArgs<ExtArgs>
+}
+export type PaymentWebhookEventIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  store?: boolean | Prisma.PaymentWebhookEvent$storeArgs<ExtArgs>
+}
 
 export type $PaymentWebhookEventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PaymentWebhookEvent"
-  objects: {}
+  objects: {
+    store: Prisma.$StorePayload<ExtArgs> | null
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     provider: $Enums.PaymentProvider
     eventKey: string
+    /**
+     * * Set once the callback is matched to an order, so admin queries can scope.
+     */
+    storeId: string | null
     signatureValid: boolean
     payloadHash: string
     payloadJson: runtime.JsonValue
@@ -879,6 +1098,7 @@ readonly fields: PaymentWebhookEventFieldRefs;
  */
 export interface Prisma__PaymentWebhookEventClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  store<T extends Prisma.PaymentWebhookEvent$storeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PaymentWebhookEvent$storeArgs<ExtArgs>>): Prisma.Prisma__StoreClient<runtime.Types.Result.GetResult<Prisma.$StorePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -911,6 +1131,7 @@ export interface PaymentWebhookEventFieldRefs {
   readonly id: Prisma.FieldRef<"PaymentWebhookEvent", 'String'>
   readonly provider: Prisma.FieldRef<"PaymentWebhookEvent", 'PaymentProvider'>
   readonly eventKey: Prisma.FieldRef<"PaymentWebhookEvent", 'String'>
+  readonly storeId: Prisma.FieldRef<"PaymentWebhookEvent", 'String'>
   readonly signatureValid: Prisma.FieldRef<"PaymentWebhookEvent", 'Boolean'>
   readonly payloadHash: Prisma.FieldRef<"PaymentWebhookEvent", 'String'>
   readonly payloadJson: Prisma.FieldRef<"PaymentWebhookEvent", 'Json'>
@@ -935,6 +1156,10 @@ export type PaymentWebhookEventFindUniqueArgs<ExtArgs extends runtime.Types.Exte
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter, which PaymentWebhookEvent to fetch.
    */
   where: Prisma.PaymentWebhookEventWhereUniqueInput
@@ -953,6 +1178,10 @@ export type PaymentWebhookEventFindUniqueOrThrowArgs<ExtArgs extends runtime.Typ
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter, which PaymentWebhookEvent to fetch.
    */
   where: Prisma.PaymentWebhookEventWhereUniqueInput
@@ -970,6 +1199,10 @@ export type PaymentWebhookEventFindFirstArgs<ExtArgs extends runtime.Types.Exten
    * Omit specific fields from the PaymentWebhookEvent
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
   /**
    * Filter, which PaymentWebhookEvent to fetch.
    */
@@ -1019,6 +1252,10 @@ export type PaymentWebhookEventFindFirstOrThrowArgs<ExtArgs extends runtime.Type
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter, which PaymentWebhookEvent to fetch.
    */
   where?: Prisma.PaymentWebhookEventWhereInput
@@ -1066,6 +1303,10 @@ export type PaymentWebhookEventFindManyArgs<ExtArgs extends runtime.Types.Extens
    * Omit specific fields from the PaymentWebhookEvent
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
   /**
    * Filter, which PaymentWebhookEvents to fetch.
    */
@@ -1115,6 +1356,10 @@ export type PaymentWebhookEventCreateArgs<ExtArgs extends runtime.Types.Extensio
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
+  /**
    * The data needed to create a PaymentWebhookEvent.
    */
   data: Prisma.XOR<Prisma.PaymentWebhookEventCreateInput, Prisma.PaymentWebhookEventUncheckedCreateInput>
@@ -1148,6 +1393,10 @@ export type PaymentWebhookEventCreateManyAndReturnArgs<ExtArgs extends runtime.T
    */
   data: Prisma.PaymentWebhookEventCreateManyInput | Prisma.PaymentWebhookEventCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1162,6 +1411,10 @@ export type PaymentWebhookEventUpdateArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the PaymentWebhookEvent
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
   /**
    * The data needed to update a PaymentWebhookEvent.
    */
@@ -1214,6 +1467,10 @@ export type PaymentWebhookEventUpdateManyAndReturnArgs<ExtArgs extends runtime.T
    * Limit how many PaymentWebhookEvents to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1228,6 +1485,10 @@ export type PaymentWebhookEventUpsertArgs<ExtArgs extends runtime.Types.Extensio
    * Omit specific fields from the PaymentWebhookEvent
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
   /**
    * The filter to search for the PaymentWebhookEvent to update in case it exists.
    */
@@ -1255,6 +1516,10 @@ export type PaymentWebhookEventDeleteArgs<ExtArgs extends runtime.Types.Extensio
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
+  /**
    * Filter which PaymentWebhookEvent to delete.
    */
   where: Prisma.PaymentWebhookEventWhereUniqueInput
@@ -1275,6 +1540,25 @@ export type PaymentWebhookEventDeleteManyArgs<ExtArgs extends runtime.Types.Exte
 }
 
 /**
+ * PaymentWebhookEvent.store
+ */
+export type PaymentWebhookEvent$storeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Store
+   */
+  select?: Prisma.StoreSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Store
+   */
+  omit?: Prisma.StoreOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StoreInclude<ExtArgs> | null
+  where?: Prisma.StoreWhereInput
+}
+
+/**
  * PaymentWebhookEvent without action
  */
 export type PaymentWebhookEventDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1286,4 +1570,8 @@ export type PaymentWebhookEventDefaultArgs<ExtArgs extends runtime.Types.Extensi
    * Omit specific fields from the PaymentWebhookEvent
    */
   omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
 }

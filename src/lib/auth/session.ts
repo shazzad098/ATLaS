@@ -64,7 +64,16 @@ export async function establishSession(
     },
   });
 
-  const accessToken = await signAccessToken({ sub: userId, sid: session.id });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isSuperAdmin: true },
+  });
+
+  const accessToken = await signAccessToken({
+    sub: userId,
+    sid: session.id,
+    sa: user?.isSuperAdmin ?? false,
+  });
   return { accessToken, refreshToken, csrfToken: generateCsrfToken(), sessionId: session.id };
 }
 
@@ -154,29 +163,49 @@ export async function rotateSession(): Promise<boolean> {
   const refreshToken = jar.get(REFRESH_COOKIE)?.value;
   if (!refreshToken) return false;
 
+  const currentHash = hashRefreshToken(refreshToken);
   const session = await prisma.session.findUnique({
-    where: { refreshTokenHash: hashRefreshToken(refreshToken) },
+    where: { refreshTokenHash: currentHash },
   });
   if (!session || session.revokedAt || session.expiresAt <= new Date()) return false;
 
   const nextRefresh = generateRefreshToken();
-  await prisma.session.update({
-    where: { id: session.id },
+  // Compare-and-swap on the old hash: when two tabs refresh concurrently, only
+  // the request that still sees the old token may rotate. The loser is forced
+  // back through the login/refresh flow instead of receiving a second live
+  // token from the same stolen cookie.
+  const rotated = await prisma.session.updateMany({
+    where: {
+      id: session.id,
+      refreshTokenHash: currentHash,
+      revokedAt: null,
+      expiresAt: { gt: new Date() },
+    },
     data: {
       refreshTokenHash: hashRefreshToken(nextRefresh),
       expiresAt: new Date(Date.now() + REFRESH_TTL_SECONDS * 1000),
     },
   });
+  if (rotated.count !== 1) return false;
 
-  const accessToken = await signAccessToken({ sub: session.userId, sid: session.id });
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { isSuperAdmin: true },
+  });
+
+  const accessToken = await signAccessToken({
+    sub: session.userId,
+    sid: session.id,
+    sa: user?.isSuperAdmin ?? false,
+  });
   const csrfToken = jar.get(CSRF_COOKIE)?.value ?? generateCsrfToken();
   await setAuthCookies({ accessToken, refreshToken: nextRefresh, csrfToken });
   return true;
 }
 
-export async function revokeSession(sessionId: string): Promise<void> {
+export async function revokeSession(userId: string, sessionId: string): Promise<void> {
   await prisma.session.updateMany({
-    where: { id: sessionId, revokedAt: null },
+    where: { id: sessionId, userId, revokedAt: null },
     data: { revokedAt: new Date() },
   });
 }

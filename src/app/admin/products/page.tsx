@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
+import { bnNumber } from "@/lib/dates";
 import { formatBdt } from "@/lib/money";
 import { listCategories, listProducts } from "@/lib/services/catalog-service";
 import { Badge, Card, EmptyState, Table, Td, Th } from "@/components/ui/shell";
 import { ButtonLink } from "@/components/ui/button";
+import { ProductImage } from "@/components/product-image";
 
 /** Product list with search and status filter (FR-03). */
 
@@ -21,7 +23,8 @@ export default async function ProductsPage({
 }: {
   searchParams: Promise<{ q?: string; status?: string; categoryId?: string; cursor?: string }>;
 }) {
-  const { store } = await requireActiveStore();
+  const { store, workspace } = await requireActiveStorePermissionPage("catalog:read");
+  const canWrite = workspace.actor.permissions.includes("catalog:write");
   const query = await searchParams;
 
   const status = (["ACTIVE", "DRAFT", "ARCHIVED"] as const).find((value) => value === query.status);
@@ -49,9 +52,11 @@ export default async function ProductsPage({
           <h1 className="text-xl font-semibold text-ink-900">পণ্য</h1>
           <p className="text-sm text-ink-500">{result.items.length}টি দেখানো হচ্ছে</p>
         </div>
-        <ButtonLink href="/admin/products/new">
-          <Plus className="h-4 w-4" /> নতুন পণ্য
-        </ButtonLink>
+        {canWrite ? (
+          <ButtonLink href="/admin/products/new">
+            <Plus className="h-4 w-4" /> নতুন পণ্য
+          </ButtonLink>
+        ) : null}
       </div>
 
       <form action="/admin/products" className="flex flex-wrap gap-2">
@@ -94,7 +99,9 @@ export default async function ProductsPage({
         <EmptyState
           title="কোনো পণ্য নেই"
           description="প্রথম পণ্য যোগ করে আপনার ক্যাটালগ শুরু করুন।"
-          action={<ButtonLink href="/admin/products/new">পণ্য যোগ করুন</ButtonLink>}
+          action={
+            canWrite ? <ButtonLink href="/admin/products/new">পণ্য যোগ করুন</ButtonLink> : undefined
+          }
         />
       ) : (
         <Card>
@@ -114,19 +121,29 @@ export default async function ProductsPage({
                 const stock = product.variants.reduce((sum, variant) => sum + (variant.stockQty - variant.reservedQty), 0);
                 const prices = product.variants.map((variant) => Number(variant.price));
                 const priceFrom = prices.length ? Math.min(...prices) : 0;
+                const discountPct = Math.max(
+                  0,
+                  ...product.variants
+                    .filter((variant) => variant.comparePrice !== null && Number(variant.comparePrice) > Number(variant.price))
+                    .map((variant) => Math.round((1 - Number(variant.price) / Number(variant.comparePrice)) * 100)),
+                );
                 return (
                   <tr key={product.id} className="hover:bg-ink-50">
                     <Td>
                       <div className="flex items-center gap-3">
                         <span className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-ink-100">
                           {product.images[0]?.url ? (
-                            <img src={product.images[0].url} alt="" className="h-full w-full object-cover" />
+                            <ProductImage src={product.images[0].url} alt="" className="h-full w-full object-cover" />
                           ) : null}
                         </span>
                         <span>
-                          <Link href={`/admin/products/${product.id}`} className="font-medium text-brand-700 hover:underline">
-                            {product.name}
-                          </Link>
+                          {canWrite ? (
+                            <Link href={`/admin/products/${product.id}`} className="font-medium text-brand-700 hover:underline">
+                              {product.name}
+                            </Link>
+                          ) : (
+                            <span className="font-medium text-ink-900">{product.name}</span>
+                          )}
                           <span className="block text-xs text-ink-400">/{product.slug}</span>
                         </span>
                       </div>
@@ -139,7 +156,14 @@ export default async function ProductsPage({
                     <Td className="text-right">
                       <Badge tone={stock <= 0 ? "danger" : "neutral"}>{stock}</Badge>
                     </Td>
-                    <Td className="text-right font-medium">{formatBdt(priceFrom)}</Td>
+                    <Td className="text-right font-medium">
+                      {formatBdt(priceFrom)}
+                      {discountPct > 0 ? (
+                        <Badge tone="warning" className="ml-1.5">
+                          −{bnNumber(discountPct)}%
+                        </Badge>
+                      ) : null}
+                    </Td>
                   </tr>
                 );
               })}

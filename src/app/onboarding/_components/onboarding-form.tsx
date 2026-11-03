@@ -103,7 +103,7 @@ export function OnboardingForm({
           </p>
         </fieldset>
 
-        <Checkbox name="acceptTerms" defaultChecked label="আমি শর্তাবলী মেনে নিচ্ছি।" />
+        <Checkbox name="acceptTerms" required label="আমি শর্তাবলী মেনে নিচ্ছি।" />
 
         <Button type="submit" size="lg" disabled={pending} className="w-full">
           {pending ? "দোকান তৈরি হচ্ছে…" : "দোকান তৈরি করুন"}

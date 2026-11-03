@@ -35,7 +35,7 @@ const TONE: Record<string, "success" | "warning" | "danger" | "neutral"> = {
 export default async function WebhooksPage() {
   const [health, events, deliveries, pendingPayments, recentAudit] = await Promise.all([
     webhookHealth(),
-    listWebhookEvents(undefined, 40),
+    listWebhookEvents({ limit: 40 }),
     listWebhookDeliveries(30),
     stalePendingPayments(30),
     prisma.auditLog.findMany({

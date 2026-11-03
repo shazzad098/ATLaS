@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { AppError, isAppError, ValidationError } from "@/lib/errors";
+import { reportError } from "@/lib/logger";
 
 /**
  * REST envelope + pagination conventions (PRD §11 "API rules"):
@@ -67,7 +68,7 @@ export function fail(error: unknown, requestId = newRequestId()): NextResponse<A
   }
 
   // Unknown failures are logged with the request id so support can correlate.
-  console.error(`[api:${requestId}] unhandled`, error);
+  reportError(error, { requestId, scope: "api" });
   return NextResponse.json(
     {
       data: null,
@@ -173,3 +174,16 @@ export function rateLimit(key: string, perMinute: number): void {
     });
   }
 }
+
+/**
+ * Plan-aware limiter for authenticated merchant API calls (PRD §5.1). The
+ * tenant's `requestsPerMinute` is read from the cached entitlement snapshot, so
+ * a Super Admin limit change applies without a deploy. Anonymous/auth routes
+ * keep the fixed limiter because they have no tenant yet.
+ */
+export async function rateLimitForTenant(tenantId: string, key: string): Promise<void> {
+  const { loadEntitlementSnapshot } = await import("@/lib/entitlements");
+  const snapshot = await loadEntitlementSnapshot(tenantId);
+  rateLimit(`${key}:${tenantId}`, Math.max(1, snapshot.limits.requestsPerMinute));
+}
+

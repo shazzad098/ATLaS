@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { listCategories } from "@/lib/services/catalog-service";
 import { ProductForm } from "@/app/admin/_components/product-form";
 
@@ -9,7 +9,7 @@ import { ProductForm } from "@/app/admin/_components/product-form";
 export const metadata = { title: "নতুন পণ্য" };
 
 export default async function NewProductPage() {
-  const { store } = await requireActiveStore();
+  const { store } = await requireActiveStorePermissionPage("catalog:write");
   const categories = await listCategories(store.id);
 
   return (

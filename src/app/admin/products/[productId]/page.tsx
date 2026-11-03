@@ -1,19 +1,31 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { formatBdt } from "@/lib/money";
 import { getProduct, listCategories } from "@/lib/services/catalog-service";
 import { storePath } from "@/lib/storefront";
 import { Badge, Card, CardBody, CardHeader, Table, Td, Th } from "@/components/ui/shell";
 import { ProductForm } from "@/app/admin/_components/product-form";
+import { ProductDiscountForm } from "@/app/admin/_components/product-discount-form";
 import { FormButton } from "@/app/admin/_components/form-button";
 import { adjustStockAction, archiveProductAction } from "@/app/admin/actions";
 
-/** Edit a product: details, variants, images and quick stock adjustments (FR-03). */
+/** Edit a product: details, variants, images, discount and stock (FR-03). */
+
+function highestVariantDiscountPercent(
+  variants: Array<{ price: unknown; comparePrice: unknown }>,
+): number {
+  return Math.max(
+    0,
+    ...variants
+      .filter((variant) => variant.comparePrice !== null && Number(variant.comparePrice) > Number(variant.price))
+      .map((variant) => Math.round((1 - Number(variant.price) / Number(variant.comparePrice)) * 100)),
+  );
+}
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ productId: string }> }) {
-  const { store } = await requireActiveStore();
+  const { store } = await requireActiveStorePermissionPage("catalog:write");
   const { productId } = await params;
 
   let product;
@@ -80,6 +92,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         />
 
         <div className="space-y-5">
+          <ProductDiscountForm
+            storeId={store.id}
+            productId={product.id}
+            currentPercent={highestVariantDiscountPercent(product.variants)}
+          />
           <Card>
             <CardHeader title="স্টক হালনাগাদ" description="দ্রুত অ্যাডজাস্টমেন্ট ও ইনভেন্টরি লগ" />
             <Table>

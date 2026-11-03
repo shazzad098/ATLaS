@@ -221,6 +221,9 @@ export type CartPricing = {
   subtotal: string;
   discountTotal: string;
   shippingTotal: string;
+  taxTotal: string;
+  taxMode: "INCLUSIVE" | "EXCLUSIVE" | "NONE";
+  taxRatePercent: number;
   grandTotal: string;
   coupon: { code: string; amount: string; type: string } | null;
   couponError: string | null;
@@ -273,18 +276,39 @@ export async function priceCart(
   }
 
   // Delivery charge: explicit zone, else the store's default zone.
-  const zone = options.zoneId
-    ? await prisma.deliveryZone.findFirst({ where: { id: options.zoneId, storeId, isActive: true } })
-    : await prisma.deliveryZone.findFirst({
-        where: { storeId, isActive: true },
-        orderBy: [{ isDefault: "desc" }, { sortOrder: "asc" }],
-      });
+  const [zone, settings] = await Promise.all([
+    options.zoneId
+      ? prisma.deliveryZone.findFirst({ where: { id: options.zoneId, storeId, isActive: true } })
+      : prisma.deliveryZone.findFirst({
+          where: { storeId, isActive: true },
+          orderBy: [{ isDefault: "desc" }, { sortOrder: "asc" }],
+        }),
+    prisma.storeSettings.findUnique({ where: { storeId }, select: { taxJson: true } }),
+  ]);
+
+  const tax = (settings?.taxJson ?? {}) as Record<string, unknown>;
+  const taxMode =
+    tax.mode === "NONE" || tax.mode === "EXCLUSIVE" ? tax.mode : "INCLUSIVE";
+  const taxRatePercent =
+    tax.vatRegistered === true
+      ? Math.min(100, Math.max(0, Number(tax.ratePercent ?? 0)))
+      : 0;
 
   const netMerchandise = subtotal - discountTotal;
   let shippingTotal = zone ? toPaisa(zone.charge) : 0n;
   if (zone?.freeAbove && netMerchandise >= toPaisa(zone.freeAbove)) shippingTotal = 0n;
 
-  const grandTotal = netMerchandise + shippingTotal;
+  // VAT applies to discounted merchandise, not delivery. INCLUSIVE extracts the
+  // tax already inside the displayed price; EXCLUSIVE adds it at checkout.
+  const taxTotal =
+    taxRatePercent > 0 && taxMode !== "NONE"
+      ? taxMode === "INCLUSIVE"
+        ? toPaisa(rateOf(fromPaisa(netMerchandise), taxRatePercent / (100 + taxRatePercent)))
+        : toPaisa(rateOf(fromPaisa(netMerchandise), taxRatePercent / 100))
+      : 0n;
+
+  const grandTotal =
+    netMerchandise + shippingTotal + (taxMode === "EXCLUSIVE" ? taxTotal : 0n);
 
   return {
     lines,
@@ -292,6 +316,9 @@ export async function priceCart(
     subtotal: fromPaisa(subtotal),
     discountTotal: fromPaisa(discountTotal),
     shippingTotal: fromPaisa(shippingTotal),
+    taxTotal: fromPaisa(taxTotal),
+    taxMode,
+    taxRatePercent,
     grandTotal: fromPaisa(grandTotal),
     coupon,
     couponError,

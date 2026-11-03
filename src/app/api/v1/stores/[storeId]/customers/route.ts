@@ -1,8 +1,9 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
-import { cursorPage, ok, parsePagination, rateLimit, route } from "@/lib/api";
+import { cursorPage, ok, parsePagination, rateLimitForTenant, route } from "@/lib/api";
+import { assertApiAccess, loadEntitlementSnapshot } from "@/lib/entitlements";
 import { assertPermission } from "@/lib/rbac";
-import { assertStoreAccess, authenticateRequest, resolveApiActor } from "@/lib/tenant";
+import { assertStoreAccess, authorizeApiRequest } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { fromPaisa, toPaisa } from "@/lib/money";
 
@@ -28,11 +29,12 @@ const querySchema = z.object({
 export const GET = route(async (request: NextRequest, context: StoreRouteContext) => {
   const { storeId } = await context.params;
 
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
+  const { actor } = await authorizeApiRequest(request);
   assertPermission(actor, "customers:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`customers:read:${actor.tenantId}`, 180);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "customers:read");
 
   const pagination = parsePagination(request.nextUrl.searchParams);
   const query = querySchema.parse(Object.fromEntries(request.nextUrl.searchParams));

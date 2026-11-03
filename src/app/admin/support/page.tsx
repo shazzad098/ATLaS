@@ -1,5 +1,5 @@
 import { LifeBuoy } from "lucide-react";
-import { requireActiveStorePage } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { listTenantTickets, ticketCounts, ticketStatusLabel } from "@/lib/services/support-service";
 import { formatDateTime } from "@/lib/dates";
 import { Badge, Card, CardBody, CardHeader, EmptyState, PageHeader, Stat } from "@/components/ui/shell";
@@ -31,7 +31,7 @@ const PRIORITY_TONE: Record<string, "danger" | "warning" | "neutral"> = {
 };
 
 export default async function SupportPage() {
-  const { workspace } = await requireActiveStorePage();
+  const { workspace } = await requireActiveStorePermissionPage("store:read");
   const tenantId = workspace.activeTenant.tenantId;
 
   const [tickets, counts] = await Promise.all([listTenantTickets(tenantId), ticketCounts(tenantId)]);

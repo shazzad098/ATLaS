@@ -56,6 +56,15 @@ export const ThemeStatus = {
 export type ThemeStatus = (typeof ThemeStatus)[keyof typeof ThemeStatus]
 
 
+export const ReviewStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type ReviewStatus = (typeof ReviewStatus)[keyof typeof ReviewStatus]
+
+
 export const DomainType = {
   SUBDOMAIN: 'SUBDOMAIN',
   CUSTOM: 'CUSTOM'
@@ -266,3 +275,27 @@ export const WebhookStatus = {
 } as const
 
 export type WebhookStatus = (typeof WebhookStatus)[keyof typeof WebhookStatus]
+
+
+export const CourierProvider = {
+  PATHAO: 'PATHAO',
+  REDX: 'REDX',
+  STEADFAST: 'STEADFAST'
+} as const
+
+export type CourierProvider = (typeof CourierProvider)[keyof typeof CourierProvider]
+
+
+export const ShipmentStatus = {
+  PENDING: 'PENDING',
+  PICKED_UP: 'PICKED_UP',
+  IN_TRANSIT: 'IN_TRANSIT',
+  OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+  DELIVERED: 'DELIVERED',
+  PARTIAL_DELIVERED: 'PARTIAL_DELIVERED',
+  RETURNED: 'RETURNED',
+  CANCELLED: 'CANCELLED',
+  FAILED: 'FAILED'
+} as const
+
+export type ShipmentStatus = (typeof ShipmentStatus)[keyof typeof ShipmentStatus]

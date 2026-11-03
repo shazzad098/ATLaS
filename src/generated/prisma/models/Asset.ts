@@ -38,6 +38,7 @@ export type AssetMinAggregateOutputType = {
   id: string | null
   storeId: string | null
   objectKey: string | null
+  url: string | null
   mimeType: string | null
   sizeBytes: number | null
   checksum: string | null
@@ -48,6 +49,7 @@ export type AssetMaxAggregateOutputType = {
   id: string | null
   storeId: string | null
   objectKey: string | null
+  url: string | null
   mimeType: string | null
   sizeBytes: number | null
   checksum: string | null
@@ -58,6 +60,7 @@ export type AssetCountAggregateOutputType = {
   id: number
   storeId: number
   objectKey: number
+  url: number
   mimeType: number
   sizeBytes: number
   checksum: number
@@ -79,6 +82,7 @@ export type AssetMinAggregateInputType = {
   id?: true
   storeId?: true
   objectKey?: true
+  url?: true
   mimeType?: true
   sizeBytes?: true
   checksum?: true
@@ -89,6 +93,7 @@ export type AssetMaxAggregateInputType = {
   id?: true
   storeId?: true
   objectKey?: true
+  url?: true
   mimeType?: true
   sizeBytes?: true
   checksum?: true
@@ -99,6 +104,7 @@ export type AssetCountAggregateInputType = {
   id?: true
   storeId?: true
   objectKey?: true
+  url?: true
   mimeType?: true
   sizeBytes?: true
   checksum?: true
@@ -197,6 +203,7 @@ export type AssetGroupByOutputType = {
   id: string
   storeId: string | null
   objectKey: string
+  url: string | null
   mimeType: string
   sizeBytes: number
   checksum: string | null
@@ -231,6 +238,7 @@ export type AssetWhereInput = {
   id?: Prisma.StringFilter<"Asset"> | string
   storeId?: Prisma.StringNullableFilter<"Asset"> | string | null
   objectKey?: Prisma.StringFilter<"Asset"> | string
+  url?: Prisma.StringNullableFilter<"Asset"> | string | null
   mimeType?: Prisma.StringFilter<"Asset"> | string
   sizeBytes?: Prisma.IntFilter<"Asset"> | number
   checksum?: Prisma.StringNullableFilter<"Asset"> | string | null
@@ -243,6 +251,7 @@ export type AssetOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   storeId?: Prisma.SortOrderInput | Prisma.SortOrder
   objectKey?: Prisma.SortOrder
+  url?: Prisma.SortOrderInput | Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
   checksum?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -254,6 +263,7 @@ export type AssetOrderByWithRelationInput = {
 export type AssetWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   objectKey?: string
+  url?: string
   AND?: Prisma.AssetWhereInput | Prisma.AssetWhereInput[]
   OR?: Prisma.AssetWhereInput[]
   NOT?: Prisma.AssetWhereInput | Prisma.AssetWhereInput[]
@@ -264,12 +274,13 @@ export type AssetWhereUniqueInput = Prisma.AtLeast<{
   metadataJson?: Prisma.JsonFilter<"Asset">
   createdAt?: Prisma.DateTimeFilter<"Asset"> | Date | string
   store?: Prisma.XOR<Prisma.StoreNullableScalarRelationFilter, Prisma.StoreWhereInput> | null
-}, "id" | "objectKey">
+}, "id" | "objectKey" | "url">
 
 export type AssetOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   storeId?: Prisma.SortOrderInput | Prisma.SortOrder
   objectKey?: Prisma.SortOrder
+  url?: Prisma.SortOrderInput | Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
   checksum?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -289,6 +300,7 @@ export type AssetScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Asset"> | string
   storeId?: Prisma.StringNullableWithAggregatesFilter<"Asset"> | string | null
   objectKey?: Prisma.StringWithAggregatesFilter<"Asset"> | string
+  url?: Prisma.StringNullableWithAggregatesFilter<"Asset"> | string | null
   mimeType?: Prisma.StringWithAggregatesFilter<"Asset"> | string
   sizeBytes?: Prisma.IntWithAggregatesFilter<"Asset"> | number
   checksum?: Prisma.StringNullableWithAggregatesFilter<"Asset"> | string | null
@@ -299,6 +311,7 @@ export type AssetScalarWhereWithAggregatesInput = {
 export type AssetCreateInput = {
   id?: string
   objectKey: string
+  url?: string | null
   mimeType: string
   sizeBytes: number
   checksum?: string | null
@@ -311,6 +324,7 @@ export type AssetUncheckedCreateInput = {
   id?: string
   storeId?: string | null
   objectKey: string
+  url?: string | null
   mimeType: string
   sizeBytes: number
   checksum?: string | null
@@ -321,6 +335,7 @@ export type AssetUncheckedCreateInput = {
 export type AssetUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -333,6 +348,7 @@ export type AssetUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -344,6 +360,7 @@ export type AssetCreateManyInput = {
   id?: string
   storeId?: string | null
   objectKey: string
+  url?: string | null
   mimeType: string
   sizeBytes: number
   checksum?: string | null
@@ -354,6 +371,7 @@ export type AssetCreateManyInput = {
 export type AssetUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -365,6 +383,7 @@ export type AssetUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   storeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -386,6 +405,7 @@ export type AssetCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   storeId?: Prisma.SortOrder
   objectKey?: Prisma.SortOrder
+  url?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
   checksum?: Prisma.SortOrder
@@ -401,6 +421,7 @@ export type AssetMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   storeId?: Prisma.SortOrder
   objectKey?: Prisma.SortOrder
+  url?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
   checksum?: Prisma.SortOrder
@@ -411,6 +432,7 @@ export type AssetMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   storeId?: Prisma.SortOrder
   objectKey?: Prisma.SortOrder
+  url?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   sizeBytes?: Prisma.SortOrder
   checksum?: Prisma.SortOrder
@@ -466,6 +488,7 @@ export type AssetUncheckedUpdateManyWithoutStoreNestedInput = {
 export type AssetCreateWithoutStoreInput = {
   id?: string
   objectKey: string
+  url?: string | null
   mimeType: string
   sizeBytes: number
   checksum?: string | null
@@ -476,6 +499,7 @@ export type AssetCreateWithoutStoreInput = {
 export type AssetUncheckedCreateWithoutStoreInput = {
   id?: string
   objectKey: string
+  url?: string | null
   mimeType: string
   sizeBytes: number
   checksum?: string | null
@@ -516,6 +540,7 @@ export type AssetScalarWhereInput = {
   id?: Prisma.StringFilter<"Asset"> | string
   storeId?: Prisma.StringNullableFilter<"Asset"> | string | null
   objectKey?: Prisma.StringFilter<"Asset"> | string
+  url?: Prisma.StringNullableFilter<"Asset"> | string | null
   mimeType?: Prisma.StringFilter<"Asset"> | string
   sizeBytes?: Prisma.IntFilter<"Asset"> | number
   checksum?: Prisma.StringNullableFilter<"Asset"> | string | null
@@ -526,6 +551,7 @@ export type AssetScalarWhereInput = {
 export type AssetCreateManyStoreInput = {
   id?: string
   objectKey: string
+  url?: string | null
   mimeType: string
   sizeBytes: number
   checksum?: string | null
@@ -536,6 +562,7 @@ export type AssetCreateManyStoreInput = {
 export type AssetUpdateWithoutStoreInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -546,6 +573,7 @@ export type AssetUpdateWithoutStoreInput = {
 export type AssetUncheckedUpdateWithoutStoreInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -556,6 +584,7 @@ export type AssetUncheckedUpdateWithoutStoreInput = {
 export type AssetUncheckedUpdateManyWithoutStoreInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   objectKey?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   sizeBytes?: Prisma.IntFieldUpdateOperationsInput | number
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -569,6 +598,7 @@ export type AssetSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   id?: boolean
   storeId?: boolean
   objectKey?: boolean
+  url?: boolean
   mimeType?: boolean
   sizeBytes?: boolean
   checksum?: boolean
@@ -581,6 +611,7 @@ export type AssetSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   storeId?: boolean
   objectKey?: boolean
+  url?: boolean
   mimeType?: boolean
   sizeBytes?: boolean
   checksum?: boolean
@@ -593,6 +624,7 @@ export type AssetSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   storeId?: boolean
   objectKey?: boolean
+  url?: boolean
   mimeType?: boolean
   sizeBytes?: boolean
   checksum?: boolean
@@ -605,6 +637,7 @@ export type AssetSelectScalar = {
   id?: boolean
   storeId?: boolean
   objectKey?: boolean
+  url?: boolean
   mimeType?: boolean
   sizeBytes?: boolean
   checksum?: boolean
@@ -612,7 +645,7 @@ export type AssetSelectScalar = {
   createdAt?: boolean
 }
 
-export type AssetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "objectKey" | "mimeType" | "sizeBytes" | "checksum" | "metadataJson" | "createdAt", ExtArgs["result"]["asset"]>
+export type AssetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "objectKey" | "url" | "mimeType" | "sizeBytes" | "checksum" | "metadataJson" | "createdAt", ExtArgs["result"]["asset"]>
 export type AssetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.Asset$storeArgs<ExtArgs>
 }
@@ -632,6 +665,10 @@ export type $AssetPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     id: string
     storeId: string | null
     objectKey: string
+    /**
+     * * Public URL stored on ProductImage/theme settings; lets deletes find the object.
+     */
+    url: string | null
     mimeType: string
     sizeBytes: number
     checksum: string | null
@@ -1064,6 +1101,7 @@ export interface AssetFieldRefs {
   readonly id: Prisma.FieldRef<"Asset", 'String'>
   readonly storeId: Prisma.FieldRef<"Asset", 'String'>
   readonly objectKey: Prisma.FieldRef<"Asset", 'String'>
+  readonly url: Prisma.FieldRef<"Asset", 'String'>
   readonly mimeType: Prisma.FieldRef<"Asset", 'String'>
   readonly sizeBytes: Prisma.FieldRef<"Asset", 'Int'>
   readonly checksum: Prisma.FieldRef<"Asset", 'String'>

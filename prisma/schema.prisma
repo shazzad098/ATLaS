@@ -53,6 +53,14 @@ enum ThemeStatus {
   ARCHIVED
 }
 
+/// Buyer-generated product reviews. Auto-approved by default; the status field
+/// leaves room for merchant moderation without a schema change.
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum DomainType {
   SUBDOMAIN
   CUSTOM
@@ -219,15 +227,25 @@ model User {
   isSuperAdmin    Boolean    @default(false)
   phoneVerifiedAt DateTime?
   lastLoginAt     DateTime?
+  /**
+   * TOTP secret, base32. Kept encrypted with `SECRETS_KEY` while at rest; the
+   * plaintext only exists in memory during setup/verification (FR-01, §13).
+   */
+  twoFactorSecret      String?
+  twoFactorEnabled     Boolean    @default(false)
+  twoFactorConfirmedAt DateTime?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   deletedAt       DateTime?
 
-  tenants       Tenant[]       @relation("TenantOwner")
-  memberships   Membership[]
-  sessions      Session[]
-  notifications Notification[]
-  auditLogs     AuditLog[]
+  tenants          Tenant[]       @relation("TenantOwner")
+  memberships      Membership[]
+  sessions         Session[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  recoveryCodes    TwoFactorRecoveryCode[]
+  twoFactorChallenges TwoFactorChallenge[]
+  impersonations   ImpersonationSession[] @relation("ImpersonationActor")
 
   @@index([status, createdAt])
 }
@@ -253,6 +271,12 @@ model Tenant {
   auditLogs         AuditLog[]
   tickets           SupportTicket[]
   webhookDeliveries WebhookDelivery[]
+  apiKeys           ApiKey[]
+  webhookEndpoints  WebhookEndpoint[]
+  analyticsEvents   AnalyticsEvent[]
+  exportJobs        ExportJob[]
+  exportSchedules   ExportSchedule[]
+  impersonations    ImpersonationSession[]
 
   @@index([ownerUserId])
   @@index([status])
@@ -325,6 +349,61 @@ model OtpChallenge {
   @@index([expiresAt])
 }
 
+/// Short-lived second-factor challenge issued after the first factor succeeds.
+/// Only the SHA-256 hash of the browser token is stored, so a database leak
+/// cannot be replayed; attempts and expiry are enforced server-side.
+model TwoFactorChallenge {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
+
+/// One-time recovery codes. Hashed with an application secret and consumed
+/// atomically, so a code works exactly once even under concurrent requests.
+model TwoFactorRecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String    @unique
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+}
+
+/// Time-boxed Super Admin impersonation (FR-02, PRD §4.5, §13).
+/// A reason and support reference are mandatory, the session expires after 60
+/// minutes, and it is read-only for merchant data. Start and end both land in
+/// the audit log.
+model ImpersonationSession {
+  id           String    @id @default(cuid())
+  superAdminId String
+  tenantId     String
+  storeId      String?
+  reason       String
+  reference    String
+  startedAt    DateTime  @default(now())
+  expiresAt    DateTime
+  endedAt      DateTime?
+
+  superAdmin User   @relation("ImpersonationActor", fields: [superAdminId], references: [id], onDelete: Cascade)
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([superAdminId, endedAt])
+  @@index([tenantId, startedAt])
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Store and theme (PRD §10.2)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -357,7 +436,17 @@ model Store {
   inventoryMovements InventoryMovement[]
   paymentMethods     PaymentMethod[]
   deliveryZones      DeliveryZone[]
+  deliveryMethods    DeliveryMethod[]
+  shipments          Shipment[]
   feeLedger          FeeLedger[]
+  paymentWebhookEvents PaymentWebhookEvent[]
+  notificationDeliveries NotificationDelivery[]
+  analyticsEvents    AnalyticsEvent[]
+  dailyMetrics       DailyStoreMetric[]
+  exportJobs         ExportJob[]
+  exportSchedules    ExportSchedule[]
+  reviews            ProductReview[]
+  wishlist           WishlistItem[]
 
   @@index([tenantId, status])
   @@index([status, publishedAt])
@@ -457,6 +546,15 @@ model Domain {
   tlsStatus          DomainStatus @default(PENDING)
   isPrimary          Boolean      @default(false)
   verifiedAt         DateTime?
+  /// Expected CNAME/A routing target shown to the merchant.
+  routingTarget      String?
+  dnsLastCheckedAt   DateTime?
+  dnsError           String?
+  /// Set only after an HTTPS handshake against the live host succeeds.
+  tlsIssuedAt        DateTime?
+  tlsLastCheckedAt   DateTime?
+  tlsAttempts        Int          @default(0)
+  tlsError           String?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -512,6 +610,8 @@ model Product {
   variants   ProductVariant[]
   images     ProductImage[]
   orderItems OrderItem[]
+  reviews    ProductReview[]
+  wishlist   WishlistItem[]
 
   @@unique([storeId, slug])
   @@index([storeId, status])
@@ -579,6 +679,8 @@ model Asset {
   id           String   @id @default(cuid())
   storeId      String?
   objectKey    String   @unique
+  /** Public URL stored on ProductImage/theme settings; lets deletes find the object. */
+  url          String?  @unique
   mimeType     String
   sizeBytes    Int
   checksum     String?
@@ -588,6 +690,7 @@ model Asset {
   store Store? @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
   @@index([storeId])
+  @@index([storeId, createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -600,6 +703,9 @@ model Customer {
   name          String
   phone         String
   email         String?
+  /// Set when the buyer created a storefront account; null for guest checkouts.
+  passwordHash  String?
+  lastLoginAt   DateTime?
   addressJson   Json          @default("{}")
   consentJson   Json          @default("{}")
   status        CatalogStatus @default(ACTIVE)
@@ -608,12 +714,76 @@ model Customer {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  store  Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  carts  Cart[]
-  orders Order[]
+  store    Store            @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  carts    Cart[]
+  orders   Order[]
+  reviews  ProductReview[]
+  comments ReviewComment[]
+  wishlist WishlistItem[]
 
   @@unique([storeId, phone])
   @@index([storeId, createdAt])
+  @@index([storeId, email])
+}
+
+/// A buyer's review of one product. One review per customer per product; the
+/// optional `orderId` marks it as a verified purchase.
+model ProductReview {
+  id         String       @id @default(cuid())
+  storeId    String
+  productId  String
+  customerId String
+  orderId    String?
+  rating     Int
+  title      String?
+  body       String
+  /// Display-name snapshot so buyers can read reviews without seeing other
+  /// customers' rows (RLS hides the Customer relation from them).
+  authorName String       @default("ক্রেতা")
+  status     ReviewStatus @default(APPROVED)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  store    Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  product  Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  order    Order?         @relation(fields: [orderId], references: [id])
+  comments ReviewComment[]
+
+  @@index([customerId, productId, createdAt])
+  @@index([storeId, productId, status, createdAt])
+  @@index([storeId, status, createdAt])
+}
+
+/// Buyer comments on a review (threaded under `reviewId`).
+model ReviewComment {
+  id         String   @id @default(cuid())
+  reviewId   String
+  customerId String?
+  authorName String
+  body       String
+  createdAt  DateTime @default(now())
+
+  review   ProductReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  customer Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  @@index([reviewId, createdAt])
+}
+
+/// Saved products for a signed-in buyer.
+model WishlistItem {
+  id         String   @id @default(cuid())
+  storeId    String
+  customerId String
+  productId  String
+  createdAt  DateTime @default(now())
+
+  store    Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([customerId, productId])
+  @@index([storeId, customerId])
 }
 
 model Cart {
@@ -663,6 +833,8 @@ model Order {
   discountTotal       Decimal           @default(0) @db.Decimal(14, 2)
   shippingTotal       Decimal           @default(0) @db.Decimal(14, 2)
   taxTotal            Decimal           @default(0) @db.Decimal(14, 2)
+  /** Rate + mode snapshot so a later settings change cannot rewrite history. */
+  taxJson             Json              @default("{}")
   grandTotal          Decimal           @db.Decimal(14, 2)
   currency            String            @default("BDT")
   couponCode          String?
@@ -684,6 +856,9 @@ model Order {
   payments  Payment[]
   returns   Return[]
   feeLedger FeeLedger[]
+  shipments Shipment[]
+  notificationDeliveries NotificationDelivery[]
+  reviews   ProductReview[]
 
   @@unique([storeId, orderNo])
   @@index([storeId, status, createdAt])
@@ -783,6 +958,8 @@ model PaymentWebhookEvent {
   id             String          @id @default(cuid())
   provider       PaymentProvider
   eventKey       String
+  /** Set once the callback is matched to an order, so admin queries can scope. */
+  storeId        String?
   signatureValid Boolean         @default(false)
   payloadHash    String
   payloadJson    Json            @default("{}")
@@ -791,9 +968,12 @@ model PaymentWebhookEvent {
   error          String?
   createdAt      DateTime        @default(now())
 
+  store Store? @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
   // Idempotency guard: a provider event is processed at most once (PRD §10.7).
   @@unique([provider, eventKey])
   @@index([provider, status])
+  @@index([storeId, createdAt])
 }
 
 model Plan {
@@ -830,6 +1010,12 @@ model Subscription {
   cancelAtPeriodEnd   Boolean            @default(false)
   cancelledAt         DateTime?
   lastPaymentFailedAt DateTime?
+  /** Set the first time a paid-plan trial starts; trials are one-time only. */
+  trialUsedAt         DateTime?
+  /** Plan change requested but not yet paid. Entitlements stay on the current plan. */
+  pendingPlanCode     String?
+  pendingBillingPeriod BillingPeriod?
+  pendingInvoiceId    String?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
@@ -942,6 +1128,73 @@ model DeliveryZone {
   @@index([storeId, isActive])
 }
 
+enum CourierProvider {
+  PATHAO
+  REDX
+  STEADFAST
+}
+
+enum ShipmentStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  PARTIAL_DELIVERED
+  RETURNED
+  CANCELLED
+  FAILED
+}
+
+// Merchant courier accounts for order delivery (FR-07). One row per store and
+// courier; the merchant keeps their own store/account ID issued by the courier.
+model DeliveryMethod {
+  id             String          @id @default(cuid())
+  storeId        String
+  provider       CourierProvider
+  courierStoreId String          @default("")
+  isEnabled      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, provider])
+  @@index([storeId, isEnabled])
+}
+
+// A consignment handed to a third-party courier. One order can have several
+// shipments over time (for example a failed attempt retried with another
+// courier), so the active one is the newest non-terminal row.
+model Shipment {
+  id               String         @id @default(cuid())
+  storeId          String
+  orderId          String
+  provider         CourierProvider
+  consignmentId    String
+  trackingCode     String
+  status           ShipmentStatus @default(PENDING)
+  isSandbox        Boolean        @default(true)
+  codAmount        Decimal        @default(0) @db.Decimal(14, 2)
+  recipientName    String
+  recipientPhone   String
+  recipientAddress String
+  recipientCity    String?
+  note             String?
+  eventsJson       Json           @default("[]")
+  lastSyncedAt     DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, consignmentId])
+  @@index([storeId, status])
+  @@index([orderId])
+  @@index([trackingCode])
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 6. Audit and operations (PRD §10.6)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -980,6 +1233,30 @@ model Notification {
   @@index([userId, readAt, createdAt])
 }
 
+/// Customer-facing email/SMS delivery log (FR-09). Provider failures never
+/// block checkout, but they must be visible to the merchant/operator.
+model NotificationDelivery {
+  id          String   @id @default(cuid())
+  storeId     String?
+  orderId     String?
+  channel     String
+  recipient   String
+  type        String
+  status      String   @default("PENDING")
+  provider    String?
+  error       String?
+  payloadJson Json     @default("{}")
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  store Store? @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([storeId, createdAt])
+  @@index([status, createdAt])
+  @@index([orderId])
+}
+
 model SupportTicket {
   id          String         @id @default(cuid())
   tenantId    String?
@@ -1000,6 +1277,7 @@ model SupportTicket {
 model WebhookDelivery {
   id          String        @id @default(cuid())
   tenantId    String
+  webhookEndpointId String?
   eventType   String
   endpoint    String
   payloadJson Json          @default("{}")
@@ -1012,6 +1290,143 @@ model WebhookDelivery {
   createdAt   DateTime      @default(now())
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  endpointRef WebhookEndpoint? @relation(fields: [webhookEndpointId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, status, nextRetryAt])
+  @@index([webhookEndpointId, createdAt])
+}
+
+/// Merchant-owned outbound webhook destination (FR-11). The signing secret is
+/// shown once at creation and then only used server-side.
+model WebhookEndpoint {
+  id             String   @id @default(cuid())
+  tenantId       String
+  url            String
+  secret         String
+  eventsJson     Json     @default("[]")
+  status         String   @default("ACTIVE")
+  failureCount   Int      @default(0)
+  lastDeliveryAt DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant     Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([tenantId, status])
+}
+
+/// Hashed, scoped API credential. The raw key is returned once on creation.
+model ApiKey {
+  id          String    @id @default(cuid())
+  tenantId    String
+  name        String
+  prefix      String    @unique
+  hash        String    @unique
+  scopesJson  Json      @default("[]")
+  createdBy   String?
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, revokedAt])
+  @@index([hash])
+}
+
+/// Daily rollup used by the reports dashboard and retention/analytics queries.
+/// Kept separate from live orders so historical reporting stays cheap even
+/// after raw events age out.
+model DailyStoreMetric {
+  id             String   @id @default(cuid())
+  storeId        String
+  date           DateTime
+  orders         Int      @default(0)
+  paidOrders     Int      @default(0)
+  deliveredOrders Int     @default(0)
+  cancelledOrders Int     @default(0)
+  grossPaisa     Int      @default(0)
+  refundPaisa    Int      @default(0)
+  taxPaisa       Int      @default(0)
+  shippingPaisa  Int      @default(0)
+  unitsSold      Int      @default(0)
+  newCustomers   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@unique([storeId, date])
+  @@index([storeId, date])
+}
+
+/// Queued CSV export. The worker writes the generated file into `fileContent`
+/// and the admin download route streams it; this keeps request latency bounded
+/// on large stores and gives every export an auditable status.
+model ExportJob {
+  id           String    @id @default(cuid())
+  tenantId     String
+  storeId      String
+  type         String
+  status       String    @default("PENDING")
+  filtersJson  Json      @default("{}")
+  requestedBy  String?
+  fileContent  String?   @db.Text
+  rowCount     Int       @default(0)
+  error        String?
+  createdAt    DateTime  @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  store  Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([storeId, status, createdAt])
+}
+
+/// Pro-plan recurring export (daily/weekly). The cron turns each due schedule
+/// into an ExportJob so failures and retries share one code path.
+model ExportSchedule {
+  id             String   @id @default(cuid())
+  tenantId       String
+  storeId        String
+  type           String
+  frequency      String
+  recipientsJson Json     @default("[]")
+  active         Boolean  @default(true)
+  nextRunAt      DateTime
+  lastRunAt      DateTime?
+  createdBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  store  Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([active, nextRunAt])
+  @@index([tenantId])
+}
+
+/// Product/checkout/analytics event stream (FR-09). Store-scoped and append-only.
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  storeId     String?
+  name        String
+  path        String?
+  referrer    String?
+  userAgent   String?
+  sessionId   String?
+  metadataJson Json    @default("{}")
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  store  Store?  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, name, occurredAt])
+  @@index([tenantId, occurredAt])
 }

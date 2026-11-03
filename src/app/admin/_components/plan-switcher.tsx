@@ -4,11 +4,7 @@ import { useActionState, useState } from "react";
 import { Alert, Badge, Card, CardBody, CardHeader } from "@/components/ui/shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Select } from "@/components/ui/form";
-import {
-  cancelSubscriptionAction,
-  changePlanAction,
-  markInvoicePaidAction,
-} from "@/app/admin/actions";
+import { cancelSubscriptionAction, changePlanAction } from "@/app/admin/actions";
 import { EMPTY_ADMIN_STATE } from "@/app/admin/state";
 import { formatBdt } from "@/lib/money";
 
@@ -126,23 +122,16 @@ export function PlanSwitcher({
   );
 }
 
-/** Mark an invoice paid (beta: manual settlement). */
-export function InvoiceRowAction({ invoiceId, status }: { invoiceId: string; status: string }) {
-  const [state, submit, pending] = useActionState(markInvoicePaidAction, EMPTY_ADMIN_STATE);
-
+/**
+ * Invoice status only. Settlement is intentionally not a merchant action:
+ * a Super Admin verifies the payment and marks it paid server-side.
+ */
+export function InvoiceRowAction({ status }: { invoiceId: string; status: string }) {
   if (status === "PAID") {
     return <span className="text-xs text-emerald-700">পরিশোধিত</span>;
   }
-
-  return (
-    <form action={submit} className="flex items-center gap-2">
-      <input type="hidden" name="invoiceId" value={invoiceId} />
-      <Button type="submit" variant="outline" size="sm" disabled={pending}>
-        {pending ? "…" : "পরিশোধ চিহ্নিত করুন"}
-      </Button>
-      {state.message ? (
-        <span className={`text-xs ${state.ok ? "text-emerald-700" : "text-red-600"}`}>{state.message}</span>
-      ) : null}
-    </form>
-  );
+  if (status === "VOID") {
+    return <span className="text-xs text-ink-500">বাতিল</span>;
+  }
+  return <span className="text-xs text-amber-700">Super Admin যাচাই করবেন</span>;
 }

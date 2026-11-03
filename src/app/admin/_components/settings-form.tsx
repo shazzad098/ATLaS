@@ -29,6 +29,18 @@ export type StoreSettingsValue = {
   seoOgImage: string;
   codAutoConfirm: boolean;
   minOrderTotal: string;
+  taxMode: string;
+  taxRatePercent: number;
+  vatRegistered: boolean;
+  notifyOrderCreated: boolean;
+  notifyPaymentReceived: boolean;
+  notifyLowStock: boolean;
+  customerOrderEmail: boolean;
+  customerOrderSms: boolean;
+  customerPaymentEmail: boolean;
+  customerPaymentSms: boolean;
+  customerShippingEmail: boolean;
+  customerShippingSms: boolean;
   returnsDays: number;
   returnsText: string;
   privacyText: string;
@@ -105,6 +117,65 @@ export function StoreSettingsForm({ storeId, value }: { storeId: string; value: 
               label="ক্যাশ অন ডেলিভারি অর্ডার স্বয়ংক্রিয়ভাবে confirm করুন"
             />
           </div>
+        </div>
+      </section>
+
+      <section className="space-y-4 border-t border-ink-100 pt-5">
+        <div>
+          <h2 className="text-sm font-semibold text-ink-900">কর / ভ্যাট</h2>
+          <p className="mt-1 text-xs text-ink-500">
+            VAT নিবন্ধিত হলে rate দিন। INCLUSIVE মানে দামের ভেতরেই কর ধরা আছে; EXCLUSIVE মানে
+            checkout-এ কর যোগ হবে। অর্ডারের সময় rate ও mode snapshot হয়ে থাকবে।
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="করের ধরন">
+            <Select name="taxMode" defaultValue={value.taxMode}>
+              <option value="NONE">কোনো কর নেই</option>
+              <option value="INCLUSIVE">মূল্যের অন্তর্ভুক্ত (Inclusive)</option>
+              <option value="EXCLUSIVE">মূল্যের সাথে যোগ (Exclusive)</option>
+            </Select>
+          </Field>
+          <Field label="VAT হার (%)">
+            <Input
+              name="taxRatePercent"
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              defaultValue={String(value.taxRatePercent)}
+            />
+          </Field>
+          <div className="flex items-end">
+            <Checkbox
+              name="vatRegistered"
+              defaultChecked={value.vatRegistered}
+              label="VAT নিবন্ধিত প্রতিষ্ঠান"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="space-y-4 border-t border-ink-100 pt-5">
+        <div>
+          <h2 className="text-sm font-semibold text-ink-900">নোটিফিকেশন</h2>
+          <p className="mt-1 text-xs text-ink-500">
+            গ্রাহক অর্ডার, পেমেন্ট ও শিপিং আপডেট SMS/ইমেইলে পাবেন। কোনো চ্যানেল বন্ধ করলে
+            সেটি আর পাঠানো হবে না — ইন-অ্যাপ অ্যালার্ট আলাদা।
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Checkbox name="customerOrderSms" defaultChecked={value.customerOrderSms} label="অর্ডার তৈরি — SMS" />
+          <Checkbox name="customerOrderEmail" defaultChecked={value.customerOrderEmail} label="অর্ডার তৈরি — Email" />
+          <Checkbox name="customerPaymentSms" defaultChecked={value.customerPaymentSms} label="পেমেন্ট নিশ্চিত — SMS" />
+          <Checkbox name="customerPaymentEmail" defaultChecked={value.customerPaymentEmail} label="পেমেন্ট নিশ্চিত — Email" />
+          <Checkbox name="customerShippingSms" defaultChecked={value.customerShippingSms} label="শিপিং আপডেট — SMS" />
+          <Checkbox name="customerShippingEmail" defaultChecked={value.customerShippingEmail} label="শিপিং আপডেট — Email" />
+        </div>
+        <div className="grid gap-3 border-t border-ink-100 pt-4 sm:grid-cols-3">
+          <Checkbox name="notifyOrderCreated" defaultChecked={value.notifyOrderCreated} label="নতুন অর্ডারে আমাকে জানান" />
+          <Checkbox name="notifyPaymentReceived" defaultChecked={value.notifyPaymentReceived} label="পেমেন্টে আমাকে জানান" />
+          <Checkbox name="notifyLowStock" defaultChecked={value.notifyLowStock} label="স্টক কম হলে জানান" />
         </div>
       </section>
 

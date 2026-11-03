@@ -174,7 +174,8 @@ export async function applyCourierFee(orderId: string): Promise<OrderFeeOutcome>
   if (!order) return { applied: false, reason: "ORDER_NOT_FOUND" };
 
   const checkout = (order.store.settings?.checkoutJson ?? {}) as Record<string, unknown>;
-  const usesThirdPartyCourier = checkout.courierMode === "THIRD_PARTY";
+  const shipment = await prisma.shipment.findFirst({ where: { orderId }, select: { id: true } });
+  const usesThirdPartyCourier = checkout.courierMode === "THIRD_PARTY" || Boolean(shipment);
 
   const existing = await prisma.feeLedger.findFirst({
     where: { orderId, feeType: "COURIER_THIRD_PARTY" },

@@ -21,6 +21,8 @@ export type Usage = {
   products: number;
   ordersThisPeriod: number;
   storageMb: number;
+  /** Exact byte usage, used to enforce the MB limit without rounding up per file. */
+  storageBytes: number;
   staffSeats: number;
 };
 
@@ -113,7 +115,8 @@ export async function loadEntitlementSnapshot(
   ]);
 
   const subscriptionStatus = subscription?.status ?? "TRIALING";
-  const storageMb = Math.ceil((assets._sum.sizeBytes ?? 0) / (1024 * 1024));
+  const storageBytes = assets._sum.sizeBytes ?? 0;
+  const storageMb = Math.ceil(storageBytes / (1024 * 1024));
 
   const snapshot: EntitlementSnapshot = {
     tenantId,
@@ -129,6 +132,7 @@ export async function loadEntitlementSnapshot(
       products,
       ordersThisPeriod,
       storageMb,
+      storageBytes,
       staffSeats,
     },
     readOnly: WRITE_BLOCKING_STATUSES.has(subscriptionStatus),
@@ -161,6 +165,19 @@ export function assertTenantWritable(snapshot: EntitlementSnapshot): void {
   );
 }
 
+/**
+ * Convenience guard for mutation services: loads the snapshot (cached) and
+ * throws `EntitlementError` when the tenant is read-only/suspended. Returning
+ * the snapshot lets callers reuse it for quota/feature checks.
+ */
+export async function requireWritableTenant(
+  tenantId: string,
+): Promise<EntitlementSnapshot> {
+  const snapshot = await loadEntitlementSnapshot(tenantId);
+  assertTenantWritable(snapshot);
+  return snapshot;
+}
+
 export function assertProductQuota(snapshot: EntitlementSnapshot, adding = 1): void {
   const limit = snapshot.limits.products;
   if (limit === null) return;
@@ -178,9 +195,15 @@ export function assertProductQuota(snapshot: EntitlementSnapshot, adding = 1): v
 }
 
 export function assertStorageQuota(snapshot: EntitlementSnapshot, addingMb = 0): void {
+  assertStorageQuotaBytes(snapshot, addingMb * 1024 * 1024);
+}
+
+/** Exact-byte variant so five 1MB uploads do not count as five rounded MB. */
+export function assertStorageQuotaBytes(snapshot: EntitlementSnapshot, addingBytes = 0): void {
   const limit = snapshot.limits.storageMb;
   if (limit === null) return;
-  if (snapshot.usage.storageMb + addingMb <= limit) return;
+  const limitBytes = limit * 1024 * 1024;
+  if (snapshot.usage.storageBytes + addingBytes <= limitBytes) return;
   throw new EntitlementError(
     `Storage limit (${limit}MB) প্রায় শেষ। Plan upgrade করুন বা পুরনো image মুছুন।`,
     {
@@ -218,6 +241,33 @@ export function assertFeature(
     feature: String(feature),
     planCode: snapshot.planCode,
     upgradeTo: upgradeTargetFor(snapshot.planCode),
+  });
+}
+
+/**
+ * API access ladder from the plan matrix. Public storefront reads are always
+ * allowed; merchant management endpoints need `SCOPED` (Standard+) and API-key
+ * / outbound-webhook management needs `FULL` (Pro). Basic's `READ_WEBHOOKS`
+ * level is deliberately below scoped management access.
+ */
+const API_ACCESS_RANK = {
+  READ_ONLY_PUBLIC: 0,
+  READ_WEBHOOKS: 1,
+  SCOPED: 2,
+  FULL: 3,
+} as const;
+
+export function assertApiAccess(
+  snapshot: EntitlementSnapshot,
+  minimum: "READ_WEBHOOKS" | "SCOPED" | "FULL" = "SCOPED",
+): void {
+  if (API_ACCESS_RANK[snapshot.limits.apiAccess] >= API_ACCESS_RANK[minimum]) return;
+  const upgradeTo = minimum === "FULL" ? "pro" : "standard";
+  throw new EntitlementError("এই API সুবিধা আপনার plan-এ নেই। Upgrade করুন।", {
+    feature: minimum === "FULL" ? "api.webhooks" : "api.scoped",
+    metric: "api_access",
+    planCode: snapshot.planCode,
+    upgradeTo,
   });
 }
 

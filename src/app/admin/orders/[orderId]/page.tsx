@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { requireActiveStore } from "@/lib/tenant";
+import { randomUUID } from "node:crypto";
+import { ArrowLeft, Truck } from "lucide-react";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { formatDateTime } from "@/lib/dates";
 import { formatBdt } from "@/lib/money";
+import { courierAdapterStatus, statusLabel, type ShipmentStatusValue } from "@/lib/couriers";
+import { readEvents } from "@/lib/couriers/events";
+import { listDeliveryMethods } from "@/lib/services/store-service";
 import {
   ORDER_STATUS_LABELS,
   allowedNextStatuses,
@@ -12,10 +16,12 @@ import {
 import { Badge, Card, CardBody, CardHeader, Table, Td, Th } from "@/components/ui/shell";
 import { FormButton } from "@/app/admin/_components/form-button";
 import { OrderStatusForm } from "@/app/admin/_components/order-status-form";
+import { CourierShipmentForm } from "@/app/admin/_components/courier-shipment-form";
 import {
   recordCodAction,
   refundOrderAction,
   resolveReturnAction,
+  syncShipmentAction,
   updateOrderStatusAction,
 } from "@/app/admin/actions";
 
@@ -33,8 +39,22 @@ const STATUS_TONE: Record<string, "neutral" | "info" | "success" | "warning" | "
   RETURNED: "neutral",
 };
 
+const SHIPMENT_TONE: Record<string, "neutral" | "info" | "success" | "warning" | "danger"> = {
+  PENDING: "warning",
+  PICKED_UP: "info",
+  IN_TRANSIT: "info",
+  OUT_FOR_DELIVERY: "info",
+  DELIVERED: "success",
+  PARTIAL_DELIVERED: "warning",
+  RETURNED: "neutral",
+  CANCELLED: "danger",
+  FAILED: "danger",
+};
+
+const SHIPPABLE_STATUSES = ["CONFIRMED", "PROCESSING", "SHIPPED"];
+
 export default async function OrderDetailPage({ params }: { params: Promise<{ orderId: string }> }) {
-  const { store } = await requireActiveStore();
+  const { store, workspace } = await requireActiveStorePermissionPage("orders:read");
   const { orderId } = await params;
 
   let order;
@@ -43,6 +63,24 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
   } catch {
     notFound();
   }
+
+  const [methods] = await Promise.all([listDeliveryMethods(store.id)]);
+  const courierModes = new Map(courierAdapterStatus().map((entry) => [entry.provider, entry]));
+
+  const enabledMethods = methods
+    .filter((method) => method.isEnabled && method.courierStoreId)
+    .map((method) => ({
+      provider: method.provider,
+      label: courierModes.get(method.provider)?.label ?? method.provider,
+      mode: courierModes.get(method.provider)?.mode ?? ("sandbox" as const),
+    }));
+
+  const activeShipment = order.shipments.find(
+    (shipment) => !["DELIVERED", "PARTIAL_DELIVERED", "RETURNED", "CANCELLED", "FAILED"].includes(shipment.status),
+  );
+  const canWrite = workspace.actor.permissions.includes("delivery:write");
+  const canShip =
+    canWrite && !activeShipment && SHIPPABLE_STATUSES.includes(order.status) && enabledMethods.length > 0;
 
   const nextStatuses = allowedNextStatuses(order.status);
   const address = order.addressSnapshotJson as Record<string, string>;
@@ -103,6 +141,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
                 <Row label={`ছাড়${order.couponCode ? ` (${order.couponCode})` : ""}`} value={`− ${formatBdt(order.discountTotal)}`} />
               ) : null}
               <Row label="ডেলিভারি চার্জ" value={formatBdt(order.shippingTotal)} />
+              {Number(order.taxTotal) > 0 ? (
+                <Row label="ভ্যাট" value={formatBdt(order.taxTotal)} />
+              ) : null}
               <Row label="সর্বমোট" value={formatBdt(order.grandTotal)} strong />
             </CardBody>
           </Card>
@@ -205,6 +246,99 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
           </Card>
 
           <Card>
+            <CardHeader
+              title={
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-4 w-4" /> কুরিয়ার
+                </span>
+              }
+              description="Pathao / RedX / Steadfast-এ অর্ডার পাঠান ও ট্র্যাকিং দেখুন"
+              action={
+                activeShipment ? (
+                  <Badge tone={SHIPMENT_TONE[activeShipment.status] ?? "neutral"}>
+                    {statusLabel(activeShipment.status as ShipmentStatusValue)}
+                  </Badge>
+                ) : null
+              }
+            />
+            <CardBody className="space-y-4">
+              {order.shipments.map((shipment) => {
+                const events = readEvents(shipment.eventsJson);
+                const label = courierModes.get(shipment.provider)?.label ?? shipment.provider;
+                return (
+                  <div
+                    key={shipment.id}
+                    className="space-y-2 rounded-lg border border-ink-100 bg-ink-50/60 p-3"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-ink-900">{label}</p>
+                        <p className="truncate font-mono text-xs text-ink-500">{shipment.trackingCode}</p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge tone={shipment.isSandbox ? "neutral" : "info"}>
+                          {shipment.isSandbox ? "Sandbox" : "Live"}
+                        </Badge>
+                        <Badge tone={SHIPMENT_TONE[shipment.status] ?? "neutral"}>
+                          {statusLabel(shipment.status as ShipmentStatusValue)}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-ink-500">
+                      COD {formatBdt(shipment.codAmount)} · {formatDateTime(shipment.createdAt)}
+                    </p>
+
+                    {events.length > 0 ? (
+                      <ul className="space-y-1 border-t border-ink-100 pt-2 text-xs text-ink-500">
+                        {events
+                          .slice(-3)
+                          .reverse()
+                          .map((event) => (
+                            <li key={event.id}>
+                              {formatDateTime(new Date(event.at))} — {event.message}
+                            </li>
+                          ))}
+                      </ul>
+                    ) : null}
+
+                    <FormButton
+                      action={syncShipmentAction}
+                      fields={{ storeId: store.id, shipmentId: shipment.id, orderId: order.id }}
+                      variant="outline"
+                      size="sm"
+                      showMessage={false}
+                    >
+                      ট্র্যাকিং আপডেট
+                    </FormButton>
+                  </div>
+                );
+              })}
+
+              {canShip ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-ink-500">
+                    {order.paymentProvider === "COD" && order.paymentStatus !== "PAID"
+                      ? `পাঠালে অর্ডার SHIPPED হবে; কুরিয়ার ${formatBdt(order.grandTotal)} কালেক্ট করবে।`
+                      : "পাঠালে অর্ডার SHIPPED হবে; পেমেন্ট সম্পন্ন — কুরিয়ার কিছু কালেক্ট করবে না।"}
+                  </p>
+                  <CourierShipmentForm storeId={store.id} orderId={order.id} methods={enabledMethods} />
+                </div>
+              ) : null}
+
+              {!activeShipment && !canShip ? (
+                <p className="text-xs text-ink-500">
+                  {enabledMethods.length === 0
+                    ? "কোনো কুরিয়ার চালু নেই — ডেলিভারি সেটিংস থেকে Store ID দিয়ে যোগ করুন।"
+                    : canWrite
+                      ? "শিপমেন্ট তৈরি করতে অর্ডারটি নিশ্চিত (CONFIRMED) করুন।"
+                      : "আপনার role-এ কুরিয়ার ব্যবহারের অনুমতি নেই।"}
+                </p>
+              ) : null}
+            </CardBody>
+          </Card>
+
+          <Card>
             <CardHeader title="দ্রুত কাজ" />
             <CardBody className="space-y-4">
               {order.paymentProvider === "COD" && !codCollected ? (
@@ -216,7 +350,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
               {order.paymentStatus === "PAID" ? (
                 <FormButton
                   action={refundOrderAction}
-                  fields={{ storeId: store.id, orderId: order.id, amount: String(order.grandTotal) }}
+                  fields={{
+                    storeId: store.id,
+                    orderId: order.id,
+                    amount: String(order.grandTotal),
+                    idempotencyKey: randomUUID(),
+                  }}
                   variant="outline"
                   size="sm"
                   confirmText="সম্পূর্ণ অর্ডার রিফান্ড করতে চান?"

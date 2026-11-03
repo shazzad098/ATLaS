@@ -36,7 +36,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </p>
       </div>
 
-      <div className="flex items-center justify-center px-4 py-12 sm:px-8">
+      <div className="flex min-h-screen items-start justify-center px-4 py-10 sm:px-8 lg:items-center lg:py-12">
         <div className="w-full max-w-md">
           <Link href="/" className="mb-8 inline-block text-lg font-semibold lg:hidden">
             ATLaS

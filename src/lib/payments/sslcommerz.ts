@@ -104,12 +104,19 @@ export const sslcommerzAdapter: PaymentAdapter = {
     if (tranId && valId) {
       const validation = await validateTransaction(valId);
       const ok = validation.ok && validation.amount !== undefined;
+      // The validated response is authoritative for the order reference too:
+      // echoing `value_a` from the browser would let a valid `val_id` from one
+      // order be replayed against another order of the same amount.
+      const verifiedOrderId = validation.orderId ?? null;
 
       return {
         eventKey: `sslcommerz:${valId}`,
         providerTxnId: valId,
-        orderNo: tranId,
+        orderNo: validation.tranId ?? tranId,
+        orderId: verifiedOrderId,
+        verifiedOrderReference: Boolean(verifiedOrderId),
         amount: validation.amount ?? null,
+        currency: validation.currency ?? null,
         status: ok ? "SUCCEEDED" : "FAILED",
         // A valid `val_id` plus a server-side validation response is the
         // signature check for SSLCommerz.
@@ -123,7 +130,9 @@ export const sslcommerzAdapter: PaymentAdapter = {
       eventKey: String(payload.eventKey ?? `sslcommerz:${payload.providerTxnId ?? "unknown"}`),
       providerTxnId: payload.providerTxnId ? String(payload.providerTxnId) : null,
       orderNo: payload.orderNo ? String(payload.orderNo) : null,
+      orderId: payload.orderId ? String(payload.orderId) : null,
       amount: payload.amount ? String(payload.amount) : null,
+      currency: payload.currency ? String(payload.currency) : "BDT",
       status:
         payload.status === "FAILED"
           ? "FAILED"
@@ -158,9 +167,14 @@ export const sslcommerzAdapter: PaymentAdapter = {
   },
 };
 
-async function validateTransaction(
-  valId: string,
-): Promise<{ ok: boolean; amount?: string; message?: string }> {
+async function validateTransaction(valId: string): Promise<{
+  ok: boolean;
+  amount?: string;
+  currency?: string;
+  tranId?: string;
+  orderId?: string;
+  message?: string;
+}> {
   const { baseUrl, storeId, storePassword } = env.gateways.sslcommerz;
   const url = new URL(`${baseUrl}/validator/api/validationserverAPI.php`);
   url.searchParams.set("val_id", valId);
@@ -171,11 +185,24 @@ async function validateTransaction(
   try {
     const response = await fetch(url);
     if (!response.ok) return { ok: false, message: `validation HTTP ${response.status}` };
-    const data = (await response.json()) as { status?: string; amount?: string; error?: string };
+    const data = (await response.json()) as {
+      status?: string;
+      amount?: string;
+      currency?: string;
+      tran_id?: string;
+      value_a?: string;
+      error?: string;
+    };
     if (data.status !== "VALID" && data.status !== "VALIDATED") {
       return { ok: false, message: data.error ?? `status ${data.status}` };
     }
-    return { ok: true, amount: data.amount };
+    return {
+      ok: true,
+      amount: data.amount,
+      currency: data.currency,
+      tranId: data.tran_id,
+      orderId: data.value_a,
+    };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "validation failed" };
   }

@@ -1,6 +1,6 @@
 import { assertCsrf } from "@/lib/auth/session";
-import { clientIp, ok, parseBody, rateLimit, route } from "@/lib/api";
-import { authenticateRequest, resolveApiActor } from "@/lib/tenant";
+import { clientIp, ok, parseBody, rateLimitForTenant, route } from "@/lib/api";
+import { authorizeApiRequest } from "@/lib/tenant";
 import { createStore, listStores, storeInputSchema } from "@/lib/services/store-service";
 import { recordAudit } from "@/lib/audit";
 
@@ -14,9 +14,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const GET = route(async (request: Request) => {
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
-  rateLimit(`stores:list:${actor.tenantId}`, 120);
+  const { actor } = await authorizeApiRequest(request);
+  await rateLimitForTenant(actor.tenantId, "stores:list");
 
   const stores = await listStores(actor.tenantId);
   return ok(stores);
@@ -24,9 +23,8 @@ export const GET = route(async (request: Request) => {
 
 export const POST = route(async (request: Request) => {
   assertCsrf(request);
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
-  rateLimit(`stores:create:${actor.tenantId}`, 20);
+  const { actor } = await authorizeApiRequest(request);
+  await rateLimitForTenant(actor.tenantId, "stores:create");
 
   const input = await parseBody(request, storeInputSchema);
   const store = await createStore(actor, input);

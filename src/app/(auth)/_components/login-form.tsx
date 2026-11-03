@@ -23,8 +23,11 @@ export function LoginForm({ devHint }: { devHint?: string }) {
   const [passwordState, passwordSubmit, passwordPending] = useActionState(loginAction, EMPTY_AUTH_STATE);
   const [otpState, otpSubmit, otpPending] = useActionState(verifyLoginOtpAction, EMPTY_AUTH_STATE);
 
+  // The OTP step can be opened either by the verify action (a failed code) or
+  // by the request action (a code was just sent). In the latter case the
+  // identifier and demo code live in `passwordState`, not `otpState`.
   const inOtpStep = otpState.step === "otp" || passwordState.step === "otp";
-  const state: AuthState = inOtpStep ? otpState : passwordState;
+  const state: AuthState = otpState.step === "otp" ? otpState : passwordState;
   const action = inOtpStep ? otpSubmit : passwordSubmit;
   const pending = otpPending || passwordPending;
 
@@ -37,19 +40,28 @@ export function LoginForm({ devHint }: { devHint?: string }) {
 
       {state.message ? <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert> : null}
 
-      <form action={action} className="space-y-4" key={inOtpStep ? "otp" : "creds"}>
+      <form action={action} className="space-y-4">
         <input type="hidden" name="mode" value={mode} />
 
-        <Field label="মোবাইল নম্বর বা ইমেইল" required>
-          <Input
-            name="identifier"
-            required
-            autoComplete="username"
-            placeholder="017XXXXXXXX"
-            readOnly={inOtpStep}
-            defaultValue={state.step === "otp" ? "" : undefined}
-          />
-        </Field>
+        {inOtpStep ? (
+          <>
+            {/* The number is re-verified server-side; a remount must not lose it. */}
+            <input type="hidden" name="identifier" value={state.identifier ?? ""} />
+            <Field label="মোবাইল নম্বর">
+              <Input value={state.identifier ?? ""} readOnly autoComplete="username" />
+            </Field>
+          </>
+        ) : (
+          <Field label="মোবাইল নম্বর বা ইমেইল" required>
+            <Input
+              name="identifier"
+              required
+              autoComplete="username"
+              placeholder="017XXXXXXXX"
+              defaultValue={state.identifier}
+            />
+          </Field>
+        )}
 
         {inOtpStep ? (
           <Field label="OTP কোড" required hint="SMS-এ পাঠানো ৬ ডিজিটের কোড">

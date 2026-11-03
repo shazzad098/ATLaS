@@ -17,18 +17,10 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "docs/**",
     "next-env.d.ts",
     // Prisma generates this on every `prisma generate`.
     "src/generated/**",
-    // Leftover Manus/Vite starter trees. `tsconfig.json` already excludes them
-    // and nothing under `src/` imports them, so linting them only reports on
-    // code that never runs.
-    "client/**",
-    "server/**",
-    "shared/**",
-    "drizzle/**",
-    "vite.config.ts",
-    "vite.config.ts.bak",
   ]),
 ]);
 

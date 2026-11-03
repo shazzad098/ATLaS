@@ -1,0 +1,710 @@
+﻿
+
+===== PAGE 1 =====
+ATLaS  — SaaS  E-commerce  Store  Builder
+Product Requirements Document, System Architecture & 
+Implementation Blueprint
+Version: 1.0
+Date: 17 October 2026
+Prepared for: ATLaS Founding Team
+Language: বাংলা  ব্যাখ্যা  + English technical terminology
+Target market: Bangladesh-ﬁrst, SME-focused
+1. Product deﬁnition
+ATLaS হেব  Bangladesh- এর   ছাট  ও  মাঝাির  ব্যবসার  জন্য  একিট  multi-tenant SaaS e-commerce platform ।  
+একজন  user কেয়ক  িমিনেট  একিট  online store  তির  করেব , একিট  template/theme  বেছ   নেব , products ও  
+inventory পিরচালনা  করেব , bKash/Nagad/SSLCommerz/COD payment  নেব  এবং  একই  design- এর  
+uniﬁed admin panel  থেক  order, customer, discount, shipping ও  reports পিরচালনা  করেব।
+মূল  business model হেলা  subscription + usage-based monetization।  Free plan- এ  সীিমত  
+product, storage ও  order quota থাকেব ; quota অিতক্রম  করেল  conﬁgured per-sale/per-order 
+platform fee প্রেযাজ্য  হেব।  Paid plan- এ   বিশ  capacity, theme access, custom domain, staﬀ role, 
+reports ও  operational features unlock হেব।
+ATLaS- এর  core promise:
+1.1 Product goals
+• 5‒10 িমিনেট  একিট  usable storefront launch করা।
+• Technical knowledge ছাড়াই  product, order ও  customer পিরচালনা  করা।
+• Template- এর  visual diﬀerence থাকেলও  admin workﬂow এক  রাখা।
+• Subscription- এর  মাধ্যেম  predictable recurring revenue  তির  করা।
+• Future mobile app- এর  জন্য  versioned REST API এবং  webhook/event foundation রাখা।
+• প্রথম  ১২  মােস  100‒200 active stores, 10k‒20k registered users এবং  প্রায়  ৳ 5 lakh monthly 
+platform GMV ল ্য  করা।
+1.2 Non-goals for initial release
+“ আপনার  ব্যবসার  জন্য  professional online store—code ছাড়াই , Bangladesh- এর  payment ও  
+delivery workﬂow সহ। ”
+
+===== PAGE 2 =====
+• Full multi-vendor marketplace ও  seller-to-seller commission settlement MVP- এর  জন্য  
+mandatory নয়।  Architecture extensible থাকেব , িকন্তু  প্রথম  release- এ  একিট  account- এর  অধীেন  এক  বা  
+একািধক  িনেজর  store পিরচালনা  priorirty পােব।
+• Drag-and-drop page builder MVP-  ত  থাকেব  না।  Predeﬁned sections, content blocks ও  
+theme settings থাকেব।
+• Native mobile app MVP- এর  অংশ  নয় ; API-ﬁrst foundation থাকেব।
+2. Reference pattern and ATLaS diﬀerentiation
+StoreLine ও  ZatiqEasy- এর  public product positioning  থেক  কেয়কিট  কায কর  pattern  দখা  যায় : দ্রুত  store 
+launch, Bangladesh-relevant payment/courier integration, uniﬁed merchant dashboard, 
+template/theme selection, free-to-paid funnel এবং  quota বা  transaction fee িদেয়  plan 
+diﬀerentiation 1  2 ।  ATLaS এগুেলা  গ্রহণ  করেব , তেব  user-deﬁned plan rules অনুযায়ী  িনেচর  
+diﬀerentiation রাখেব :
+• চারিট  পিরষ্কার  plan: Free, Basic, Standard, Pro ।
+• Free plan- এ  25 products এবং  100MB storage, িকন্তু  50 completed sales পয ন্ত  platform fee-
+free; এরপর  প্রিত  sale- এ  2.5% fee ।
+• Basic plan- এ  5 িট  theme- এর  curated pool, user একিট  theme  বেছ   নেব  এবং  plan চলাকালীন  theme 
+switch করেব  না।
+• Standard ও  Pro-  ত  custom domain, Pro-  ত  custom domain + subdomain দুেটা  একসােথ  এবং  
+higher operational limits ।
+• সব  template একই  ATLaS Admin Console ব্যবহার  করেব।
+• plan enforcement centrally হেব —frontend শুধু  feature hide করেব  না ; backend policy engine- ও  
+authorization enforce করেব।
+3. Personas and jobs-to-be-done
+3.1 Merchant / Store Owner
+Facebook/WhatsApp- িনভ র  ব্যবসা   থেক  িনেজর  branded store- এ   যেত  চান।  তাঁর  job হেলা  product upload 
+করা , order conﬁrm করা , payment  দখা , delivery  দওয়া  এবং  sales report  বাঝা।
+3.2 Store Staﬀ
+Reference websites- এর  published pricing/features পিরবত নশীল  হেত  পাের।  ATLaS- এর  pricing 
+matrix এই  PRD- এর  business decision অনুযায়ী  প্রস্তািবত ; implementation- এর  আেগ  commercial 
+approval প্রেয়াজন।
+
+===== PAGE 3 =====
+Owner- এর  হেয়  order বা  catalog manage কেরন।  Staﬀ permissions plan ও  role অনুযায়ী  সীিমত  থাকেব।
+3.3 Customer / Shopper
+Storefront- এ  product browse, search, cart, checkout, payment এবং  order tracking কেরন।  
+Account ছাড়া  guest checkout রাখা  হেব ; customer account optional হেব।
+3.4 ATLaS Super Admin
+Plan, template, merchant, payment settlement, subscription, disputes, fraud, support ও  
+platform analytics পিরচালনা  কেরন।
+3.5 Template Manager / Content Operator
+Theme- এর  sections, default content, preview screenshots, feature tags ও  compatible plan 
+manage কেরন।
+3.6 Support Agent / Finance Operator
+Support ticket, merchant veriﬁcation, refund/settlement review এবং  payment reconciliation 
+পিরচালনা  কেরন।
+4. Product scope
+4.1 Public marketing website
+• Homepage: value proposition, demo store previews, feature overview, Bangladesh 
+payment/courier story, testimonials, CTA ।
+• Template Catalog: category, industry, style, plan availability, live preview, responsive 
+preview, theme comparison ।
+• Pricing: monthly/yearly toggle, quota, transaction fee, feature comparison, FAQ ।
+• How it works: create account → create store → choose theme → add products → 
+connect payment → start selling ।
+• Help center, Terms, Privacy, Refund/Cancellation Policy, Contact/Support ।
+4.2 Merchant onboarding
+• Email/phone signup; Bangladesh mobile number veriﬁcation by OTP.
+• Business/store name, category, logo, brand colors, address, contact number ।
+• Unique subdomain selection: store-slug.atlas.example .
+
+===== PAGE 4 =====
+• Trial activation এবং  plan selection ।
+• Onboarding checklist: add ﬁrst product, conﬁgure delivery, choose payment, publish 
+store ।
+4.3 Storefront
+• Mobile-ﬁrst responsive storefront ।
+• Home, shop/category, product details, cart, checkout, order success, contact/about, 
+policy pages ।
+• Theme-driven layout with predeﬁned sections ।
+• Theme settings: logo, favicon, colors, fonts, button style, header/footer, banners, 
+navigation, homepage blocks ।
+• Product search, category ﬁlter, sorting, pagination ।
+• Product variants: size, color, material, SKU, price override, stock ।
+• Coupon/discount support ।
+• COD এবং  online payment checkout ।
+• Order conﬁrmation by SMS/email/WhatsApp-ready notiﬁcation adapter ।
+• Basic SEO: title, description, slug, Open Graph image, sitemap per store ।
+• Bengali/English content support; platform UI initially বাংলা  + English-ready ।
+4.4 Uniﬁed merchant admin
+Dashboard modules:
+1. Overview: revenue, orders, pending actions, low stock, subscription usage ।
+2. Products: create/edit/archive, bulk import/export, categories, tags, variants, inventory ।
+3. Orders: status timeline, payment status, fulﬁllment, notes, invoice, refund request ।
+4. Customers: proﬁles, order history, segments, blacklist, consent ।
+5. Discounts: coupon, percentage/ﬁxed discount, minimum cart, date range, usage cap ।
+6. Store Design: theme selection, theme settings, homepage sections, navigation, 
+preview/publish ।
+7. Payments: gateway connection, transaction list, settlement status, fee breakdown ।
+8. Delivery: zones, delivery charge, courier connection, tracking status ।
+9. Reports: sales, products, customers, order status, payment method, export ।
+10. Staﬀ & Roles: plan-dependent seats and permissions ।
+
+===== PAGE 5 =====
+11. Subscription & Billing: plan, usage, invoices, payment method, upgrade/downgrade ।
+12. Settings: business proﬁle, domain, tax settings, policies, notiﬁcations, API keys ।
+4.5 Super Admin console
+• Merchant/store search, veriﬁcation, suspend/restore, impersonation with audit log ।
+• Plan and entitlement conﬁguration ।
+• Theme/template CRUD, preview and rollout ।
+• Payment gateway credentials and webhook monitoring ।
+• Subscription, invoice, fee, refund and settlement reconciliation ।
+• Support tickets and announcements ।
+• Platform metrics: active stores, MRR, churn, GMV, conversion, storage, API health ।
+• Security center: login events, suspicious activity, rate limits, audit logs ।
+5. Subscription and entitlement model
+5.1 Recommended plan matrix
+Capability Free Basic Standard Pro
+Monthly price ৳ 0 Business-
+approved
+Business-
+approved
+Business-
+approved
+Yearly billing No / optional Yes Yes Yes
+Free trial
+7 days of paid 
+features, then 
+Free
+7 days 7 days 7 days
+Products 25 250 1,000 Unlimited
+Monthly orders 
+included
+50 completed 
+sales fee-free; 
+additional sales 
+fee applies
+500 2,000 Unlimited
+Extra order/sale 
+fee
+2.5% per sale 
+after 50
+2% per order 
+after 500
+1% per order 
+after 2,000
+0% platform 
+overage 
+recommended
+Storage 100MB 1GB 5GB Unlimited with 
+fair-use guardrail
+
+===== PAGE 6 =====
+Important fee semantics:
+• “Per sale” means a successful/paid or merchant-conﬁrmed COD order, as conﬁgured 
+by ﬁnance policy; cancelled and fully refunded orders should not create a platform fee.
+• Payment gateway processing fees charged by bKash/Nagad/SSLCommerz remain 
+separate from ATLaS platform fees.
+• User-speciﬁed rule: third-party courier use করেল  0.5% payment charge  নওয়া  হেব।  এিট  
+gateway fee- এর  সে   double-count হেব  না ; billing ledger- এ  আলাদা  fee type িহেসেব   দখােত  হেব।
+Themes 2 starter themes 5 curated themes All Standard 
+themes
+All themes + Pro-
+exclusive
+Theme switching
+Limited to 
+selected starter 
+theme
+Not allowed 
+during active 
+subscription
+Allowed Allowed
+Custom domain No No Yes Yes
+ATLaS 
+subdomain Yes Yes Yes Yes; plus custom 
+domain
+Custom domain 
++ subdomain 
+together
+No No Yes Yes
+Staﬀ seats 1 2 5 10; conﬁgurable
+Products/variants
+/inventory Core Core + bulk tools Advanced
+Advanced + 
+automation-
+ready
+Coupons/discoun
+ts Basic Basic Advanced 
+campaigns
+Advanced 
+campaigns
+Reports/export Basic dashboard CSV export Advanced reports
+Advanced reports 
++ scheduled 
+export
+Courier 
+integrations Manual/limited
+Third-party with 
+0.5% payment 
+charge where 
+applicable
+More connections All supported 
+connections
+API access Read-only public 
+API
+Read API + 
+webhooks Full scoped API Full API + higher 
+rate limit
+Support Community/help 
+center Standard Priority Priority + 
+onboarding
+
+===== PAGE 7 =====
+• Basic/Standard overage fee- এর  exact base—gross order value, net merchandise value, না  
+shipping বােদ  subtotal—commercial approval- এ  lock করেত  হেব।  Recommended default: net 
+merchandise subtotal after discount, excluding delivery fee and refunded items।
+5.2 Subscription lifecycle
+TRIALING → ACTIVE → PAST_DUE → GRACE_PERIOD → READ_ONLY → SUSPENDED → CANCELLED
+• Trial  শষ  হেল  paid plan না  িনেল  Free plan- এ  downgrade ।
+• Payment failure- এ  7-day grace period ।
+• Grace period- এ  store চালু  থাকেব  এবং  owner-  ক  alert  দেব।
+• Read-only phase- এ  storefront order  নওয়া  business decision অনুযায়ী  বন্ধ  বা  limited হেত  পাের ; 
+data export ও  billing renewal  খালা  থাকেব।
+• Suspension- এ  storefront maintenance page  দখােব , data retain থাকেব।
+• Downgrade- এ  existing products/orders delete করা  হেব  না ; quota exceed করেল  নতুন  create 
+action block হেব  এবং  upgrade prompt  দখােব।
+5.3 Entitlement service
+Feature check শুধু  UI-  ত  নয় , backend- এ  হেব।  প্রিতিট  request- এর  সময়  tenant_id , plan_id , 
+feature_key , usage_metric  এবং  limit  evaluate হেব।  Entitlement snapshot cache করা  যায় , তেব  
+billing change হেল  immediate invalidation দরকার।
+6. Functional requirements
+FR-01 Authentication and account
+• OTP-based phone veriﬁcation, email/password বা  passwordless login ।
+• Session management, refresh token rotation, logout all sessions ।
+• Optional 2FA for Super Admin এবং  Pro merchant ।
+• Account deletion request with retention policy ।
+FR-02 Multi-tenancy
+• প্রিতিট  Store একিট  logical tenant boundary হেব।
+• সব  business table- এ  tenant_id  mandatory এবং  server-side scope enforce হেব।
+• Super Admin access audit-logged এবং  time-limited হেব।
+• এক  user- এর  একািধক  store থাকেল  account-level workspace switcher থাকেব।
+
+===== PAGE 8 =====
+FR-03 Product and inventory
+• Product, variant, SKU, price, compare-at-price, stock, low-stock threshold, images, SEO 
+metadata ।
+• Inventory adjustment ledger; direct overwrite নয় , reason সহ  adjustment ।
+• Atomic stock reservation during checkout ।
+• CSV import validation ও  dry-run ।
+FR-04 Orders
+• States: PENDING_PAYMENT , PAID , CONFIRMED , PROCESSING , SHIPPED , DELIVERED , 
+CANCELLED , REFUNDED , RETURN_REQUESTED , RETURNED ।
+• Immutable order snapshot: product name, price, discount, shipping, tax, customer 
+address ।
+• Admin action- এর  জন্য  actor এবং  timestamp audit ।
+FR-05 Payments
+• bKash, Nagad, SSLCommerz adapter interface ।
+• Payment initiation, callback/webhook veriﬁcation, idempotency, reconciliation ।
+• COD as ﬁrst-class payment method ।
+• Failed/pending/expired payment retry ।
+• Sensitive gateway secret encrypted at rest ।
+FR-06 Theme and content
+• Theme registry: compatibility, plan, version, status, preview asset ।
+• Theme conﬁguration JSON schema িদেয়  validate হেব।
+• Draft vs published version; publish operation atomic ।
+• Theme switching- এ  content mapping compatibility check ।
+• Basic plan- এ  selected theme lock policy ।
+FR-07 Domain
+• Subdomain auto-provisioning ।
+• Standard/Pro custom domain mapping ।
+• DNS veriﬁcation by TXT/CNAME ।
+• TLS certiﬁcate provisioning through platform/edge provider ।
+
+===== PAGE 9 =====
+• Domain status: pending, veriﬁed, active, failed, suspended ।
+FR-08 Reporting
+• Daily aggregation jobs ।
+• Dashboard metrics source-of-truth ledger  থেক  আসেব।
+• CSV export asynchronous job িহেসেব   তির  হেব।
+• PII export permission-controlled হেব।
+FR-09 Notiﬁcations
+• In-app notiﬁcation center ।
+• Email adapter; SMS provider-ready interface ।
+• Event types: order created, payment received, low stock, subscription renewal/failure, 
+domain veriﬁed ।
+7. Non-functional requirements
+Area Requirement
+Availability MVP target 99.5%; mature platform 99.9% 
+monthly uptime
+Performance
+Storefront p95 server response <500ms for 
+cached pages; admin API p95 <800ms under 
+normal load
+Scalability 100‒200 stores initially; architecture scale to 
+2,000 stores without tenant redesign
+Security OWASP ASVS-aligned controls, TLS, 
+encryption at rest, RBAC, rate limit, audit log
+Reliability
+Idempotent webhooks; retry with 
+exponential backoﬀ; daily backup + point-in-
+time recovery where supported
+Data isolation Tenant-scoped queries, automated tests for 
+cross-tenant leakage
+Observability Structured logs, traces, metrics, error 
+tracking, webhook dashboards
+
+===== PAGE 10 =====
+8. Recommended system architecture
+8.1 Architecture decision
+MVP-  ত  modular monolith + async workers recommended ।  100‒200 store scale- এ  
+microservices শুরু  করেল  operational complexity বাড়েব।  Codebase module boundaries স্পষ্ট  রাখেল  
+পরবত ীেত  Payments, Storefront Rendering, Billing ও  Notiﬁcations আলাদা  service করা  যােব।
+8.2 Logical components
+• Marketing Web: public pages, pricing, catalog, SEO.
+• Merchant Admin: dashboard SPA/SSR app.
+• Storefront Runtime: domain/subdomain-aware renderer; theme conﬁg ও  tenant data 
+িদেয়  page render ।
+• API Application: authentication, tenant, catalog, order, billing, theme, domain, reports 
+modules ।
+• Policy/Entitlement Module: plan limit ও  feature access ।
+• Payment Adapter Layer: bKash, Nagad, SSLCommerz, COD ।
+• Courier Adapter Layer: future Pathao, SteadFast, RedX, Paperﬂy etc. interface ।
+• PostgreSQL: transactional source of truth ।
+• Redis: session, cache, rate limit, queue broker ।
+• Object Storage: product images, theme assets, exports, backups ।
+• Worker: notiﬁcations, reports, CSV jobs, image processing, billing retries ।
+Accessibility WCAG 2.1 AA target for marketing/admin 
+critical ﬂows
+Localization Bangla and English labels; BDT currency; 
+Asia/Dhaka timezone
+Privacy Consent, data export, deletion workﬂow, 
+retention schedule and privacy policy
+SEO SSR/edge-rendered storefront metadata, 
+sitemap, canonical URL, robots controls
+Disaster recovery RPO ≤24h MVP; RTO ≤4h MVP; improve with 
+managed backups
+
+===== PAGE 11 =====
+• Search: MVP PostgreSQL full-text; later OpenSearch/Meilisearch ।
+• Observability: logs, metrics, tracing, audit stream ।
+8.3 Recommended technology baseline
+• Frontend: Next.js/React, TypeScript, Tailwind বা  design system ।
+• Backend: NestJS/TypeScript অথবা  Laravel/PHP; team skill অনুযায়ী  একিট   বেছ  িনেত  হেব।
+• Database: PostgreSQL 16+ ।
+• Queue/cache: Redis + BullMQ বা  equivalent ।
+• Object storage: S3-compatible storage ।
+• Edge/CDN: Cloudﬂare বা  equivalent; custom domain/TLS support যাচাই  কের।
+• Deployment: Managed container platform initially; CI/CD with staging and production ।
+• API: REST /api/v1 ; OpenAPI speciﬁcation; future GraphQL read layer optional ।
+9. System diagrams
+9.1 Request and data ﬂow
+Figure 1. Recommended modular-monolith architecture with async workers.
+
+===== PAGE 12 =====
+9.2 Multi-tenant entity relationship overview
+10. Database schema blueprint
+িনেচর  schema logical blueprint; production- এ  migration, indexes, constraints, soft-delete 
+policy এবং  PII encryption আলাদা  implementation item হেব।
+Identity and tenancy
+• users(id, phone, email, password_hash, status, phone_veriﬁed_at, created_at)
+• tenants(id, name, owner_user_id, status, timezone, currency, created_at)
+• memberships(id, tenant_id, user_id, role_id, status, invited_at, accepted_at)
+• roles(id, tenant_id nullable, code, name, permissions_json)
+• sessions(id, user_id, refresh_token_hash, expires_at, revoked_at, ip, user_agent)
+Store and theme
+• stores(id, tenant_id, name, slug, description, logo_asset_id, status, published_at)
+• store_settings(store_id, locale, address_json, contact_json, seo_json, checkout_json)
+• themes(id, code, name, description, preview_asset_id, status)
+• theme_versions(id, theme_id, version, conﬁg_schema_json, compatible_plans_json, 
+asset_manifest_json, status)
+
+===== PAGE 13 =====
+• store_themes(id, store_id, theme_version_id, conﬁg_json, is_selected, locked_until, published_at)
+• content_pages(id, store_id, slug, title, body_json, status)
+• domains(id, store_id, host, type, veriﬁcation_token, veriﬁcation_status, tls_status, is_primary)
+Catalog and inventory
+• categories(id, store_id, parent_id, name, slug, image_asset_id, status)
+• products(id, store_id, category_id, name, slug, description_json, status, seo_json)
+• product_variants(id, product_id, sku, option_values_json, price, compare_price, stock_qty, 
+reserved_qty, status)
+• product_images(id, product_id, asset_id, sort_order, alt_text)
+• inventory_movements(id, store_id, variant_id, type, quantity_delta, reason, reference_type, 
+reference_id, actor_id)
+• assets(id, store_id nullable, object_key, mime_type, size_bytes, checksum, metadata_json)
+Orders and customers
+• customers(id, store_id, name, phone, email, address_json, consent_json, status)
+• carts(id, store_id, customer_id nullable, session_key, status, expires_at)
+• cart_items(id, cart_id, variant_id, quantity, unit_price_snapshot)
+• orders(id, store_id, order_no, customer_id nullable, status, payment_status, fulﬁllment_status, 
+subtotal, discount_total, shipping_total, grand_total, currency, address_snapshot_json, created_at)
+• order_items(id, order_id, product_id, variant_id, name_snapshot, sku_snapshot, quantity, unit_price, 
+discount_total, line_total)
+• order_events(id, order_id, from_status, to_status, actor_type, actor_id, note, created_at)
+• returns(id, order_id, status, reason, requested_at, resolved_at)
+Payments, billing and fees
+• payment_methods(id, store_id, provider, public_conﬁg_json, encrypted_secret_ref, status)
+• payments(id, order_id, provider, provider_txn_id, amount, fee_amount, status, idempotency_key, 
+raw_reference)
+• payment_webhook_events(id, provider, event_key, signature_valid, payload_hash, processed_at, 
+status)
+• plans(id, code, name, billing_period, price, limits_json, features_json, status)
+
+===== PAGE 14 =====
+• subscriptions(id, tenant_id, plan_id, status, trial_end, current_period_start, current_period_end, 
+cancel_at_period_end)
+• invoices(id, tenant_id, subscription_id, number, subtotal, discount, tax, total, status, due_at, paid_at)
+• usage_counters(id, tenant_id, metric, period_start, period_end, quantity, updated_at)
+• fee_ledger(id, tenant_id, store_id, order_id nullable, fee_type, base_amount, rate, fee_amount, 
+status, created_at)
+• coupons(id, store_id, code, type, value, min_order, usage_limit, used_count, starts_at, ends_at, 
+status)
+Audit and operations
+• audit_logs(id, tenant_id nullable, actor_id, action, resource_type, resource_id, metadata_json, ip, 
+created_at)
+• notiﬁcations(id, user_id, type, payload_json, read_at, created_at)
+• support_tickets(id, tenant_id nullable, requester_id, priority, status, subject, body, assigned_to, 
+created_at)
+• webhook_deliveries(id, tenant_id, event_type, endpoint, payload_hash, status, attempts, 
+next_retry_at)
+Critical indexes and constraints
+• Unique: (store_id, slug)  on products; (store_id, order_no)  on orders; (host)  on active 
+domains; (tenant_id, user_id)  on memberships ।
+• Index all high-volume queries by store_id , tenant_id , status and created_at ।
+• tenant_id  must be derived server-side; client payload  থেক  trust করা  যােব  না।
+• Money columns ﬁxed precision numeric; ﬂoating point ব্যবহার  নয়।
+• Payment webhook (provider, event_key)  unique for idempotency ।
+11. REST API blueprint
+Base URL: /api/v1 ।  সব  protected endpoint bearer token + tenant context ব্যবহার  করেব।
+Auth
+• POST /auth/request-otp
+• POST /auth/verify-otp
+• POST /auth/refresh
+
+===== PAGE 15 =====
+• POST /auth/logout
+• GET /me
+Stores and themes
+• POST /stores
+• GET /stores
+• GET /stores/{storeId}
+• PATCH /stores/{storeId}
+• GET /stores/{storeId}/themes
+• POST /stores/{storeId}/themes/select
+• PATCH /stores/{storeId}/theme-conﬁg
+• POST /stores/{storeId}/publish
+• POST /stores/{storeId}/domains/verify
+Catalog
+• GET /stores/{storeId}/products
+• POST /stores/{storeId}/products
+• PATCH /products/{productId}
+• POST /products/import
+• GET /products/export
+• POST /variants/{variantId}/inventory-adjustments
+Commerce
+• POST /storefront/{storeSlug}/cart/items
+• POST /storefront/{storeSlug}/checkout
+• GET /stores/{storeId}/orders
+• PATCH /orders/{orderId}/status
+• POST /orders/{orderId}/refund-request
+• GET /stores/{storeId}/customers
+• POST /stores/{storeId}/coupons
+Billing
+
+===== PAGE 16 =====
+• GET /billing/plans
+• POST /billing/subscriptions
+• POST /billing/subscriptions/{id}/change-plan
+• POST /billing/subscriptions/{id}/cancel
+• GET /billing/usage
+• GET /billing/invoices
+Webhooks and integrations
+• POST /webhooks/payments/{provider}
+• POST /webhooks/couriers/{provider}
+• POST /stores/{storeId}/integrations/{provider}/connect
+• GET /stores/{storeId}/api-keys
+• POST /stores/{storeId}/api-keys
+API rules: OpenAPI-ﬁrst documentation, cursor pagination, request id, idempotency key on 
+checkout/payment, consistent error envelope, rate limits by plan, webhook signature 
+veriﬁcation, version deprecation policy ।
+12. Key user stories and acceptance criteria
+US-01 Store creation
+As a new merchant, I want to create a store with a unique subdomain, so that I can publish 
+my business online.
+Acceptance criteria:
+• Valid slug availability realtime  দখা  যায়।
+• Duplicate slug reject হয়।
+• Store created হেল  default theme ও  onboarding checklist  তির  হয়।
+• Free entitlement automatically assigned হয়।
+US-02 Product limit enforcement
+As a Free merchant, I want the system to prevent me from exceeding 25 products, so that 
+plan rules predictable থােক।
+Acceptance criteria:
+
+===== PAGE 17 =====
+• 25- এর  পর  create/import blocked; clear upgrade message ।
+• Existing products read/edit করা  যায়।
+• Plan upgrade হেল  quota immediately increase হয়।
+US-03 Order overage fee
+As a Free/Basic merchant, I want overage fee transparently  দখেত , so that আমার  invoice 
+surprise না  হয়।
+Acceptance criteria:
+• Included quota এবং  consumed quota dashboard- এ  visible ।
+• Eligible order- এর  জন্য  fee ledger  তির  হয়।
+• Cancelled/fully refunded order policy অনুযায়ী  reverse/void হয়।
+• Invoice- এ  order reference ও  fee rate  দখায়।
+US-04 Theme selection
+As a merchant, I want to preview themes before publishing, so that আমার  brand- এর  জন্য  সিঠক  
+design বাছেত  পাির।
+Acceptance criteria:
+• Desktop/mobile preview available ।
+• Theme conﬁg draft save হয়।
+• Publish না  করা  পয ন্ত  live storefront বদলায়  না।
+• Basic plan- এ  selected theme locked state  দখায়।
+US-05 Payment callback
+As a shopper, I want to pay through bKash/Nagad/SSLCommerz, so that local payment 
+method ব্যবহার  করেত  পাির।
+Acceptance criteria:
+• Payment initiation- এ  unique transaction reference ।
+• Duplicate callback order double-paid কের  না।
+• Signature/veriﬁcation failure হেল  payment pending/failed হয়।
+• Merchant এবং  customer notiﬁcation পায়।
+US-06 Subscription expiry
+
+===== PAGE 18 =====
+As a merchant, I want advance warning before suspension, so that আমার  store 
+uninterrupted থােক।
+Acceptance criteria:
+• Renewal reminder 7, 3, 1 day আেগ।
+• Failed payment- এ  grace period badge ।
+• Suspension- এ  store maintenance state এবং  data export available ।
+13. Security, privacy and compliance checklist
+• OWASP Top 10 এবং  ASVS baseline review ।
+• Password কখেনা  plaintext নয় ; Argon2id/bcrypt ।
+• OTP brute-force protection, device/IP rate limit ।
+• CSRF protection  যখােন  cookie-based session ।
+• Strict input validation, output encoding, SSRF protection ।
+• Signed webhook + replay protection + idempotency ।
+• Gateway secrets KMS/secret manager- এ ; database- এ  raw secret নয়।
+• Tenant isolation automated integration test এবং  security review ।
+• Admin impersonation: reason, ticket/reference, start/end, full audit ।
+• PII minimization; card data ATLaS store করেব  না।
+• Backup encryption এবং  restore drill quarterly ।
+• Content upload MIME validation, virus scan-ready pipeline, image dimension/size limit ।
+• Refund, subscription cancellation, data deletion ও  retention policy Terms- এ  স্পষ্ট।
+• Bangladesh- এর  প্রেযাজ্য  digital commerce, consumer protection, tax/VAT এবং  payment-
+provider terms launch- এর  আেগ  local legal/compliance review করা  হেব।  এই  PRD legal advice 
+নয়।
+14. Analytics and success metrics
+Product funnel
+• Signup → store created conversion ।
+• Store created → ﬁrst product added ।
+• Product added → store published ।
+
+===== PAGE 19 =====
+• Published → ﬁrst order ।
+• Trial → paid conversion ।
+Business metrics
+• MRR, ARR, ARPU, paid store count ।
+• GMV, ATLaS fee revenue, gateway fee pass-through ।
+• Churn, downgrade, reactivation, failed payment rate ।
+• Active stores (last 30 days order or admin activity) ।
+Reliability metrics
+• Storefront p95 latency, checkout success rate, payment callback success rate ।
+• Order creation failure rate, webhook retry count, queue lag ।
+• Storage utilization, backup success, incident MTTR ।
+Event taxonomy
+signup_completed , store_created , theme_selected , ﬁrst_product_created , store_published , 
+checkout_started , payment_succeeded , order_created , subscription_started , 
+subscription_renewed , subscription_failed , plan_upgraded ।
+15. MVP roadmap
+Phase 0 — Foundation (2 weeks)
+PRD lock, UX ﬂow, design system, architecture decision, repo/CI/CD, environments, 
+database migration framework, observability baseline ।
+Phase 1 — Merchant and storefront core (4‒6 weeks)
+Auth, tenant/store creation, subdomain, theme registry, 3‒5 initial themes, theme settings, 
+product/category/variant, storefront pages, cart and COD checkout ।
+Phase 2 — Order/payment operations (4‒5 weeks)
+Order lifecycle, inventory reservation, bKash/Nagad/SSLCommerz adapters, webhook 
+reconciliation, customer management, coupon/discount, basic reports ।
+Phase 3 — Subscription and entitlements (3‒4 weeks)
+
+===== PAGE 20 =====
+Plans, trial, monthly/yearly billing, usage counters, overage fee ledger, invoices, grace/read-
+only/suspension, plan-based staﬀ/theme/domain/API limits ।
+Phase 4 — Domain, courier and admin operations (3‒4 weeks)
+Custom domain for Standard/Pro, TLS/DNS veriﬁcation, courier abstraction plus ﬁrst 
+integration(s), Super Admin console, support, audit, exports ।
+Phase 5 — Hardening and launch (2‒3 weeks)
+Load test, security review, payment certiﬁcation, backup restore test, accessibility, SEO, 
+legal pages, beta onboarding, incident runbook, production launch ।
+Indicative MVP duration: 18‒24 weeks for a focused team. এিট  estimate; ﬁnal timeline team 
+seniority, payment onboarding, design scope ও  gateway certiﬁcation- এর  উপর  িনভ র  করেব।
+16. Suggested team and ownership
+• Product Manager / Founder: scope, pricing, partner decisions ।
+• Tech Lead: architecture, security, code quality ।
+• 2 Full-stack Engineers: API, admin, billing, integrations ।
+• Frontend/Theme Engineer: storefront runtime, themes, responsive QA ।
+• QA Engineer: functional, payment, regression, load test ।
+• UI/UX Designer: onboarding, storefront, admin design system ।
+• DevOps part-time: deployment, monitoring, backups, domains ।
+• Support/Operations: beta merchant onboarding ও  payment reconciliation ।
+17. Launch risks and mitigations
+Risk Impact Mitigation
+Payment gateway onboarding 
+delay High Adapter contract আেগ  িস্থর ; COD 
+িদেয়  beta শুরু ; sandbox tests
+Fee calculation dispute High
+Invoice transparency, 
+immutable ledger, refund 
+reversal policy
+Cross-tenant data leak Critical Tenant guard, RLS option, 
+automated isolation tests, 
+
+===== PAGE 21 =====
+18. Open decisions before engineering kickoﬀ
+1. Basic, Standard এবং  Pro plan- এর  exact monthly/yearly price ।
+2. “50 sales” quota gross successful sales নািক  completed delivered sales িহেসেব  গণনা  হেব।
+3. Standard plan- এর  exact product/order/storage/theme/staﬀ/API limits ।
+4. Third-party courier- এর  0.5% fee  কান  transaction base- এ  বসেব  এবং   কান  courier list “third-
+party” িহেসেব  গণ্য  হেব।
+5. ATLaS- এর  primary domain এবং  default subdomain pattern ।
+6. Payment settlement model: merchant- এর  own gateway account বনাম  ATLaS aggregate 
+merchant model ।
+7. Tax/VAT invoice responsibility এবং  legal entity details ।
+8. Refund/return policy ও  COD fraud workﬂow ।
+9. First launch- এ   কান  courier integration: Pathao, SteadFast, RedX, Paperﬂy, নািক  manual 
+delivery ।
+10. One account- এ  multiple stores launch day  থেকই  থাকেব  িক  না।
+19. Deﬁnition of Done for MVP
+MVP complete বলা  হেব  যখন :
+security review
+Theme quality inconsistent Medium
+Design tokens, schema 
+validation, theme QA checklist, 
+versioning
+Custom domain complexity Medium
+Standard/Pro- এর  আেগ  
+subdomain beta; managed 
+DNS/TLS path
+Storage abuse Medium MIME/size limits, quotas, image 
+optimization, fair-use policy
+Subscription expiry causes 
+merchant harm High Reminder, grace period, export, 
+reversible suspension
+Scope creep from multi-vendor High Marketplace আলাদা  Phase 2/3 
+epic িহেসেব  রাখা
+
+===== PAGE 22 =====
+• A new merchant OTP verify কের  store  তির , theme select, product add এবং  subdomain- এ  
+publish করেত  পাের।
+• Shopper mobile device  থেক  product browse কের  COD বা  conﬁgured online gateway- এ  
+order করেত  পাের।
+• Merchant একই  dashboard  থেক  order status, inventory, customer, discount এবং  basic 
+report পিরচালনা  করেত  পাের।
+• Free/Basic/Standard/Pro entitlement server-side enforced হয়।
+• Trial, paid renewal, failed payment, grace, read-only এবং  suspension tested থােক।
+• Fee ledger ও  invoice auditable হয়।
+• Payment webhook duplicate-safe এবং  reconciliation report থােক।
+• Tenant isolation, backup restore, monitoring, audit logs এবং  incident runbook veriﬁed 
+থােক।
+• অন্তত  3 িট  polished theme, responsive QA এবং  বাংলা /English content rendering ready থােক।
+References
+[1] StoreLine public product, platform and pricing pages
+[2] ZatiqEasy public product, toolkit and pricing pages
+[3] bKash Business and Merchant information
+[4] SSLCOMMERZ payment gateway overview
+[5] SSLCOMMERZ developer documentation
+Appendix A — Recommended ﬁrst three themes
+1. Nokshi: fashion, boutique, lifestyle; warm palette; large product imagery ।
+2. Bazar: grocery, food, everyday products; dense catalog; category-ﬁrst navigation ।
+3. Studio: gadgets, cosmetics, premium products; clean whitespace; strong search and 
+product detail ।
+প্রিতিট  theme একই  component contract অনুসরণ  করেব : Header , Hero , CategoryGrid , ProductGrid , 
+PromoBanner , Testimonials , TrustBar , Footer ।  Theme-speciﬁc visual design থাকেব , িকন্তু  
+business data contract একই  থাকেব।
+Appendix B — Operational policy defaults
+• Timezone: Asia/Dhaka ; currency: BDT ।
+
+===== PAGE 23 =====
+• Trial: 7 days; no card required ।
+• Grace: 7 days ।
+• Failed payment retry: day 1, day 3, day 5 ।
+• Product image max: 5MB per ﬁle; platform compresses to WebP/AVIF where supported ।
+• API default rate limit: 60 requests/minute per user; plan-based upgrade available ।
+• Order fee calculation: discount-adjusted merchandise subtotal, excluding delivery and 
+refunded lines ।
+• Deleted products/orders: soft delete; ﬁnancial records immutable ।

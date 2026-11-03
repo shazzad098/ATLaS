@@ -3,8 +3,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ForbiddenError, NotFoundError, TenantMismatchError, UnauthenticatedError } from "@/lib/errors";
-import { permissionsForRole, type ActorContext, type Permission, type RoleCode } from "@/lib/rbac";
+import { PERMISSIONS, permissionsForRole, type ActorContext, type Permission, type RoleCode } from "@/lib/rbac";
 import { readSession, type SessionUser } from "@/lib/auth/session";
+import { readImpersonation } from "@/lib/auth/impersonation";
 
 /**
  * Tenant context (FR-02).
@@ -34,17 +35,78 @@ export type StoreSummary = {
   publishedAt: Date | null;
 };
 
+export type ImpersonationInfo = {
+  id: string;
+  tenantName: string;
+  reason: string;
+  reference: string;
+  expiresAt: Date;
+};
+
 export type Workspace = {
   user: SessionUser;
   memberships: TenantMembershipSummary[];
   activeTenant: TenantMembershipSummary;
   stores: StoreSummary[];
   actor: ActorContext;
+  /** Set when a Super Admin is viewing the workspace under impersonation. */
+  impersonation: ImpersonationInfo | null;
 };
+
+/** Read-only permissions granted to an impersonating Super Admin. */
+const IMPERSONATION_PERMISSIONS: Permission[] = PERMISSIONS.filter((permission) =>
+  permission.endsWith(":read"),
+);
 
 export const getWorkspace = cache(async (): Promise<Workspace | null> => {
   const session = await readSession();
   if (!session) return null;
+
+  // Impersonation takes precedence over the operator's own memberships. The
+  // workspace is loaded straight from the impersonated tenant and the actor is
+  // downgraded to read-only, so an accidental click cannot mutate merchant data.
+  if (session.user.isSuperAdmin) {
+    const active = await readImpersonation();
+    if (active) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: active.tenantId },
+        select: { id: true, name: true, status: true },
+      });
+      if (tenant) {
+        const stores = await prisma.store.findMany({
+          where: { tenantId: tenant.id, deletedAt: null },
+          orderBy: { createdAt: "asc" },
+          select: { id: true, name: true, slug: true, status: true, publishedAt: true },
+        });
+        return {
+          user: session.user,
+          memberships: [],
+          activeTenant: {
+            tenantId: tenant.id,
+            tenantName: tenant.name,
+            tenantStatus: tenant.status,
+            roleCode: "SUPPORT",
+            roleName: "Super Admin (read-only)",
+            permissions: IMPERSONATION_PERMISSIONS,
+          },
+          stores,
+          actor: {
+            userId: session.user.id,
+            tenantId: tenant.id,
+            roleCode: "SUPPORT",
+            permissions: IMPERSONATION_PERMISSIONS,
+          },
+          impersonation: {
+            id: active.id,
+            tenantName: active.tenantName,
+            reason: active.reason,
+            reference: active.reference,
+            expiresAt: active.expiresAt,
+          },
+        };
+      }
+    }
+  }
 
   const rows = await prisma.membership.findMany({
     where: { userId: session.user.id, status: { in: ["ACTIVE", "INVITED"] } },
@@ -84,6 +146,7 @@ export const getWorkspace = cache(async (): Promise<Workspace | null> => {
       roleCode: active.roleCode,
       permissions: active.permissions,
     },
+    impersonation: null,
   };
 });
 
@@ -140,6 +203,31 @@ export async function requireActiveStorePage(): Promise<{ workspace: Workspace; 
   return { workspace, store };
 }
 
+/**
+ * Page-safe permission gate. Pages render in parallel with the layout, so a
+ * signed-out visitor must be redirected to login rather than shown a 403
+ * boundary; a signed-in user without the permission goes to the in-panel
+ * `/admin/forbidden` screen, which never itself requires a permission.
+ */
+export async function requirePermissionPage(permission: Permission): Promise<Workspace> {
+  const workspace = await getWorkspace();
+  if (!workspace) redirect("/login");
+
+  if (!workspace.actor.permissions.includes(permission)) {
+    redirect(`/admin/forbidden?permission=${encodeURIComponent(permission)}`);
+  }
+  return workspace;
+}
+
+export async function requireActiveStorePermissionPage(
+  permission: Permission,
+): Promise<{ workspace: Workspace; store: StoreSummary }> {
+  const workspace = await requirePermissionPage(permission);
+  const store = await getActiveStore(workspace);
+  if (!store) redirect("/onboarding");
+  return { workspace, store };
+}
+
 /** Tenant guard: a store id must belong to the actor's tenant. */
 export async function assertStoreAccess(actor: ActorContext, storeId: string): Promise<void> {
   const store = await prisma.store.findFirst({
@@ -176,6 +264,50 @@ export async function authenticateRequest(request: Request): Promise<SessionUser
   const session = await readSession();
   if (!session) throw new UnauthenticatedError();
   return session.user;
+}
+
+/**
+ * Resolve either a scoped API key or a normal session/bearer token into an
+ * actor. API keys carry their own permission list and are always limited to the
+ * key's tenant; they can never borrow another membership.
+ */
+export async function authorizeApiRequest(request: Request): Promise<{
+  actor: ActorContext;
+  user: SessionUser | null;
+  apiKeyId?: string;
+}> {
+  const authorization = request.headers.get("authorization") ?? "";
+  const bearer = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
+  const rawKey = request.headers.get("x-api-key") ?? (bearer.startsWith("atlas_") ? bearer : "");
+
+  if (rawKey) {
+    const { authenticateApiKey } = await import("@/lib/services/api-key-service");
+    const key = await authenticateApiKey(rawKey);
+    if (!key) throw new UnauthenticatedError("API key অবৈধ বা বাতিল হয়েছে।");
+
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: key.tenantId },
+      select: { ownerUserId: true, status: true },
+    });
+    if (!tenant || tenant.status === "SUSPENDED" || tenant.status === "CANCELLED") {
+      throw new ForbiddenError("এই workspace-এ API access বন্ধ আছে।");
+    }
+
+    return {
+      actor: {
+        userId: tenant.ownerUserId,
+        tenantId: key.tenantId,
+        roleCode: "API_KEY",
+        permissions: key.scopes,
+        apiKeyId: key.keyId,
+      },
+      user: null,
+      apiKeyId: key.keyId,
+    };
+  }
+
+  const user = await authenticateRequest(request);
+  return { actor: await resolveApiActor(request, user), user };
 }
 
 /**

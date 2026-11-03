@@ -1,15 +1,25 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { AppError, NotFoundError } from "@/lib/errors";
 import { buildOrderNo } from "@/lib/dates";
 import { fromPaisa, toPaisa } from "@/lib/money";
-import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
+import {
+  customerMessage,
+  notify,
+  notifyCustomer,
+  NOTIFICATION_TYPES,
+} from "@/lib/notifications";
 import { getOrCreateOpenCart, loadCart, priceCart } from "@/lib/services/cart-service";
 import { applyTransition } from "@/lib/services/order-service";
 import { reserveStock } from "@/lib/services/inventory-service";
 import { applyAllOrderFees } from "@/lib/services/fee-service";
 import { getPaymentAdapter } from "@/lib/payments";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
+import { emitWebhookEvent } from "@/lib/services/webhook-service";
+import { trackEvent } from "@/lib/services/analytics-service";
+import { signOrderAccessToken } from "@/lib/order-access";
+import { normalizePhone } from "@/lib/auth/phone";
+import { recordAudit } from "@/lib/audit";
 
 /**
  * Checkout (FR-05, US-05).
@@ -44,6 +54,8 @@ export type CheckoutResult = {
   orderId: string;
   grandTotal: string;
   status: string;
+  /** Signed capability token for the public order-tracking page. */
+  accessToken: string;
   payment: {
     provider: string;
     status: string;
@@ -59,14 +71,21 @@ export class CheckoutError extends AppError {
 }
 
 export async function placeOrder(input: {
-  storeSlug: string;
+  /** Resolved store id (preferred; needed for custom-domain storefronts). */
+  storeId?: string;
+  /** Fallback for API callers that only have the public store slug. */
+  storeSlug?: string;
   sessionKey: string;
   payload: CheckoutInput;
   idempotencyKey: string;
   baseUrl: string;
 }): Promise<CheckoutResult> {
+  if (!input.storeId && !input.storeSlug) throw new NotFoundError("Store");
+
   const store = await prisma.store.findFirst({
-    where: { slug: input.storeSlug, deletedAt: null },
+    where: input.storeId
+      ? { id: input.storeId, deletedAt: null }
+      : { slug: input.storeSlug!, deletedAt: null },
     include: { settings: true, tenant: true },
   });
   if (!store) throw new NotFoundError("Store");
@@ -97,9 +116,16 @@ export async function placeOrder(input: {
     throw new CheckoutError("এই দোকানে নির্বাচিত পেমেন্ট মাধ্যমটি এখন সক্রিয় নয়।");
   }
 
-  // Replay protection: the same idempotency key returns the original order.
-  const existing = await prisma.order.findUnique({
-    where: { idempotencyKey: input.idempotencyKey },
+  // Replay protection is store-scoped: the same client key in another store
+  // must never return this store's order metadata. New orders persist the
+  // composite key; the raw key is still accepted for orders created before
+  // this change (always constrained by storeId here).
+  const scopedIdempotencyKey = `${store.id}:${input.idempotencyKey}`;
+  const existing = await prisma.order.findFirst({
+    where: {
+      storeId: store.id,
+      idempotencyKey: { in: [scopedIdempotencyKey, input.idempotencyKey] },
+    },
     select: { id: true, orderNo: true, grandTotal: true, status: true, paymentProvider: true },
   });
   if (existing) {
@@ -108,6 +134,11 @@ export async function placeOrder(input: {
       orderNo: existing.orderNo,
       grandTotal: fromPaisa(toPaisa(existing.grandTotal)),
       status: existing.status,
+      accessToken: signOrderAccessToken({
+        storeId: store.id,
+        orderId: existing.id,
+        orderNo: existing.orderNo,
+      }),
       payment: { provider: existing.paymentProvider, status: "REPLAYED" },
     };
   }
@@ -118,9 +149,9 @@ export async function placeOrder(input: {
   }
 
   const pricing = await priceCart(store.id, cart, { zoneId: input.payload.zoneId ?? null });
-  if (pricing.couponError) {
-    throw new CheckoutError(pricing.couponError);
-  }
+  // A stale or deleted coupon must never block checkout. `priceCart` already
+  // leaves the discount out when the code cannot be validated, so the order is
+  // placed at the normal price and the shopper can re-apply a valid code later.
   for (const line of pricing.lines) {
     if (line.available < line.quantity) {
       throw new CheckoutError(`"${line.productName}" এর স্টক শেষ হয়ে গেছে।`);
@@ -130,9 +161,13 @@ export async function placeOrder(input: {
   const checkoutSettings = (store.settings?.checkoutJson ?? {}) as Record<string, unknown>;
   const codAutoConfirm = checkoutSettings.codAutoConfirm !== false;
 
+  // Store a canonical phone number so guest checkout, buyer accounts and the
+  // panel's purchase history all resolve to the same `Customer` row.
+  const customerPhone = normalizePhone(input.payload.customerPhone);
+
   const addressSnapshot = {
     name: input.payload.customerName,
-    phone: input.payload.customerPhone,
+    phone: customerPhone,
     email: input.payload.customerEmail || null,
     ...input.payload.address,
     zone: pricing.zone?.name ?? null,
@@ -151,11 +186,11 @@ export async function placeOrder(input: {
     }
 
     const customer = await tx.customer.upsert({
-      where: { storeId_phone: { storeId: store.id, phone: input.payload.customerPhone } },
+      where: { storeId_phone: { storeId: store.id, phone: customerPhone } },
       create: {
         storeId: store.id,
         name: input.payload.customerName,
-        phone: input.payload.customerPhone,
+        phone: customerPhone,
         email: input.payload.customerEmail || null,
         addressJson: input.payload.address as never,
         consentJson: { acceptedTerms: true, acceptedAt: new Date().toISOString() } as never,
@@ -177,7 +212,7 @@ export async function placeOrder(input: {
         orderNo: buildOrderNo(),
         customerId: customer.id,
         customerName: input.payload.customerName,
-        customerPhone: input.payload.customerPhone,
+        customerPhone: customerPhone,
         status: "PENDING_PAYMENT",
         paymentProvider: input.payload.paymentProvider,
         paymentStatus: "PENDING",
@@ -185,11 +220,16 @@ export async function placeOrder(input: {
         subtotal: pricing.subtotal as never,
         discountTotal: pricing.discountTotal as never,
         shippingTotal: pricing.shippingTotal as never,
+        taxTotal: pricing.taxTotal as never,
+        taxJson: {
+          mode: pricing.taxMode,
+          ratePercent: pricing.taxRatePercent,
+        } as never,
         grandTotal: pricing.grandTotal as never,
         couponCode: pricing.coupon?.code ?? null,
         addressSnapshotJson: addressSnapshot as never,
         notes: input.payload.notes || null,
-        idempotencyKey: input.idempotencyKey,
+        idempotencyKey: scopedIdempotencyKey,
       },
     });
 
@@ -246,9 +286,17 @@ export async function placeOrder(input: {
     });
 
     return created;
-  });
+  }, { timeout: 15_000 });
 
   // Post-commit side effects (each is independently safe to retry).
+  const accessToken = signOrderAccessToken({
+    storeId: store.id,
+    orderId: order.id,
+    orderNo: order.orderNo,
+  });
+  const orderPageUrl = `${input.baseUrl}/store/${store.slug}/order/${order.orderNo}?t=${encodeURIComponent(
+    accessToken,
+  )}`;
   let redirectUrl: string | undefined;
   let paymentStatus = "PENDING";
 
@@ -275,9 +323,9 @@ export async function placeOrder(input: {
       amount: pricing.grandTotal,
       currency: "BDT",
       customerName: input.payload.customerName,
-      customerPhone: input.payload.customerPhone,
+      customerPhone,
       callbackUrl: `${input.baseUrl}/api/v1/webhooks/payments/${input.payload.paymentProvider.toLowerCase()}`,
-      successUrl: `${input.baseUrl}/store/${store.slug}/order/${order.orderNo}`,
+      successUrl: orderPageUrl,
       failureUrl: `${input.baseUrl}/store/${store.slug}/checkout?error=payment_failed`,
     });
 
@@ -314,11 +362,62 @@ export async function placeOrder(input: {
     payload: { orderId: order.id, storeId: store.id },
   });
 
+  // Platform notification feed: a buyer-created order is not tied to a merchant
+  // actor, but Super Admin still needs the store, amount and payment details.
+  await recordAudit({
+    action: "order.created",
+    tenantId: store.tenantId,
+    resourceType: "Order",
+    resourceId: order.id,
+    metadata: {
+      orderNo: order.orderNo,
+      storeId: store.id,
+      storeName: store.name,
+      total: pricing.grandTotal,
+      paymentProvider: input.payload.paymentProvider,
+      itemCount: pricing.itemCount,
+      customerName: input.payload.customerName,
+    },
+  });
+
+  const message = customerMessage("order.created", {
+    storeName: store.name,
+    orderNo: order.orderNo,
+    amount: pricing.grandTotal,
+  });
+  await notifyCustomer({
+    storeId: store.id,
+    orderId: order.id,
+    type: "order.created",
+    ...message,
+    email: input.payload.customerEmail || null,
+    phone: customerPhone,
+    payload: { orderNo: order.orderNo, provider: input.payload.paymentProvider },
+  });
+
+  await emitWebhookEvent(store.tenantId, "order.created", {
+    orderId: order.id,
+    orderNo: order.orderNo,
+    status: order.status,
+    paymentProvider: input.payload.paymentProvider,
+    grandTotal: pricing.grandTotal,
+    currency: "BDT",
+    customerName: input.payload.customerName,
+    customerPhone,
+  });
+  await trackEvent({
+    tenantId: store.tenantId,
+    storeId: store.id,
+    name: "checkout.success",
+    metadata: { orderId: order.id, grandTotal: pricing.grandTotal },
+  });
+
   return {
     orderId: order.id,
     orderNo: order.orderNo,
     grandTotal: pricing.grandTotal,
     status: input.payload.paymentProvider === "COD" && codAutoConfirm ? "CONFIRMED" : order.status,
+    accessToken,
     payment: {
       provider: input.payload.paymentProvider,
       status: paymentStatus,

@@ -1,10 +1,20 @@
 import Link from "next/link";
-import { requireActiveStore } from "@/lib/tenant";
-import { addDays, formatDate } from "@/lib/dates";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
+import { addDays, bnNumber, formatDate, formatDateTime } from "@/lib/dates";
 import { formatBdt } from "@/lib/money";
 import { orderMetrics } from "@/lib/services/order-service";
 import { loadEntitlementSnapshot, assertReportLevel } from "@/lib/entitlements";
+import {
+  EXPORT_LABELS,
+  EXPORT_TYPES,
+  listExportJobs,
+  listExportSchedules,
+  reportOverview,
+} from "@/lib/services/report-service";
 import { Badge, Card, CardBody, CardHeader, Stat, Table, Td, Th } from "@/components/ui/shell";
+import { ReportExportForm, ExportScheduleForm } from "@/app/admin/_components/report-export-form";
+import { FormButton } from "@/app/admin/_components/form-button";
+import { deleteExportScheduleAction } from "@/app/admin/actions";
 
 /** Sales reporting with CSV export (FR-10). */
 
@@ -21,16 +31,19 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ range?: string }>;
 }) {
-  const { workspace, store } = await requireActiveStore();
+  const { workspace, store } = await requireActiveStorePermissionPage("reports:read");
   const query = await searchParams;
 
   const days = RANGES.find((range) => range.value === query.range)?.value ?? "30";
   const to = new Date();
   const from = addDays(to, -Number(days));
 
-  const [metrics, snapshot] = await Promise.all([
+  const [metrics, snapshot, reports, jobs, schedules] = await Promise.all([
     orderMetrics(store.id, { from, to }),
     loadEntitlementSnapshot(workspace.activeTenant.tenantId),
+    reportOverview(store.id, { from, to }),
+    listExportJobs(store.id, 8),
+    listExportSchedules(store.id),
   ]);
 
   let exportAllowed = true;
@@ -39,8 +52,12 @@ export default async function ReportsPage({
   } catch {
     exportAllowed = false;
   }
+  const scheduleAllowed = exportAllowed && snapshot.features.scheduledExport;
 
   const peak = Math.max(1, ...metrics.byDay.map((day) => Number(day.revenue)));
+  const exportTypes = EXPORT_TYPES.map((type) => ({ value: type, label: EXPORT_LABELS[type] }));
+  const fromInput = from.toISOString().slice(0, 10);
+  const toInput = to.toISOString().slice(0, 10);
 
   return (
     <div className="space-y-5">
@@ -188,6 +205,236 @@ export default async function ReportsPage({
             </tbody>
           </Table>
         )}
+      </Card>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card>
+          <CardHeader
+            title="কাস্টমার রিপোর্ট"
+            description={`নতুন ${bnNumber(reports.customers.newCustomers)} · ক্রেতা ${bnNumber(reports.customers.buyingCustomers)} · রিপিট ${reports.customers.repeatRate}%`}
+          />
+          {reports.customers.topCustomers.length === 0 ? (
+            <CardBody>
+              <p className="text-sm text-ink-500">এই সময়ে কোনো ক্রেতা নেই।</p>
+            </CardBody>
+          ) : (
+            <Table>
+              <thead>
+                <tr>
+                  <Th>কাস্টমার</Th>
+                  <Th className="text-right">অর্ডার</Th>
+                  <Th className="text-right">খরচ</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.customers.topCustomers.map((customer) => (
+                  <tr key={customer.phone}>
+                    <Td>
+                      <span className="font-medium">{customer.name}</span>
+                      <span className="ml-2 text-xs text-ink-500">{customer.phone}</span>
+                    </Td>
+                    <Td className="text-right">{bnNumber(customer.orders)}</Td>
+                    <Td className="text-right font-medium">{formatBdt(customer.spent)}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card>
+
+        <Card>
+          <CardHeader title="পেমেন্ট মিলান" description="Provider ও status অনুযায়ী amount, fee ও net" />
+          {reports.payments.length === 0 ? (
+            <CardBody>
+              <p className="text-sm text-ink-500">এই সময়ে কোনো পেমেন্ট নেই।</p>
+            </CardBody>
+          ) : (
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Provider</Th>
+                  <Th>Status</Th>
+                  <Th className="text-right">Amount</Th>
+                  <Th className="text-right">Fee</Th>
+                  <Th className="text-right">Net</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.payments.map((row) => (
+                  <tr key={`${row.provider}-${row.status}`}>
+                    <Td>{row.provider}</Td>
+                    <Td className="text-xs">{row.status}</Td>
+                    <Td className="text-right">{formatBdt(row.amount)}</Td>
+                    <Td className="text-right">{formatBdt(row.fee)}</Td>
+                    <Td className="text-right font-medium">{formatBdt(row.net)}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Card>
+          <CardHeader title="পণ্যভিত্তিক লাভ" description="Cost price থাকলে profit দেখানো হয়" />
+          {reports.profit.length === 0 ? (
+            <CardBody>
+              <p className="text-sm text-ink-500">বিক্রির ডেটা নেই।</p>
+            </CardBody>
+          ) : (
+            <Table>
+              <thead>
+                <tr>
+                  <Th>পণ্য</Th>
+                  <Th className="text-right">Qty</Th>
+                  <Th className="text-right">আয়</Th>
+                  <Th className="text-right">লাভ</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {reports.profit.map((row) => (
+                  <tr key={row.name}>
+                    <Td className="font-medium">{row.name}</Td>
+                    <Td className="text-right">{bnNumber(row.qty)}</Td>
+                    <Td className="text-right">{formatBdt(row.revenue)}</Td>
+                    <Td className="text-right font-medium">{row.profit ? formatBdt(row.profit) : "—"}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card>
+
+        <Card>
+          <CardHeader
+            title="স্টক ও ইনভেন্টরি"
+            description={`${bnNumber(reports.stock.totalSkus)} SKU · স্টক মূল্য ${formatBdt((reports.stock.totalStockValuePaisa / 100).toFixed(2))}`}
+          />
+          <CardBody className="space-y-3">
+            <div className="flex flex-wrap gap-2 text-xs">
+              <Badge tone={reports.stock.outOfStock > 0 ? "danger" : "success"}>
+                স্টক শেষ: {bnNumber(reports.stock.outOfStock)}
+              </Badge>
+              <Badge tone="warning">কম স্টক: {bnNumber(reports.stock.lowStock.length)}</Badge>
+            </div>
+            {reports.stock.lowStock.length > 0 ? (
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>পণ্য / SKU</Th>
+                    <Th className="text-right">Available</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.stock.lowStock.slice(0, 10).map((row) => (
+                    <tr key={row.id}>
+                      <Td>
+                        <span className="font-medium">{row.product.name}</span>
+                        <span className="ml-1 font-mono text-[11px] text-ink-500">{row.sku}</span>
+                      </Td>
+                      <Td className="text-right font-semibold">{bnNumber(row.available)}</Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            ) : (
+              <p className="text-sm text-ink-500">সব SKU-তে যথেষ্ট স্টক আছে।</p>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader
+          title="Export ও scheduled report"
+          description={
+            exportAllowed
+              ? "CSV job তৈরি করুন; Pro plan-এ প্রতিদিন/সাপ্তাহিক schedule করা যায়।"
+              : "CSV export Basic ও তার উপরের plan-এ পাওয়া যায়।"
+          }
+          action={exportAllowed ? <Badge tone="success">CSV সক্রিয়</Badge> : <Badge tone="warning">Upgrade প্রয়োজন</Badge>}
+        />
+        <CardBody className="space-y-6">
+          {exportAllowed ? (
+            <ReportExportForm storeId={store.id} types={exportTypes} from={fromInput} to={toInput} />
+          ) : null}
+
+          {jobs.length > 0 ? (
+            <div>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">সাম্প্রতিক export</h3>
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>রিপোর্ট</Th>
+                    <Th>Status</Th>
+                    <Th className="text-right">Rows</Th>
+                    <Th>তৈরি</Th>
+                    <Th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {jobs.map((job) => (
+                    <tr key={job.id}>
+                      <Td>{EXPORT_LABELS[job.type as keyof typeof EXPORT_LABELS] ?? job.type}</Td>
+                      <Td>
+                        <Badge tone={job.status === "COMPLETED" ? "success" : job.status === "FAILED" ? "danger" : "warning"}>
+                          {job.status}
+                        </Badge>
+                      </Td>
+                      <Td className="text-right">{bnNumber(job.rowCount)}</Td>
+                      <Td className="text-xs">{formatDateTime(job.createdAt)}</Td>
+                      <Td className="text-right">
+                        {job.status === "COMPLETED" ? (
+                          <Link href={`/admin/reports/exports/${job.id}`} className="text-xs font-semibold text-brand-700 hover:underline">
+                            ডাউনলোড
+                          </Link>
+                        ) : null}
+                      </Td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          ) : null}
+
+          <div>
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">Scheduled export</h3>
+            {!scheduleAllowed ? (
+              <p className="text-sm text-ink-500">Scheduled export Pro plan-এ পাওয়া যায়।</p>
+            ) : (
+              <>
+                <ExportScheduleForm storeId={store.id} types={exportTypes} />
+                {schedules.length > 0 ? (
+                  <div className="mt-4 space-y-2">
+                    {schedules.map((schedule) => (
+                      <div
+                        key={schedule.id}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-ink-200 px-3 py-2 text-xs"
+                      >
+                        <span>
+                          <span className="font-semibold">{EXPORT_LABELS[schedule.type as keyof typeof EXPORT_LABELS] ?? schedule.type}</span>
+                          {" · "}
+                          {schedule.frequency === "DAILY" ? "প্রতিদিন" : "সাপ্তাহিক"} · {schedule.recipients.join(", ")}
+                          {" · "}পরবর্তী {formatDateTime(schedule.nextRunAt)}
+                        </span>
+                        <FormButton
+                          action={deleteExportScheduleAction}
+                          fields={{ storeId: store.id, scheduleId: schedule.id }}
+                          variant="ghost"
+                          size="sm"
+                          confirmText="এই schedule মুছে ফেলবেন?"
+                        >
+                          মুছুন
+                        </FormButton>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
+        </CardBody>
       </Card>
     </div>
   );

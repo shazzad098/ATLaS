@@ -1,7 +1,8 @@
 import { type NextRequest } from "next/server";
-import { ok, rateLimit, route } from "@/lib/api";
+import { ok, rateLimitForTenant, route } from "@/lib/api";
+import { assertApiAccess, loadEntitlementSnapshot } from "@/lib/entitlements";
 import { assertPermission } from "@/lib/rbac";
-import { assertStoreAccess, authenticateRequest, resolveApiActor } from "@/lib/tenant";
+import { assertStoreAccess, authorizeApiRequest } from "@/lib/tenant";
 import { getSubscriptionDetail, listInvoices, pricingMatrix } from "@/lib/services/billing-service";
 
 /**
@@ -21,11 +22,12 @@ type StoreRouteContext = { params: Promise<{ storeId: string }> };
 export const GET = route(async (request: NextRequest, context: StoreRouteContext) => {
   const { storeId } = await context.params;
 
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
+  const { actor } = await authorizeApiRequest(request);
   assertPermission(actor, "billing:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`billing:read:${actor.tenantId}`, 120);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "billing:read");
 
   const [detail, invoices, plans] = await Promise.all([
     getSubscriptionDetail(actor.tenantId),

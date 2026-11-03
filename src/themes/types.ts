@@ -43,9 +43,21 @@ export type ThemeContext = {
     whatsapp: string;
   };
   announcement: string;
+  /**
+   * Buyer account link. Absent in previews (the customizer canvas), where the
+   * whole surface is non-interactive.
+   */
+  account?: {
+    href: string;
+    signedIn: boolean;
+    name: string | null;
+  };
 };
 
 export type SectionProps = { ctx: ThemeContext };
+
+/** Optional product images let a hero render a real product collage. */
+export type HeroProps = SectionProps & { featured?: StorefrontProduct[] };
 
 export type ProductGridProps = SectionProps & {
   title: string;
@@ -65,7 +77,7 @@ export type ThemeComponents = {
   name: string;
   variant: SectionVariant;
   Header: ComponentType<SectionProps>;
-  Hero: ComponentType<SectionProps>;
+  Hero: ComponentType<HeroProps>;
   CategoryGrid: ComponentType<CategoryGridProps>;
   ProductGrid: ComponentType<ProductGridProps>;
   PromoBanner: ComponentType<SectionProps>;

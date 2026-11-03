@@ -35,3 +35,6 @@ services:
 
 volumes:
   atlas-db-data:
+    # Keep the historical volume name so local data survives compose runs
+    # (compose would otherwise prefix it with the project name).
+    name: atlas-db-data

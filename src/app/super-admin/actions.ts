@@ -1,13 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { AppError } from "@/lib/errors";
 import { recordAudit } from "@/lib/audit";
 import { requireSuperAdmin } from "@/lib/auth/session";
-import { adminUpdatePlan, runBillingSweep } from "@/lib/services/billing-service";
+import { adminUpdatePlan, markInvoicePaid, runBillingSweep } from "@/lib/services/billing-service";
 import type { PlanCode } from "@/lib/plans";
-import { ensureThemeCatalog } from "@/lib/services/theme-service";
-import { setTenantStatus, updateSupportTicket } from "@/lib/services/platform-service";
+import { ensureThemeCatalog, setThemeStatus } from "@/lib/services/theme-service";
+import { setTenantStatus, updateSupportTicket, createTenantWorkspace } from "@/lib/services/platform-service";
+import { endImpersonation, startImpersonation } from "@/lib/auth/impersonation";
 import type { SuperAdminState } from "@/app/super-admin/state";
 
 /**
@@ -32,6 +34,36 @@ function message(error: unknown, fallback: string): SuperAdminState {
   if (error instanceof AppError) return { ok: false, message: error.message };
   if (error instanceof Error && error.message) return { ok: false, message: error.message };
   return { ok: false, message: fallback };
+}
+
+/**
+ * Start a time-limited, read-only impersonation (PRD §4.5, §13).
+ * A reason and support reference are mandatory; the workspace opens at /admin
+ * with a persistent banner and every write is blocked by the read-only actor.
+ */
+export async function startImpersonationAction(
+  _prev: SuperAdminState,
+  formData: FormData,
+): Promise<SuperAdminState> {
+  try {
+    const user = await requireSuperAdmin();
+    await startImpersonation({
+      superAdminId: user.id,
+      tenantId: required(formData, "tenantId"),
+      reason: text(formData, "reason"),
+      reference: text(formData, "reference"),
+    });
+  } catch (error) {
+    return message(error, "Impersonation শুরু করা যায়নি।");
+  }
+
+  redirect("/admin");
+}
+
+export async function stopImpersonationAction(): Promise<void> {
+  const user = await requireSuperAdmin();
+  await endImpersonation(user.id);
+  redirect("/super-admin/tenants");
 }
 
 /**
@@ -101,10 +133,33 @@ export async function runBillingSweepAction(
     revalidatePath("/super-admin");
     return {
       ok: true,
-      message: `Sweep সম্পন্ন — trial downgrade ${result.trialDowngrades}, invoice ${result.invoicesRaised}, reminder ${result.reminders}, read-only ${result.movedToReadOnly}, suspended ${result.suspended}।`,
+      message: `Sweep সম্পন্ন — free renewal ${result.freeRenewals}, trial downgrade ${result.trialDowngrades}, downgrade ${result.downgrades}, invoice ${result.invoicesRaised}, grace ${result.enteredGrace}, reminder ${result.reminders}, read-only ${result.movedToReadOnly}, suspended ${result.suspended}।`,
     };
   } catch (error) {
     return message(error, "Billing sweep চালানো যায়নি।");
+  }
+}
+
+/**
+ * Manual settlement is deliberately Super Admin-only. The service re-checks
+ * `isSuperAdmin`, records an audit row with the reason, restores suspended
+ * tenants/stores, and activates any pending plan change attached to the invoice.
+ */
+export async function markInvoicePaidAction(
+  _prev: SuperAdminState,
+  formData: FormData,
+): Promise<SuperAdminState> {
+  try {
+    const user = await requireSuperAdmin();
+    const invoiceId = required(formData, "invoiceId");
+    const reason = text(formData, "reason").trim() || "Manual settlement by Super Admin";
+    await markInvoicePaid(user.id, invoiceId, reason);
+    revalidatePath("/super-admin/billing");
+    revalidatePath("/super-admin/fees");
+    revalidatePath("/admin/billing");
+    return { ok: true, message: "Invoice পরিশোধিত এবং subscription চালু হয়েছে।" };
+  } catch (error) {
+    return message(error, "Invoice settle করা যায়নি।");
   }
 }
 
@@ -127,6 +182,60 @@ export async function syncThemeCatalogAction(
     return { ok: true, message: `${result.themes}টি theme ও ${result.versions}টি version sync হয়েছে।` };
   } catch (error) {
     return message(error, "Theme catalog sync করা যায়নি।");
+  }
+}
+
+/**
+ * Activate/retire a theme. Retiring removes it from the merchant catalog while
+ * stores that already picked it keep rendering it unchanged.
+ */
+export async function setThemeStatusAction(
+  _prev: SuperAdminState,
+  formData: FormData,
+): Promise<SuperAdminState> {
+  try {
+    const user = await requireSuperAdmin();
+    const code = required(formData, "themeCode");
+    const status = required(formData, "status");
+    if (!["ACTIVE", "ARCHIVED"].includes(status)) {
+      throw new AppError("VALIDATION_FAILED", "অবৈধ theme status।", 422);
+    }
+
+    await setThemeStatus(user.id, code, status as "ACTIVE" | "ARCHIVED");
+
+    revalidatePath("/super-admin/themes");
+    revalidatePath(`/super-admin/themes/${code}`);
+    revalidatePath("/admin/design");
+    return {
+      ok: true,
+      message: `${code} theme ${status === "ACTIVE" ? "ক্যাটালগে চালু" : "ক্যাটালগ থেকে বন্ধ"} করা হয়েছে।`,
+    };
+  } catch (error) {
+    return message(error, "Theme status পরিবর্তন করা যায়নি।");
+  }
+}
+
+/** Creates a merchant workspace (owner account + roles + plan subscription). */
+export async function createTenantAction(
+  _prev: SuperAdminState,
+  formData: FormData,
+): Promise<SuperAdminState> {
+  try {
+    const user = await requireSuperAdmin();
+    const tenantName = required(formData, "tenantName");
+    const ownerName = required(formData, "ownerName");
+    const ownerPhone = required(formData, "ownerPhone");
+    const planCode = required(formData, "planCode");
+
+    await createTenantWorkspace(user.id, { tenantName, ownerName, ownerPhone, planCode });
+
+    revalidatePath("/super-admin/tenants");
+    return {
+      ok: true,
+      message: `“${tenantName}” workspace তৈরি হয়েছে — owner ${ownerPhone} দিয়ে OTP login করতে পারবেন।`,
+    };
+  } catch (error) {
+    return message(error, "টেন্যান্ট তৈরি করা যায়নি।");
   }
 }
 

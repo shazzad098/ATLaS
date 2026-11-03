@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
 /**
- * Host → storefront routing (PRD §6 "subdomain routing", FR-07).
+ * Host routing + trusted RLS context (PRD §6, FR-07).
  *
  * A merchant's store is reachable three ways, and all three converge on the same
  * `/store/[slug]` route so there is exactly one rendering path:
@@ -13,6 +14,12 @@ import type { NextRequest } from "next/server";
  *
  * Platform hosts (the apex, `www`, and anything reserved) are left untouched so
  * the marketing site, admin and API keep working from the main domain.
+ *
+ * The proxy also verifies the session token and forwards a trusted
+ * `x-atlas-rls` header. `src/lib/db.ts` uses it to pick a database pool whose
+ * Postgres session variables drive Row-Level Security. Any client-supplied
+ * copy of that header is stripped first, so a request cannot choose its own
+ * tenant context.
  */
 
 const RESERVED_SUBDOMAINS = new Set([
@@ -47,15 +54,98 @@ const RESERVED_SUBDOMAINS = new Set([
   "atlas",
 ]);
 
-/** Paths the proxy must never touch. `/pay/` is a platform route reached from a storefront host. */
+/** Paths the proxy must never rewrite. `/pay/` is a platform route reached from a storefront host. */
 const BYPASS_PREFIXES = ["/api/", "/_next/", "/store/", "/pay/"];
 
-export function proxy(request: NextRequest) {
+/** Paths where a merchant/super-admin session (not a buyer session) is authoritative. */
+const MERCHANT_PREFIXES = ["/admin", "/super-admin", "/api/", "/account", "/onboarding"];
+
+const ACCESS_COOKIE = "atlas_at";
+const BUYER_COOKIE = "atlas_buyer";
+const CART_COOKIE = "atlas_cart"; // keep in sync with cart-service
+
+type TokenClaims = { sub?: string; sa?: boolean; storeId?: string };
+
+function secretKey(): Uint8Array {
+  return new TextEncoder().encode(process.env.AUTH_SECRET ?? "");
+}
+
+async function verifyToken(token: string, audience: "atlas-app" | "atlas-buyer") {
+  try {
+    const { payload } = await jwtVerify(token, secretKey(), {
+      issuer: "atlas",
+      audience,
+    });
+    return payload as TokenClaims;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Choose the database context for this request.
+ *
+ * Merchant/admin routes use the access token (or bearer token). Storefront and
+ * marketing routes use a buyer session when present, otherwise the public
+ * context. Public requests are unauthenticated by definition and the database
+ * grants them a bypass pool; authenticated requests are always restricted.
+ */
+async function resolveRlsContext(request: NextRequest, isMerchantPath: boolean): Promise<string> {
+  if (isMerchantPath) {
+    const bearer = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1];
+    const accessToken = request.cookies.get(ACCESS_COOKIE)?.value ?? bearer;
+    if (accessToken) {
+      const claims = await verifyToken(accessToken, "atlas-app");
+      if (claims) {
+        if (claims.sa === true) return "platform";
+        if (typeof claims.sub === "string") return `user:${claims.sub}`;
+      }
+    }
+    return "public";
+  }
+
+  const buyerToken = request.cookies.get(BUYER_COOKIE)?.value;
+  if (buyerToken) {
+    const claims = await verifyToken(buyerToken, "atlas-buyer");
+    if (
+      claims &&
+      typeof claims.sub === "string" &&
+      typeof claims.storeId === "string" &&
+      claims.storeId.length <= 80 &&
+      claims.sub.length <= 80
+    ) {
+      const cartKey = request.cookies.get(CART_COOKIE)?.value ?? "";
+      return `buyer:${claims.storeId}:${claims.sub}:${cartKey.slice(0, 80)}`;
+    }
+  }
+
+  return "public";
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const host = request.nextUrl.hostname.toLowerCase();
+  const isPublicApi = pathname.startsWith("/api/v1/public/");
+  const isMerchantPath =
+    !isPublicApi && MERCHANT_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  const rlsContext = await resolveRlsContext(request, isMerchantPath);
+
+  // `nextUrl.hostname` can be normalised to the dev server's own host; the
+  // forwarded/Host header is the merchant-facing hostname we must route on.
+  const rawHost =
+    request.headers.get("x-forwarded-host") ??
+    request.headers.get("host") ??
+    request.nextUrl.hostname;
+  const host = rawHost.split(",")[0].trim().toLowerCase().replace(/:\d+$/, "");
+
+  const forwardedHeaders = new Headers(request.headers);
+  // Never trust an incoming context header: it is derived from the verified token.
+  forwardedHeaders.delete("x-atlas-rls");
+  forwardedHeaders.set("x-atlas-rls", rlsContext);
+
+  const next = () => NextResponse.next({ request: { headers: forwardedHeaders } });
 
   if (BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    return NextResponse.next();
+    return next();
   }
 
   const rootDomain = (process.env.APP_ROOT_DOMAIN ?? "atlas.example").toLowerCase();
@@ -69,7 +159,7 @@ export function proxy(request: NextRequest) {
     host === "0.0.0.0" ||
     host.endsWith(".vercel.app")
   ) {
-    return NextResponse.next();
+    return next();
   }
 
   let slug: string | null = null;
@@ -81,23 +171,23 @@ export function proxy(request: NextRequest) {
 
   // Reserved platform subdomains keep serving the app shell.
   if (slug && (RESERVED_SUBDOMAINS.has(slug) || slug.includes("."))) {
-    return NextResponse.next();
+    return next();
   }
 
   const target = slug ? `/store/${slug}` : "/store/_host";
   const url = request.nextUrl.clone();
   url.pathname = `${target}${pathname === "/" ? "" : pathname}`;
 
-  const headers = new Headers(request.headers);
-  headers.set("x-atlas-host", host);
-  headers.set("x-atlas-storefront", "1");
+  forwardedHeaders.set("x-atlas-host", host);
+  forwardedHeaders.set("x-atlas-storefront", "1");
 
-  return NextResponse.rewrite(url, { request: { headers } });
+  return NextResponse.rewrite(url, { request: { headers: forwardedHeaders } });
 }
 
 export const config = {
   matcher: [
-    // Everything except Next internals, the API, and files with an extension.
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.[a-zA-Z0-9]+$).*)",
+    // Everything except Next internals and static files. API routes are
+    // included so bearer/cookie sessions can set the RLS context too.
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.[a-zA-Z0-9]+$).*)",
   ],
 };

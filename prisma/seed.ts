@@ -31,7 +31,7 @@ import { recordCodCollection } from "@/lib/services/payment-service";
 /**
  * ATLaS demo seed (PRD §12 "seed data").
  *
- * Idempotent: re-running deletes and rebuilds the two demo tenants, while users,
+ * Idempotent: re-running deletes and rebuilds the three demo tenants, while users,
  * plans and the theme catalog are reconciled in place. Orders are created through
  * the real checkout path so inventory, fees, notifications and the audit trail
  * are all consistent with what a merchant would see in production.
@@ -40,11 +40,19 @@ import { recordCodCollection } from "@/lib/services/payment-service";
  *   Tenant B — Dhaka Bazar      (free)   16 products, 76 orders → ~65 eligible,
  *                                        which crosses the 50-order Free quota
  *                                        and generates PRD US-03 overage fees.
+ *   Tenant C — Studio           (free)   12 products, 18 orders
  */
 
-const DEMO_STORE_SLUGS = ["nokshi-demo", "dhaka-bazar"];
+const DEMO_STORE_SLUGS = ["nokshi-demo", "dhaka-bazar", "studio-demo"];
 
-const SEED_PASSWORD = "Atlas#2017";
+/** Demo password for local/CI only; production must supply its own. */
+const SEED_PASSWORD = process.env.SEED_PASSWORD?.trim() || "Atlas#2017";
+
+if (process.env.NODE_ENV === "production" && !process.env.SEED_PASSWORD?.trim()) {
+  throw new Error(
+    "Refusing to seed production with the public demo password. Set SEED_PASSWORD first.",
+  );
+}
 
 const SUPER_ADMIN = {
   phone: normalizePhone("01700000000"),
@@ -182,6 +190,28 @@ const BAZAR_PRODUCTS: SeedProduct[] = [
   { name: "চিনি (কেজি)", category: "mudi", sku: "DB-GR-004", variants: [{ stock: 180, price: 125, comparePrice: 140 }], tags: ["মুদি"], description: "পরিশোধিত চিনি।" },
   { name: "দুধ (লিটার প্যাকেট)", category: "dudh", sku: "DB-DY-001", variants: [{ stock: 120, price: 90, comparePrice: 100 }], tags: ["দুধ"], description: "প্যাকেটজাত তরল দুধ, ফ্রিজে রাখুন।" },
   { name: "ডিম (ডজন)", category: "dudh", sku: "DB-DY-002", variants: [{ stock: 100, price: 130, comparePrice: 145 }], tags: ["ডিম"], description: "দেশি মুরগির ডিম, ডজন হিসেবে।" },
+];
+
+const STUDIO_CATEGORIES = [
+  { name: "অডিও", slug: "audio" },
+  { name: "ওয়্যারেবল", slug: "wearable" },
+  { name: "গ্যাজেট", slug: "gadget" },
+  { name: "স্কিন কেয়ার", slug: "skincare" },
+];
+
+const STUDIO_PRODUCTS: SeedProduct[] = [
+  { name: "Air Studio ইয়ারবাডস", category: "audio", sku: "ST-AU-001", variants: [{ stock: 40, price: 3490, comparePrice: 4290 }], tags: ["ইয়ারবাডস", "ANC"], description: "অ্যাক্টিভ নয়েজ ক্যানসেলিং সহ ওয়্যারলেস ইয়ারবাডস, ৩০ ঘণ্টা ব্যাটারি।" },
+  { name: "স্টুডিও হেডফোন", category: "audio", sku: "ST-AU-002", variants: [{ stock: 22, price: 5900, comparePrice: 7200 }], tags: ["হেডফোন", "ওভার-ইয়ার"], description: "ওভার-ইয়ার হেডফোন, স্টুডিও-গ্রেড সাউন্ড ও নরম ইয়ার কুশন।" },
+  { name: "পোর্টেবল স্পিকার", category: "audio", sku: "ST-AU-003", variants: [{ stock: 35, price: 2750, comparePrice: 3400 }], tags: ["স্পিকার", "ব্লুটুথ"], description: "IPX7 ওয়াটারপ্রুফ ব্লুটুথ স্পিকার, ১২ ঘণ্টা প্লে-টাইম।" },
+  { name: "Pulse S2 স্মার্টওয়াচ", category: "wearable", sku: "ST-WR-001", variants: [{ stock: 18, price: 6900, comparePrice: 8500 }], tags: ["স্মার্টওয়াচ", "AMOLED"], description: "AMOLED ডিসপ্লে, হার্ট রেট ও স্লিপ ট্র্যাকিং সহ স্মার্টওয়াচ।" },
+  { name: "ফিটনেস ব্যান্ড", category: "wearable", sku: "ST-WR-002", variants: [{ stock: 45, price: 2200, comparePrice: 2900 }], tags: ["ফিটনেস", "ব্যান্ড"], description: "হালকা ফিটনেস ব্যান্ড, ৭ দিনের ব্যাটারি ও স্টেপ কাউন্টিং।" },
+  { name: "স্মার্ট রিং", category: "wearable", sku: "ST-WR-003", variants: [{ stock: 12, price: 4500, comparePrice: 5500 }], tags: ["স্মার্ট রিং", "স্লিপ"], description: "টাইটানিয়াম ফিনিশ স্মার্ট রিং, স্লিপ ও রিকভারি স্কোর।" },
+  { name: "মেকানিক্যাল কীবোর্ড", category: "gadget", sku: "ST-GD-001", variants: [{ stock: 25, price: 4200, comparePrice: 5200 }], tags: ["কীবোর্ড", "মেকানিক্যাল"], description: "৭৫% লেআউট মেকানিক্যাল কীবোর্ড, হট-সোয়াপ সুইচ।" },
+  { name: "৬৫W গ্যান চার্জার", category: "gadget", sku: "ST-GD-002", variants: [{ stock: 60, price: 2890, comparePrice: 3600 }], tags: ["চার্জার", "GaN"], description: "তিন পোর্টের ফাস্ট চার্জার, ল্যাপটপ ও ফোনের জন্য।" },
+  { name: "USB-C হাব", category: "gadget", sku: "ST-GD-003", variants: [{ stock: 38, price: 1950, comparePrice: 2500 }], tags: ["হাব", "USB-C"], description: "৭-ইন-১ USB-C হাব, HDMI ও কার্ড রিডার সহ।" },
+  { name: "ভিটামিন-সি সিরাম", category: "skincare", sku: "ST-SK-001", variants: [{ stock: 80, price: 1250, comparePrice: 1600 }], tags: ["সিরাম", "ভিটামিন-সি"], description: "১৫% ভিটামিন-সি সিরাম, উজ্জ্বল ও সতেজ ত্বকের জন্য।" },
+  { name: "হায়ালুরোনিক ময়েশ্চারাইজার", category: "skincare", sku: "ST-SK-002", variants: [{ stock: 65, price: 1450, comparePrice: 1800 }], tags: ["ময়েশ্চারাইজার", "হায়ালুরোনিক"], description: "হালকা হায়ালুরোনিক ময়েশ্চারাইজার, সব ধরনের ত্বকের জন্য।" },
+  { name: "সানস্ক্রিন SPF 50", category: "skincare", sku: "ST-SK-003", variants: [{ stock: 100, price: 980, comparePrice: 1250 }], tags: ["সানস্ক্রিন", "SPF 50"], description: "হালকা ফিনিশ সানস্ক্রিন, UVA/UVB প্রোটেকশন।" },
 ];
 
 const CONTENT_PAGES: Record<string, { title: string; body: string }> = {
@@ -688,6 +718,28 @@ async function main() {
   await seedOrders(bazar, 76, 2002);
   console.log(`   ${BAZAR_PRODUCTS.length} products, 76 orders`);
 
+  console.log("• Tenant C — Studio");
+  const studio = await buildTenant(
+    {
+      tenantName: "Studio Supply",
+      storeName: "স্টুডিও",
+      slug: "studio-demo",
+      description: "যাচাই করা গ্যাজেট, অডিও ও পার্সোনাল কেয়ার — অফিসিয়াল ওয়ারেন্টি সহ।",
+      themeCode: "studio",
+      contact: { phone: "01733333333", email: "hello@studio.example", whatsapp: "01733333333" },
+      address: { line1: "৮/বি, রোড ১১", area: "বনানী", city: "ঢাকা", district: "ঢাকা", postcode: "1213" },
+      categories: STUDIO_CATEGORIES,
+      products: STUDIO_PRODUCTS,
+      coupons: [{ code: "STUDIO10", type: "PERCENTAGE", value: 10, minOrder: 2000, usageLimit: 100 }],
+      sandboxGateways: ["BKASH", "NAGAD", "SSLCOMMERZ"],
+      orderCount: 18,
+      seed: 41,
+    },
+    merchant.id,
+  );
+  await seedOrders(studio, 18, 3003);
+  console.log(`   ${STUDIO_PRODUCTS.length} products, 18 orders`);
+
   const summary = await prisma.order.groupBy({
     by: ["storeId", "status"],
     _count: { _all: true },
@@ -701,14 +753,15 @@ async function main() {
 
   console.log("\n✔ Seed complete");
   console.log(`   Super Admin : ${SUPER_ADMIN.phone} / ${SEED_PASSWORD}  (id ${superAdmin.id.slice(0, 8)}…)`);
-  console.log(`   Merchant    : ${MERCHANT.phone} / ${SEED_PASSWORD}  (owner of both stores)`);
-  console.log(`   Storefronts : ${env.appUrl}/store/nokshi-demo , ${env.appUrl}/store/dhaka-bazar`);
+  console.log(`   Merchant    : ${MERCHANT.phone} / ${SEED_PASSWORD}  (owner of all demo stores)`);
+  console.log(`   Storefronts : ${env.appUrl}/store/nokshi-demo , ${env.appUrl}/store/dhaka-bazar , ${env.appUrl}/store/studio-demo`);
   console.log(`   Orders      : ${summary.reduce((acc, row) => acc + row._count._all, 0)}`);
   if (fees.length === 0) {
     console.log("   Fee ledger  : no billable fees");
   }
   for (const row of fees) {
-    const tenantName = row.tenantId === bazar.tenant.id ? "Dhaka Bazar" : "Nokshi";
+    const tenantName =
+      row.tenantId === bazar.tenant.id ? "Dhaka Bazar" : row.tenantId === studio.tenant.id ? "Studio" : "Nokshi";
     console.log(
       `   Fee ledger  : ${tenantName} ${row.feeType} (${row.status}) ×${row._count._all} = ৳${row._sum.feeAmount}`,
     );

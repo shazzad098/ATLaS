@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { KeyRound, MonitorSmartphone, ShieldAlert, UserRound } from "lucide-react";
+import { KeyRound, MonitorSmartphone, ShieldAlert, ShieldCheck, UserRound } from "lucide-react";
 import { readSession, listSessions } from "@/lib/auth/session";
 import { getAccountProfile } from "@/lib/services/account-service";
 import { formatDate, formatDateTime } from "@/lib/dates";
@@ -11,6 +11,8 @@ import { FormButton } from "@/app/admin/_components/form-button";
 import { logoutAction } from "@/app/(auth)/actions";
 import { revokeOtherSessionsAction, revokeSessionAction } from "@/app/account/actions";
 import { DeletionForm, PasswordForm, ProfileForm } from "@/app/account/_components/account-forms";
+import { TwoFactorCard } from "@/app/account/_components/two-factor-card";
+import { getTwoFactorStatus } from "@/lib/services/two-factor-service";
 
 /**
  * Account & security (FR-01).
@@ -25,9 +27,10 @@ export default async function AccountPage() {
   const session = await readSession();
   if (!session) redirect("/login");
 
-  const [profile, sessions] = await Promise.all([
+  const [profile, sessions, twoFactor] = await Promise.all([
     getAccountProfile(session.user.id),
     listSessions(session.user.id),
+    getTwoFactorStatus(session.user.id),
   ]);
 
   const user = profile.user;
@@ -84,6 +87,31 @@ export default async function AccountPage() {
           </CardBody>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader
+          title={
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4" /> দুই-ধাপ যাচাই (2FA)
+            </span>
+          }
+          description="Google Authenticator / Authy-এর TOTP — পাসওয়ার্ড ছাড়াও দ্বিতীয় ধাপ।"
+          action={<Badge tone={twoFactor.enabled ? "success" : "warning"}>{twoFactor.enabled ? "চালু" : "বন্ধ"}</Badge>}
+        />
+        <CardBody>
+          <TwoFactorCard
+            enabled={twoFactor.enabled}
+            confirmedAt={twoFactor.confirmedAt ? formatDate(twoFactor.confirmedAt) : null}
+            recoveryCodesRemaining={twoFactor.recoveryCodesRemaining}
+            hasPassword={Boolean(user.passwordHash)}
+            warning={
+              user.isSuperAdmin && !twoFactor.enabled
+                ? "Super Admin অ্যাকাউন্ট — 2FA চালু করা strongly recommended।"
+                : null
+            }
+          />
+        </CardBody>
+      </Card>
 
       <Card>
         <CardHeader
@@ -149,11 +177,15 @@ export default async function AccountPage() {
       </Card>
 
       <p className="text-center text-xs text-ink-500">
-        লগইন ইভেন্ট ও সেশন ইতিহাস{" "}
-        <Link href="/super-admin/audit" className="font-medium text-brand-700 hover:underline">
-          audit log
-        </Link>
-        -এ সংরক্ষিত থাকে।
+        লগইন ইভেন্ট ও সেশন ইতিহাস সংরক্ষিত থাকে।
+        {user.isSuperAdmin ? (
+          <>
+            {" "}
+            <Link href="/super-admin/audit" className="font-medium text-brand-700 hover:underline">
+              Audit log দেখুন
+            </Link>
+          </>
+        ) : null}
       </p>
     </div>
   );

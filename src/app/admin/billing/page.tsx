@@ -1,8 +1,8 @@
-import { requireActiveStore } from "@/lib/tenant";
+import { requirePermissionPage } from "@/lib/tenant";
 import { formatDate } from "@/lib/dates";
 import { formatBdt } from "@/lib/money";
 import { pricingMatrix, getSubscriptionDetail, listInvoices } from "@/lib/services/billing-service";
-import { Badge, Card, CardBody, CardHeader, Stat, Table, Td, Th } from "@/components/ui/shell";
+import { Alert, Badge, Card, CardBody, CardHeader, Stat, Table, Td, Th } from "@/components/ui/shell";
 import { InvoiceRowAction, PlanSwitcher } from "@/app/admin/_components/plan-switcher";
 
 /** Billing: plan, usage vs limits, overage and invoices (PRD §5). */
@@ -10,7 +10,7 @@ import { InvoiceRowAction, PlanSwitcher } from "@/app/admin/_components/plan-swi
 export const metadata = { title: "বিলিং" };
 
 export default async function BillingPage() {
-  const { workspace } = await requireActiveStore();
+  const workspace = await requirePermissionPage("billing:read");
   const tenantId = workspace.activeTenant.tenantId;
 
   const [detail, invoices, plans] = await Promise.all([
@@ -30,6 +30,19 @@ export default async function BillingPage() {
           {subscription.plan.name} প্ল্যান · {subscription.billingPeriod === "YEARLY" ? "বার্ষিক" : "মাসিক"}
         </p>
       </div>
+
+      {subscription.pendingPlanCode ? (
+        <Alert tone="warning">
+          {subscription.pendingPlanCode} plan-এর invoice তৈরি হয়েছে। Super Admin payment যাচাই করলে
+          প্ল্যানটি চালু হবে; তার আগে বর্তমান plan-এর entitlement বহাল থাকবে।
+        </Alert>
+      ) : null}
+
+      {subscription.status === "GRACE_PERIOD" ? (
+        <Alert tone="danger">
+          Renewal payment বাকি। Grace period শেষ হলে store read-only হয়ে যাবে।
+        </Alert>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat

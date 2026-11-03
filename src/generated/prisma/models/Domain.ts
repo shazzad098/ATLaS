@@ -20,8 +20,18 @@ export type DomainModel = runtime.Types.Result.DefaultSelection<Prisma.$DomainPa
 
 export type AggregateDomain = {
   _count: DomainCountAggregateOutputType | null
+  _avg: DomainAvgAggregateOutputType | null
+  _sum: DomainSumAggregateOutputType | null
   _min: DomainMinAggregateOutputType | null
   _max: DomainMaxAggregateOutputType | null
+}
+
+export type DomainAvgAggregateOutputType = {
+  tlsAttempts: number | null
+}
+
+export type DomainSumAggregateOutputType = {
+  tlsAttempts: number | null
 }
 
 export type DomainMinAggregateOutputType = {
@@ -34,6 +44,13 @@ export type DomainMinAggregateOutputType = {
   tlsStatus: $Enums.DomainStatus | null
   isPrimary: boolean | null
   verifiedAt: Date | null
+  routingTarget: string | null
+  dnsLastCheckedAt: Date | null
+  dnsError: string | null
+  tlsIssuedAt: Date | null
+  tlsLastCheckedAt: Date | null
+  tlsAttempts: number | null
+  tlsError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +65,13 @@ export type DomainMaxAggregateOutputType = {
   tlsStatus: $Enums.DomainStatus | null
   isPrimary: boolean | null
   verifiedAt: Date | null
+  routingTarget: string | null
+  dnsLastCheckedAt: Date | null
+  dnsError: string | null
+  tlsIssuedAt: Date | null
+  tlsLastCheckedAt: Date | null
+  tlsAttempts: number | null
+  tlsError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,11 +86,26 @@ export type DomainCountAggregateOutputType = {
   tlsStatus: number
   isPrimary: number
   verifiedAt: number
+  routingTarget: number
+  dnsLastCheckedAt: number
+  dnsError: number
+  tlsIssuedAt: number
+  tlsLastCheckedAt: number
+  tlsAttempts: number
+  tlsError: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type DomainAvgAggregateInputType = {
+  tlsAttempts?: true
+}
+
+export type DomainSumAggregateInputType = {
+  tlsAttempts?: true
+}
 
 export type DomainMinAggregateInputType = {
   id?: true
@@ -78,6 +117,13 @@ export type DomainMinAggregateInputType = {
   tlsStatus?: true
   isPrimary?: true
   verifiedAt?: true
+  routingTarget?: true
+  dnsLastCheckedAt?: true
+  dnsError?: true
+  tlsIssuedAt?: true
+  tlsLastCheckedAt?: true
+  tlsAttempts?: true
+  tlsError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -92,6 +138,13 @@ export type DomainMaxAggregateInputType = {
   tlsStatus?: true
   isPrimary?: true
   verifiedAt?: true
+  routingTarget?: true
+  dnsLastCheckedAt?: true
+  dnsError?: true
+  tlsIssuedAt?: true
+  tlsLastCheckedAt?: true
+  tlsAttempts?: true
+  tlsError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +159,13 @@ export type DomainCountAggregateInputType = {
   tlsStatus?: true
   isPrimary?: true
   verifiedAt?: true
+  routingTarget?: true
+  dnsLastCheckedAt?: true
+  dnsError?: true
+  tlsIssuedAt?: true
+  tlsLastCheckedAt?: true
+  tlsAttempts?: true
+  tlsError?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -149,6 +209,18 @@ export type DomainAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: DomainAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: DomainSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: DomainMinAggregateInputType
@@ -179,6 +251,8 @@ export type DomainGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: DomainCountAggregateInputType | true
+  _avg?: DomainAvgAggregateInputType
+  _sum?: DomainSumAggregateInputType
   _min?: DomainMinAggregateInputType
   _max?: DomainMaxAggregateInputType
 }
@@ -193,9 +267,18 @@ export type DomainGroupByOutputType = {
   tlsStatus: $Enums.DomainStatus
   isPrimary: boolean
   verifiedAt: Date | null
+  routingTarget: string | null
+  dnsLastCheckedAt: Date | null
+  dnsError: string | null
+  tlsIssuedAt: Date | null
+  tlsLastCheckedAt: Date | null
+  tlsAttempts: number
+  tlsError: string | null
   createdAt: Date
   updatedAt: Date
   _count: DomainCountAggregateOutputType | null
+  _avg: DomainAvgAggregateOutputType | null
+  _sum: DomainSumAggregateOutputType | null
   _min: DomainMinAggregateOutputType | null
   _max: DomainMaxAggregateOutputType | null
 }
@@ -228,6 +311,13 @@ export type DomainWhereInput = {
   tlsStatus?: Prisma.EnumDomainStatusFilter<"Domain"> | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFilter<"Domain"> | boolean
   verifiedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  routingTarget?: Prisma.StringNullableFilter<"Domain"> | string | null
+  dnsLastCheckedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  dnsError?: Prisma.StringNullableFilter<"Domain"> | string | null
+  tlsIssuedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  tlsLastCheckedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  tlsAttempts?: Prisma.IntFilter<"Domain"> | number
+  tlsError?: Prisma.StringNullableFilter<"Domain"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Domain"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Domain"> | Date | string
   store?: Prisma.XOR<Prisma.StoreScalarRelationFilter, Prisma.StoreWhereInput>
@@ -243,6 +333,13 @@ export type DomainOrderByWithRelationInput = {
   tlsStatus?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  routingTarget?: Prisma.SortOrderInput | Prisma.SortOrder
+  dnsLastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  dnsError?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlsIssuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlsLastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlsAttempts?: Prisma.SortOrder
+  tlsError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   store?: Prisma.StoreOrderByWithRelationInput
@@ -261,6 +358,13 @@ export type DomainWhereUniqueInput = Prisma.AtLeast<{
   tlsStatus?: Prisma.EnumDomainStatusFilter<"Domain"> | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFilter<"Domain"> | boolean
   verifiedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  routingTarget?: Prisma.StringNullableFilter<"Domain"> | string | null
+  dnsLastCheckedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  dnsError?: Prisma.StringNullableFilter<"Domain"> | string | null
+  tlsIssuedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  tlsLastCheckedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  tlsAttempts?: Prisma.IntFilter<"Domain"> | number
+  tlsError?: Prisma.StringNullableFilter<"Domain"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Domain"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Domain"> | Date | string
   store?: Prisma.XOR<Prisma.StoreScalarRelationFilter, Prisma.StoreWhereInput>
@@ -276,11 +380,20 @@ export type DomainOrderByWithAggregationInput = {
   tlsStatus?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   verifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  routingTarget?: Prisma.SortOrderInput | Prisma.SortOrder
+  dnsLastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  dnsError?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlsIssuedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlsLastCheckedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  tlsAttempts?: Prisma.SortOrder
+  tlsError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DomainCountOrderByAggregateInput
+  _avg?: Prisma.DomainAvgOrderByAggregateInput
   _max?: Prisma.DomainMaxOrderByAggregateInput
   _min?: Prisma.DomainMinOrderByAggregateInput
+  _sum?: Prisma.DomainSumOrderByAggregateInput
 }
 
 export type DomainScalarWhereWithAggregatesInput = {
@@ -296,6 +409,13 @@ export type DomainScalarWhereWithAggregatesInput = {
   tlsStatus?: Prisma.EnumDomainStatusWithAggregatesFilter<"Domain"> | $Enums.DomainStatus
   isPrimary?: Prisma.BoolWithAggregatesFilter<"Domain"> | boolean
   verifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Domain"> | Date | string | null
+  routingTarget?: Prisma.StringNullableWithAggregatesFilter<"Domain"> | string | null
+  dnsLastCheckedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Domain"> | Date | string | null
+  dnsError?: Prisma.StringNullableWithAggregatesFilter<"Domain"> | string | null
+  tlsIssuedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Domain"> | Date | string | null
+  tlsLastCheckedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Domain"> | Date | string | null
+  tlsAttempts?: Prisma.IntWithAggregatesFilter<"Domain"> | number
+  tlsError?: Prisma.StringNullableWithAggregatesFilter<"Domain"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Domain"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Domain"> | Date | string
 }
@@ -309,6 +429,13 @@ export type DomainCreateInput = {
   tlsStatus?: $Enums.DomainStatus
   isPrimary?: boolean
   verifiedAt?: Date | string | null
+  routingTarget?: string | null
+  dnsLastCheckedAt?: Date | string | null
+  dnsError?: string | null
+  tlsIssuedAt?: Date | string | null
+  tlsLastCheckedAt?: Date | string | null
+  tlsAttempts?: number
+  tlsError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   store: Prisma.StoreCreateNestedOneWithoutDomainsInput
@@ -324,6 +451,13 @@ export type DomainUncheckedCreateInput = {
   tlsStatus?: $Enums.DomainStatus
   isPrimary?: boolean
   verifiedAt?: Date | string | null
+  routingTarget?: string | null
+  dnsLastCheckedAt?: Date | string | null
+  dnsError?: string | null
+  tlsIssuedAt?: Date | string | null
+  tlsLastCheckedAt?: Date | string | null
+  tlsAttempts?: number
+  tlsError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -337,6 +471,13 @@ export type DomainUpdateInput = {
   tlsStatus?: Prisma.EnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routingTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dnsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dnsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tlsIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  tlsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   store?: Prisma.StoreUpdateOneRequiredWithoutDomainsNestedInput
@@ -352,6 +493,13 @@ export type DomainUncheckedUpdateInput = {
   tlsStatus?: Prisma.EnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routingTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dnsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dnsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tlsIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  tlsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -366,6 +514,13 @@ export type DomainCreateManyInput = {
   tlsStatus?: $Enums.DomainStatus
   isPrimary?: boolean
   verifiedAt?: Date | string | null
+  routingTarget?: string | null
+  dnsLastCheckedAt?: Date | string | null
+  dnsError?: string | null
+  tlsIssuedAt?: Date | string | null
+  tlsLastCheckedAt?: Date | string | null
+  tlsAttempts?: number
+  tlsError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -379,6 +534,13 @@ export type DomainUpdateManyMutationInput = {
   tlsStatus?: Prisma.EnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routingTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dnsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dnsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tlsIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  tlsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -393,6 +555,13 @@ export type DomainUncheckedUpdateManyInput = {
   tlsStatus?: Prisma.EnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routingTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dnsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dnsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tlsIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  tlsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -417,8 +586,19 @@ export type DomainCountOrderByAggregateInput = {
   tlsStatus?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   verifiedAt?: Prisma.SortOrder
+  routingTarget?: Prisma.SortOrder
+  dnsLastCheckedAt?: Prisma.SortOrder
+  dnsError?: Prisma.SortOrder
+  tlsIssuedAt?: Prisma.SortOrder
+  tlsLastCheckedAt?: Prisma.SortOrder
+  tlsAttempts?: Prisma.SortOrder
+  tlsError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type DomainAvgOrderByAggregateInput = {
+  tlsAttempts?: Prisma.SortOrder
 }
 
 export type DomainMaxOrderByAggregateInput = {
@@ -431,6 +611,13 @@ export type DomainMaxOrderByAggregateInput = {
   tlsStatus?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   verifiedAt?: Prisma.SortOrder
+  routingTarget?: Prisma.SortOrder
+  dnsLastCheckedAt?: Prisma.SortOrder
+  dnsError?: Prisma.SortOrder
+  tlsIssuedAt?: Prisma.SortOrder
+  tlsLastCheckedAt?: Prisma.SortOrder
+  tlsAttempts?: Prisma.SortOrder
+  tlsError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -445,8 +632,19 @@ export type DomainMinOrderByAggregateInput = {
   tlsStatus?: Prisma.SortOrder
   isPrimary?: Prisma.SortOrder
   verifiedAt?: Prisma.SortOrder
+  routingTarget?: Prisma.SortOrder
+  dnsLastCheckedAt?: Prisma.SortOrder
+  dnsError?: Prisma.SortOrder
+  tlsIssuedAt?: Prisma.SortOrder
+  tlsLastCheckedAt?: Prisma.SortOrder
+  tlsAttempts?: Prisma.SortOrder
+  tlsError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type DomainSumOrderByAggregateInput = {
+  tlsAttempts?: Prisma.SortOrder
 }
 
 export type DomainCreateNestedManyWithoutStoreInput = {
@@ -508,6 +706,13 @@ export type DomainCreateWithoutStoreInput = {
   tlsStatus?: $Enums.DomainStatus
   isPrimary?: boolean
   verifiedAt?: Date | string | null
+  routingTarget?: string | null
+  dnsLastCheckedAt?: Date | string | null
+  dnsError?: string | null
+  tlsIssuedAt?: Date | string | null
+  tlsLastCheckedAt?: Date | string | null
+  tlsAttempts?: number
+  tlsError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -521,6 +726,13 @@ export type DomainUncheckedCreateWithoutStoreInput = {
   tlsStatus?: $Enums.DomainStatus
   isPrimary?: boolean
   verifiedAt?: Date | string | null
+  routingTarget?: string | null
+  dnsLastCheckedAt?: Date | string | null
+  dnsError?: string | null
+  tlsIssuedAt?: Date | string | null
+  tlsLastCheckedAt?: Date | string | null
+  tlsAttempts?: number
+  tlsError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -564,6 +776,13 @@ export type DomainScalarWhereInput = {
   tlsStatus?: Prisma.EnumDomainStatusFilter<"Domain"> | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFilter<"Domain"> | boolean
   verifiedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  routingTarget?: Prisma.StringNullableFilter<"Domain"> | string | null
+  dnsLastCheckedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  dnsError?: Prisma.StringNullableFilter<"Domain"> | string | null
+  tlsIssuedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  tlsLastCheckedAt?: Prisma.DateTimeNullableFilter<"Domain"> | Date | string | null
+  tlsAttempts?: Prisma.IntFilter<"Domain"> | number
+  tlsError?: Prisma.StringNullableFilter<"Domain"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Domain"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Domain"> | Date | string
 }
@@ -577,6 +796,13 @@ export type DomainCreateManyStoreInput = {
   tlsStatus?: $Enums.DomainStatus
   isPrimary?: boolean
   verifiedAt?: Date | string | null
+  routingTarget?: string | null
+  dnsLastCheckedAt?: Date | string | null
+  dnsError?: string | null
+  tlsIssuedAt?: Date | string | null
+  tlsLastCheckedAt?: Date | string | null
+  tlsAttempts?: number
+  tlsError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -590,6 +816,13 @@ export type DomainUpdateWithoutStoreInput = {
   tlsStatus?: Prisma.EnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routingTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dnsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dnsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tlsIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  tlsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -603,6 +836,13 @@ export type DomainUncheckedUpdateWithoutStoreInput = {
   tlsStatus?: Prisma.EnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routingTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dnsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dnsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tlsIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  tlsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -616,6 +856,13 @@ export type DomainUncheckedUpdateManyWithoutStoreInput = {
   tlsStatus?: Prisma.EnumDomainStatusFieldUpdateOperationsInput | $Enums.DomainStatus
   isPrimary?: Prisma.BoolFieldUpdateOperationsInput | boolean
   verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routingTarget?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dnsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  dnsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tlsIssuedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsLastCheckedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tlsAttempts?: Prisma.IntFieldUpdateOperationsInput | number
+  tlsError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -632,6 +879,13 @@ export type DomainSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   tlsStatus?: boolean
   isPrimary?: boolean
   verifiedAt?: boolean
+  routingTarget?: boolean
+  dnsLastCheckedAt?: boolean
+  dnsError?: boolean
+  tlsIssuedAt?: boolean
+  tlsLastCheckedAt?: boolean
+  tlsAttempts?: boolean
+  tlsError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>
@@ -647,6 +901,13 @@ export type DomainSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   tlsStatus?: boolean
   isPrimary?: boolean
   verifiedAt?: boolean
+  routingTarget?: boolean
+  dnsLastCheckedAt?: boolean
+  dnsError?: boolean
+  tlsIssuedAt?: boolean
+  tlsLastCheckedAt?: boolean
+  tlsAttempts?: boolean
+  tlsError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>
@@ -662,6 +923,13 @@ export type DomainSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   tlsStatus?: boolean
   isPrimary?: boolean
   verifiedAt?: boolean
+  routingTarget?: boolean
+  dnsLastCheckedAt?: boolean
+  dnsError?: boolean
+  tlsIssuedAt?: boolean
+  tlsLastCheckedAt?: boolean
+  tlsAttempts?: boolean
+  tlsError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>
@@ -677,11 +945,18 @@ export type DomainSelectScalar = {
   tlsStatus?: boolean
   isPrimary?: boolean
   verifiedAt?: boolean
+  routingTarget?: boolean
+  dnsLastCheckedAt?: boolean
+  dnsError?: boolean
+  tlsIssuedAt?: boolean
+  tlsLastCheckedAt?: boolean
+  tlsAttempts?: boolean
+  tlsError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DomainOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "host" | "type" | "verificationToken" | "verificationStatus" | "tlsStatus" | "isPrimary" | "verifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["domain"]>
+export type DomainOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "storeId" | "host" | "type" | "verificationToken" | "verificationStatus" | "tlsStatus" | "isPrimary" | "verifiedAt" | "routingTarget" | "dnsLastCheckedAt" | "dnsError" | "tlsIssuedAt" | "tlsLastCheckedAt" | "tlsAttempts" | "tlsError" | "createdAt" | "updatedAt", ExtArgs["result"]["domain"]>
 export type DomainInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   store?: boolean | Prisma.StoreDefaultArgs<ExtArgs>
 }
@@ -707,6 +982,19 @@ export type $DomainPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     tlsStatus: $Enums.DomainStatus
     isPrimary: boolean
     verifiedAt: Date | null
+    /**
+     * Expected CNAME/A routing target shown to the merchant.
+     */
+    routingTarget: string | null
+    dnsLastCheckedAt: Date | null
+    dnsError: string | null
+    /**
+     * Set only after an HTTPS handshake against the live host succeeds.
+     */
+    tlsIssuedAt: Date | null
+    tlsLastCheckedAt: Date | null
+    tlsAttempts: number
+    tlsError: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["domain"]>
@@ -1142,6 +1430,13 @@ export interface DomainFieldRefs {
   readonly tlsStatus: Prisma.FieldRef<"Domain", 'DomainStatus'>
   readonly isPrimary: Prisma.FieldRef<"Domain", 'Boolean'>
   readonly verifiedAt: Prisma.FieldRef<"Domain", 'DateTime'>
+  readonly routingTarget: Prisma.FieldRef<"Domain", 'String'>
+  readonly dnsLastCheckedAt: Prisma.FieldRef<"Domain", 'DateTime'>
+  readonly dnsError: Prisma.FieldRef<"Domain", 'String'>
+  readonly tlsIssuedAt: Prisma.FieldRef<"Domain", 'DateTime'>
+  readonly tlsLastCheckedAt: Prisma.FieldRef<"Domain", 'DateTime'>
+  readonly tlsAttempts: Prisma.FieldRef<"Domain", 'Int'>
+  readonly tlsError: Prisma.FieldRef<"Domain", 'String'>
   readonly createdAt: Prisma.FieldRef<"Domain", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Domain", 'DateTime'>
 }

@@ -1,7 +1,11 @@
 node_modules
 dist
+.next
 .git
 .env
 .env.*
+public/uploads
+outputs
+.work
 .manus-logs
 *.manus-starter-*

@@ -59,11 +59,23 @@ const PROMISES = [
   "বাংলায় সাপোর্ট, কর্মদিবসে উত্তর",
 ];
 
+const MARQUEE_ITEMS = [
+  ...THEME_CATALOG.map((theme) => `${theme.name} থিম`),
+  "বিকাশ",
+  "নগদ",
+  "SSLCommerz",
+  "ক্যাশ অন ডেলিভারি",
+  "REST API v1",
+  "বাংলা + English",
+  "BDT · Asia/Dhaka",
+];
+
 type IconName =
   | "language"
   | "layers"
   | "receipt"
   | "arrow-down"
+  | "arrow-right"
   | "shield"
   | "scale"
   | "users"
@@ -76,7 +88,8 @@ type IconName =
   | "check";
 
 function Icon({ name, className }: { name: IconName; className?: string }) {
-  const paths: Record<IconName, React.ReactNode> = {    language: (
+  const paths: Record<IconName, React.ReactNode> = {
+    language: (
       <>
         <path d="M4 5h9M8.5 5c0 4.5-2.6 8.2-5.5 10" />
         <path d="M6 10.5c1.6 2.2 3.6 3.6 6 4.5" />
@@ -101,6 +114,12 @@ function Icon({ name, className }: { name: IconName; className?: string }) {
         <path d="M12 4v12" />
         <path d="m7 11 5 5 5-5" />
         <path d="M5 20h14" />
+      </>
+    ),
+    "arrow-right": (
+      <>
+        <path d="M4 12h15" />
+        <path d="m13 6 6 6-6 6" />
       </>
     ),
     shield: (
@@ -183,22 +202,29 @@ function Icon({ name, className }: { name: IconName; className?: string }) {
 
 const PRINCIPLE_ICONS: IconName[] = ["language", "layers", "receipt", "arrow-down", "shield", "scale"];
 
+const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+
+/** Latin digits → Bengali digits, so counts stay consistent with the copy. */
+function bn(value: number | string) {
+  return String(value).replace(/\d/g, (digit) => BN_DIGITS[Number(digit)]);
+}
+
 const STATS = [
   {
     label: "থিম",
-    value: `${THEME_CATALOG.length}টি`,
+    value: `${bn(THEME_CATALOG.length)}টি`,
     hint: THEME_CATALOG.map((theme) => theme.name).join(", "),
     icon: "layers" as IconName,
   },
   {
     label: "পেমেন্ট",
-    value: `${PAYMENT_PROVIDERS.length}টি`,
+    value: `${bn(PAYMENT_PROVIDERS.length)}টি`,
     hint: "bKash, Nagad, SSLCommerz, COD",
     icon: "wallet" as IconName,
   },
   {
     label: "প্ল্যান",
-    value: `${PLAN_CODES.length}টি`,
+    value: `${bn(PLAN_CODES.length)}টি`,
     hint: "Free, Basic, Standard, Pro",
     icon: "chart" as IconName,
   },
@@ -210,73 +236,214 @@ const STATS = [
   },
 ];
 
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/85 px-3 py-1 text-[11px] font-semibold tracking-wide text-brand-800 shadow-xs backdrop-blur">
+      <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
+      {children}
+    </span>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="reveal mx-auto max-w-2xl text-center">
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 className="mt-4 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">{title}</h2>
+      <p className="mt-3 text-sm leading-relaxed text-ink-600">{description}</p>
+    </div>
+  );
+}
+
 export default function AboutPage() {
   return (
-    <div className="bg-white">
+    <div className="overflow-hidden bg-white">
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-ink-100 bg-gradient-to-b from-brand-50/80 via-white to-white">
+      <section className="relative overflow-hidden border-b border-ink-100 bg-gradient-to-b from-brand-50/90 via-white to-white">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div className="absolute top-[-14rem] left-1/2 h-[30rem] w-[30rem] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl" />
-          <div className="absolute -left-24 top-24 h-64 w-64 rounded-full bg-brand-100/70 blur-3xl" />
-          <div className="absolute -right-24 top-4 h-64 w-64 rounded-full bg-accent-400/10 blur-3xl" />
+          <div className="animate-drift absolute -top-56 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-brand-200/45 blur-3xl" />
+          <div className="animate-float-slow absolute -left-28 top-32 h-72 w-72 rounded-full bg-brand-100/80 blur-3xl" />
+          <div className="animate-float absolute -right-24 top-10 h-72 w-72 rounded-full bg-accent-400/15 blur-3xl" />
           <div className="absolute inset-0 bg-[radial-gradient(#d5d9e2_1px,transparent_1px)] [background-size:22px_22px] opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]" />
         </div>
 
-        <div className="relative mx-auto max-w-3xl px-4 pt-14 pb-14 text-center sm:pt-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1 text-xs font-medium text-brand-800 shadow-xs backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-            আমাদের সম্পর্কে
-          </span>
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-14 pb-16 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-24">
+          <div>
+            <div className="animate-fade-up">
+              <Eyebrow>আমাদের সম্পর্কে</Eyebrow>
+            </div>
 
-          <h1 className="mt-5 text-3xl leading-[1.25] font-bold tracking-tight text-ink-900 sm:text-[44px] sm:leading-[1.18]">
-            ছোট ব্যবসার জন্য বড় প্লাটফর্ম —{" "}
-            <span className="relative inline-block text-brand-700">
-              কোনো কোড ছাড়াই
-              <svg
-                viewBox="0 0 300 18"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-                className="absolute -bottom-1.5 left-0 h-3 w-full text-brand-400 sm:h-4"
+            <h1 className="animate-fade-up mt-5 text-3xl leading-[1.25] font-bold tracking-tight text-ink-900 sm:text-[44px] sm:leading-[1.18]" style={{ animationDelay: "80ms" }}>
+              ছোট ব্যবসার জন্য বড় প্লাটফর্ম —{" "}
+              <span className="relative inline-block bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 bg-clip-text text-transparent">
+                কোনো কোড ছাড়াই
+                <svg
+                  viewBox="0 0 300 18"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                  className="absolute -bottom-1.5 left-0 h-3 w-full text-brand-400 sm:h-4"
+                >
+                  <path
+                    d="M3 12C48 4 96 15 147 9c51-6 99 4 150-3"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeWidth="4"
+                  />
+                </svg>
+              </span>
+            </h1>
+
+            <p className="animate-fade-up mt-7 max-w-xl text-sm leading-relaxed text-ink-600 sm:text-base" style={{ animationDelay: "160ms" }}>
+              বাংলাদেশে হাজারো উদ্যোক্তা প্রতিদিন Facebook পেজে অর্ডার নেন, মেসেজে কাস্টমারের ঠিকানা
+              লিখে রাখেন, আর Excel-এ স্টক মেলান। ATLaS সেই কাজটুকু এক জায়গায় আনে — দোকান, প্রোডাক্ট,
+              অর্ডার, পেমেন্ট আর ডেলিভারি, সব একটি অ্যাডমিনে।
+            </p>
+            <p className="animate-fade-up mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-600" style={{ animationDelay: "220ms" }}>
+              লক্ষ্য পরিষ্কার — একজন উদ্যোক্তা রাত ১০টায় মোবাইল থেকে নিজের প্রথম প্রোডাক্ট যোগ করবেন,
+              আর সকালে দোকানটা লাইভ থাকবে।
+            </p>
+
+            <div className="animate-fade-up mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: "300ms" }}>
+              <ButtonLink href="/signup" size="lg">
+                ফ্রি অ্যাকাউন্ট খুলুন
+              </ButtonLink>
+              <ButtonLink href="/how-it-works" variant="outline" size="lg">
+                ছয় ধাপে শুরু করুন
+              </ButtonLink>
+            </div>
+
+            <div className="animate-fade-up mt-9 grid max-w-md grid-cols-3 gap-2.5" style={{ animationDelay: "380ms" }}>
+              {[
+                { value: bn(THEME_CATALOG.length), label: "তৈরি থিম" },
+                { value: bn(PAYMENT_PROVIDERS.length), label: "পেমেন্ট" },
+                { value: bn(PLAN_CODES.length), label: "প্ল্যান" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-xl border border-white/70 bg-white/70 px-3 py-2.5 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-sm"
+                >
+                  <p className="text-lg font-bold tracking-tight text-ink-900">{item.value}</p>
+                  <p className="text-[10px] text-ink-500">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Store preview collage */}
+          <div className="animate-fade-up relative mx-auto w-full max-w-md lg:max-w-none" style={{ animationDelay: "200ms" }}>
+            <div aria-hidden="true" className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-brand-200/60 via-white to-accent-400/25 blur-2xl" />
+
+            <div className="relative rounded-3xl border border-white/80 bg-white/85 p-4 shadow-2xl shadow-brand-900/10 backdrop-blur">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-rose-300" />
+                  <span className="h-2 w-2 rounded-full bg-amber-300" />
+                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                </div>
+                <p className="truncate text-[11px] font-medium text-ink-500">আপনার দোকান · অ্যাডমিন</p>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700">
+                  <span className="animate-pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-brand-500" />
+                  লাইভ
+                </span>
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {THEME_CATALOG.map((theme) => (
+                  <div
+                    key={theme.code}
+                    className="group cursor-default overflow-hidden rounded-xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-md"
+                  >
+                    <div className={`h-16 bg-gradient-to-br ${theme.preview.gradient}`} />
+                    <div className="flex items-center justify-between px-2 py-1.5">
+                      <span className="text-[10px] font-medium text-ink-700">{theme.name}</span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-brand-400 opacity-0 transition group-hover:opacity-100" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-xl border border-ink-100 bg-white p-2.5">
+                  <p className="text-[10px] text-ink-500">পেমেন্ট</p>
+                  <div className="mt-1.5 flex gap-1">
+                    <span className="h-1.5 flex-1 rounded-full bg-pink-400" />
+                    <span className="h-1.5 flex-1 rounded-full bg-orange-400" />
+                    <span className="h-1.5 flex-1 rounded-full bg-sky-400" />
+                    <span className="h-1.5 flex-1 rounded-full bg-emerald-400" />
+                  </div>
+                </div>
+                <div className="rounded-xl border border-ink-100 bg-white p-2.5">
+                  <p className="text-[10px] text-ink-500">ইন্টিগ্রেশন</p>
+                  <p className="mt-0.5 text-[11px] font-semibold text-ink-800">REST API v1</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="animate-float absolute top-16 -left-3 hidden items-center gap-2 rounded-xl border border-ink-200/80 bg-white/95 px-3 py-2 shadow-lg shadow-ink-900/5 backdrop-blur sm:flex">
+              <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-50 text-brand-700">
+                <Icon name="layers" className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-[11px] font-semibold text-ink-800">{bn(THEME_CATALOG.length)}টি থিম</span>
+            </div>
+
+            <div
+              className="animate-float-slow absolute top-6 -right-3 hidden items-center gap-2 rounded-xl border border-ink-200/80 bg-white/95 px-3 py-2 shadow-lg shadow-ink-900/5 backdrop-blur sm:flex"
+              style={{ animationDelay: "1.2s" }}
+            >
+              <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-50 text-brand-700">
+                <Icon name="wallet" className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-[11px] font-semibold text-ink-800">
+                {bn(PAYMENT_PROVIDERS.length)}টি পেমেন্ট
+              </span>
+            </div>
+
+            <div
+              className="animate-float absolute -bottom-4 left-6 hidden items-center gap-2 rounded-xl border border-ink-200/80 bg-white/95 px-3 py-2 shadow-lg shadow-ink-900/5 backdrop-blur sm:flex"
+              style={{ animationDelay: "0.6s" }}
+            >
+              <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-600 text-white">
+                <Icon name="check" className="h-3.5 w-3.5" />
+              </span>
+              <span className="text-[11px] font-semibold text-ink-800">কার্ড ছাড়া ট্রায়াল</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Capability marquee */}
+      <section aria-label="প্ল্যাটফর্মের মূল সক্ষমতা" className="border-b border-ink-100 bg-white py-4">
+        <div className="marquee-mask pause-on-hover overflow-hidden">
+          <div className="animate-marquee flex w-max items-center gap-2.5">
+            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, index) => (
+              <span
+                key={`${item}-${index}`}
+                className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50/60 px-3 py-1.5 text-xs font-medium whitespace-nowrap text-ink-600"
               >
-                <path
-                  d="M3 12C48 4 96 15 147 9c51-6 99 4 150-3"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeWidth="4"
-                />
-              </svg>
-            </span>
-          </h1>
-
-          <p className="mx-auto mt-7 max-w-2xl text-sm leading-relaxed text-ink-600 sm:text-base">
-            বাংলাদেশে হাজারো উদ্যোক্তা প্রতিদিন Facebook পেজে অর্ডার নেন, মেসেজে কাস্টমারের ঠিকানা
-            লিখে রাখেন, আর Excel-এ স্টক মেলান। ATLaS সেই কাজটুকু এক জায়গায় আনে — দোকান, প্রোডাক্ট,
-            অর্ডার, পেমেন্ট আর ডেলিভারি, সব একটি অ্যাডমিনে।
-          </p>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-ink-600">
-            লক্ষ্য পরিষ্কার — একজন উদ্যোক্তা রাত ১০টায় মোবাইল থেকে নিজের প্রথম প্রোডাক্ট যোগ করবেন,
-            আর সকালে দোকানটা লাইভ থাকবে।
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <ButtonLink href="/signup" size="lg">
-              ফ্রি অ্যাকাউন্ট খুলুন
-            </ButtonLink>
-            <ButtonLink href="/how-it-works" variant="outline" size="lg">
-              ছয় ধাপে শুরু করুন
-            </ButtonLink>
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
+                {item}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Why */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
-          <div className="lg:sticky lg:top-24">
-            <p className="text-xs font-semibold tracking-wide text-brand-700 uppercase">কেন ATLaS</p>
+      <section className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24">
+        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="reveal lg:sticky lg:top-24">
+            <span className="text-xs font-semibold tracking-wide text-brand-700 uppercase">কেন ATLaS</span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-              একটা দোকান চালাতে দশটা টুল লাগা উচিত নয়
+              একটা দোকান চালাতে <span className="text-brand-700">দশটা টুল</span> লাগা উচিত নয়
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-ink-600">
               অর্ডার আসে ইনবক্সে, স্টক থাকে খাতায়, ডেলিভারি চার্জ মনে রাখতে হয়, আর মাস শেষে হিসাব
@@ -287,48 +454,87 @@ export default function AboutPage() {
               দোকান সাজানো, প্রোডাক্ট তোলা, অর্ডার সামলানো আর রিপোর্ট দেখা — সব একই অ্যাডমিনে, একই
               লগইনে, একই ভাষায়।
             </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {["এক ড্যাশবোর্ড", "এক লগইন", "এক ভাষা"].map((chip) => (
+                <span
+                  key={chip}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50/70 px-3 py-1 text-[11px] font-medium text-brand-800 transition hover:border-brand-300 hover:bg-brand-100"
+                >
+                  <Icon name="check" className="h-3 w-3" />
+                  {chip}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-ink-200 bg-white shadow-sm">
-            <div className="grid gap-0 sm:grid-cols-2">
-              <div className="border-b border-ink-100 p-5 sm:border-r sm:border-b-0">
-                <div className="flex items-center gap-2">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-100 text-ink-500">
-                    <Icon name="store" className="h-4 w-4" />
-                  </span>
-                  <p className="text-xs font-semibold tracking-wide text-ink-500 uppercase">আগে</p>
-                </div>
-                <ul className="mt-4 space-y-2.5">
-                  {BEFORE.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-ink-500">
-                      <span className="mt-0.5 text-ink-300">
-                        <svg viewBox="0 0 20 20" aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth={2.2}>
-                          <path d="M6 6l8 8M14 6l-8 8" />
-                        </svg>
-                      </span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+          <div className="reveal relative">
+            <div aria-hidden="true" className="pointer-events-none absolute -inset-3 rounded-[1.9rem] bg-gradient-to-br from-brand-200/45 via-transparent to-accent-400/15 blur-xl" />
+            <div className="relative overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-sm transition duration-300 hover:shadow-xl hover:shadow-brand-900/10">
+              <div className="flex items-center justify-between border-b border-ink-100 bg-ink-50/60 px-5 py-3">
+                <p className="text-xs font-semibold text-ink-700">আগে vs ATLaS-এ</p>
+                <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[10px] font-semibold text-brand-800">
+                  একই দোকান
+                </span>
               </div>
 
-              <div className="bg-brand-50/40 p-5">
-                <div className="flex items-center gap-2">
-                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-white">
-                    <Icon name="check" className="h-4 w-4" />
-                  </span>
-                  <p className="text-xs font-semibold tracking-wide text-brand-700 uppercase">ATLaS-এ</p>
+              <div className="relative grid sm:grid-cols-2">
+                <div className="border-b border-ink-100 p-5 sm:border-r sm:border-b-0">
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-100 text-ink-500">
+                      <Icon name="store" className="h-4 w-4" />
+                    </span>
+                    <p className="text-xs font-semibold tracking-wide text-ink-500 uppercase">আগে</p>
+                  </div>
+                  <ul className="mt-4 space-y-2">
+                    {BEFORE.map((item) => (
+                      <li
+                        key={item}
+                        className="group flex items-start gap-2.5 rounded-lg p-1.5 text-xs leading-relaxed text-ink-500 transition hover:bg-ink-50 hover:text-ink-700"
+                      >
+                        <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-ink-100 text-ink-400 transition group-hover:bg-rose-100 group-hover:text-rose-500">
+                          <svg
+                            viewBox="0 0 20 20"
+                            aria-hidden="true"
+                            className="h-2.5 w-2.5"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeWidth={2.2}
+                          >
+                            <path d="M6 6l8 8M14 6l-8 8" />
+                          </svg>
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="mt-4 space-y-2.5">
-                  {AFTER.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-ink-700">
-                      <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700">
-                        <Icon name="check" className="h-2.5 w-2.5" />
-                      </span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+
+                <div className="bg-brand-50/40 p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-white">
+                      <Icon name="check" className="h-4 w-4" />
+                    </span>
+                    <p className="text-xs font-semibold tracking-wide text-brand-700 uppercase">ATLaS-এ</p>
+                  </div>
+                  <ul className="mt-4 space-y-2">
+                    {AFTER.map((item) => (
+                      <li
+                        key={item}
+                        className="group flex items-start gap-2.5 rounded-lg p-1.5 text-xs leading-relaxed text-ink-700 transition hover:bg-white hover:shadow-xs"
+                      >
+                        <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-100 text-brand-700 transition group-hover:bg-brand-600 group-hover:text-white">
+                          <Icon name="check" className="h-2.5 w-2.5" />
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <span className="pointer-events-none absolute top-1/2 left-1/2 hidden h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-4 border-white bg-brand-600 text-white shadow-md sm:grid">
+                  <Icon name="arrow-right" className="h-4 w-4" />
+                </span>
               </div>
             </div>
           </div>
@@ -336,32 +542,39 @@ export default function AboutPage() {
       </section>
 
       {/* Principles */}
-      <section className="border-y border-ink-100 bg-ink-50/50 py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold tracking-wide text-brand-700 uppercase">আমাদের নীতি</p>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-              যে ছয়টি সিদ্ধান্তে প্ল্যাটফর্মটা দাঁড়িয়ে
-            </h2>
-            <p className="mt-2 text-sm text-ink-600">
-              প্রতিটি ফিচার লেখার আগে এই প্রশ্নগুলোর উত্তর একই থাকে — তাই আচরণও একই থাকে।
-            </p>
-          </div>
+      <section className="relative border-y border-ink-100 bg-ink-50/50 py-16 sm:py-24">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5d9e2_1px,transparent_1px)] [background-size:26px_26px] opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"
+        />
+        <div className="relative mx-auto max-w-6xl px-4">
+          <SectionHeading
+            eyebrow="আমাদের নীতি"
+            title="যে ছয়টি সিদ্ধান্তে প্ল্যাটফর্মটা দাঁড়িয়ে"
+            description="প্রতিটি ফিচার লেখার আগে এই প্রশ্নগুলোর উত্তর একই থাকে — তাই আচরণও একই থাকে।"
+          />
 
-          <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {PRINCIPLES.map((principle, index) => (
               <article
                 key={principle.title}
-                className="group relative flex h-full flex-col rounded-xl border border-ink-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md"
+                className="group hover-shine relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-900/10"
               >
-                <div className="flex items-center justify-between">
-                  <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand-50 text-brand-700 transition group-hover:bg-brand-100">
-                    <Icon name={PRINCIPLE_ICONS[index]} />
-                  </span>
-                  <span className="font-mono text-[11px] font-medium text-ink-300">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                </div>
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-brand-400 via-brand-600 to-accent-400 transition-transform duration-500 group-hover:scale-x-100"
+                />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -top-7 -right-3 font-mono text-6xl font-bold text-ink-900/[0.04] transition-all duration-500 select-none group-hover:-translate-y-1 group-hover:text-brand-600/10"
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition-all duration-300 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white">
+                  <Icon name={PRINCIPLE_ICONS[index]} />
+                </span>
+
                 <h3 className="mt-4 text-sm font-semibold text-ink-900">{principle.title}</h3>
                 <p className="mt-2 text-xs leading-relaxed text-ink-600">{principle.body}</p>
               </article>
@@ -371,24 +584,35 @@ export default function AboutPage() {
       </section>
 
       {/* Audience / difference / promise */}
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:py-20">
-        <div className="grid gap-6 rounded-2xl border border-ink-200 bg-white p-6 shadow-sm sm:p-8 lg:grid-cols-3 lg:divide-x lg:divide-ink-100">
-          <div className="lg:pr-6">
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-ink-50 text-brand-700">
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="reveal group relative overflow-hidden rounded-2xl border border-ink-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-brand-100/0 blur-2xl transition duration-500 group-hover:bg-brand-200/60"
+            />
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
               <Icon name="users" />
             </span>
-            <h2 className="mt-3 text-base font-semibold text-ink-900">কাদের জন্য</h2>
+            <h2 className="mt-4 text-base font-semibold text-ink-900">কাদের জন্য</h2>
             <p className="mt-2 text-xs leading-relaxed text-ink-600">
               বুটিক, হোম বেকারি, মুদি দোকান, গ্যাজেট ও কসমেটিক্স — যাদের নিজের ডিজাইন নেই, কিন্তু
               নিজের ব্র্যান্ড আছে। প্রোডাক্ট ফটোগ্রাফি ও বর্ণনা নিজের, চেহারাটা প্ল্যাটফর্মের।
             </p>
           </div>
 
-          <div className="lg:px-6">
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-ink-50 text-brand-700">
+          <div
+            className="reveal group relative overflow-hidden rounded-2xl border border-ink-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg"
+            style={{ animationDelay: "90ms" }}
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-brand-100/0 blur-2xl transition duration-500 group-hover:bg-brand-200/60"
+            />
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
               <Icon name="sparkles" />
             </span>
-            <h2 className="mt-3 text-base font-semibold text-ink-900">যেভাবে আলাদা</h2>
+            <h2 className="mt-4 text-base font-semibold text-ink-900">যেভাবে আলাদা</h2>
             <p className="mt-2 text-xs leading-relaxed text-ink-600">
               রেফারেন্স প্ল্যাটফর্মগুলো হয় খুব সাধারণ, নয়তো বিদেশি গেটওয়ে-কেন্দ্রিক। ATLaS-এ দেশীয়
               পেমেন্ট ও COD একই স্রোতে, প্ল্যান-ভিত্তিক entitlement সার্ভারে enforce হয়, আর থিমগুলো
@@ -396,15 +620,22 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="lg:pl-6">
-            <span className="grid h-9 w-9 place-items-center rounded-lg bg-ink-50 text-brand-700">
+          <div
+            className="reveal group relative overflow-hidden rounded-2xl border border-ink-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-lg"
+            style={{ animationDelay: "180ms" }}
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-brand-100/0 blur-2xl transition duration-500 group-hover:bg-brand-200/60"
+            />
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
               <Icon name="handshake" />
             </span>
-            <h2 className="mt-3 text-base font-semibold text-ink-900">আমাদের প্রতিশ্রুতি</h2>
+            <h2 className="mt-4 text-base font-semibold text-ink-900">আমাদের প্রতিশ্রুতি</h2>
             <ul className="mt-3 space-y-2">
               {PROMISES.map((promise) => (
                 <li key={promise} className="flex items-start gap-2 text-xs text-ink-600">
-                  <span className="mt-px grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700">
+                  <span className="mt-px grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700 transition group-hover:bg-brand-100">
                     <Icon name="check" className="h-2.5 w-2.5" />
                   </span>
                   {promise}
@@ -416,31 +647,39 @@ export default function AboutPage() {
       </section>
 
       {/* Platform stats */}
-      <section className="border-t border-ink-100 bg-ink-50/50 py-16 sm:py-20">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold tracking-wide text-brand-700 uppercase">এক নজরে</p>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-              আজই যা ব্যবহার করা যায়
-            </h2>
-            <p className="mt-2 text-sm text-ink-600">
-              কোনো অতিরিক্ত সেটআপ, অ্যাপ বা ইন্টিগ্রেশন ছাড়াই — সাইনআপ করলেই সবগুলো খোলা।
-            </p>
-          </div>
+      <section className="relative overflow-hidden border-y border-ink-100 bg-gradient-to-b from-ink-50/80 via-white to-white py-16 sm:py-24">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+          <div className="animate-float-slow absolute -top-24 -right-16 h-64 w-64 rounded-full bg-brand-100/70 blur-3xl" />
+          <div className="animate-float absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-accent-400/10 blur-3xl" />
+        </div>
 
-          <div className="mt-9 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {STATS.map((stat) => (
+        <div className="relative mx-auto max-w-6xl px-4">
+          <SectionHeading
+            eyebrow="এক নজরে"
+            title="আজই যা ব্যবহার করা যায়"
+            description="কোনো অতিরিক্ত সেটআপ, অ্যাপ বা ইন্টিগ্রেশন ছাড়াই — সাইনআপ করলেই সবগুলো খোলা।"
+          />
+
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {STATS.map((stat, index) => (
               <div
                 key={stat.label}
-                className="rounded-xl border border-ink-200 bg-white p-5 transition hover:border-brand-200 hover:shadow-sm"
+                className="reveal group relative overflow-hidden rounded-2xl border border-ink-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-900/10"
+                style={{ animationDelay: `${index * 80}ms` }}
               >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-gradient-to-r from-brand-400 to-accent-400 transition-transform duration-500 group-hover:scale-x-100"
+                />
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-ink-500">{stat.label}</p>
-                  <span className="text-brand-600">
+                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-50 text-brand-600 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
                     <Icon name={stat.icon} className="h-4 w-4" />
                   </span>
                 </div>
-                <p className="mt-2 text-2xl font-bold tracking-tight text-ink-900">{stat.value}</p>
+                <p className="mt-3 text-2xl font-bold tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-brand-700">
+                  {stat.value}
+                </p>
                 <p className="mt-1 text-[11px] leading-relaxed text-ink-500">{stat.hint}</p>
               </div>
             ))}
@@ -449,20 +688,27 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:py-20">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 px-6 py-10 text-center shadow-xl shadow-brand-900/10 sm:px-10 sm:py-12">
-          <div aria-hidden="true" className="pointer-events-none absolute -top-16 -right-10 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+      <section className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
+        <div className="reveal animate-gradient-pan relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 via-brand-600 to-brand-500 px-6 py-12 text-center shadow-2xl shadow-brand-900/20 sm:px-12 sm:py-16">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="animate-drift absolute -top-24 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+            <div className="animate-float-slow absolute -bottom-28 -left-12 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,0.12)_100%)]" />
+          </div>
 
           <div className="relative">
-            <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-medium text-brand-50 backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />
+              আমরা শুনতে চাই
+            </span>
+            <h2 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl">
               কথা বলতে চান?
             </h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-brand-50">
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-brand-50">
               প্ল্যান, অংশীদারিত্ব বা কাস্টম প্রয়োজনে আমাদের লিখুন — কর্মদিবসে একই দিনে উত্তর
               পাবেন। অথবা আজই ফ্রি অ্যাকাউন্ট খুলে নিজের দোকান সাজানো শুরু করুন।
             </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               <ButtonLink href="/contact" variant="inverse" size="lg">
                 যোগাযোগ করুন
               </ButtonLink>

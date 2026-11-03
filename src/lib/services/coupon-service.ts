@@ -5,6 +5,7 @@ import { assertPermission, type ActorContext } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
 import { toDecimalString } from "@/lib/money";
 import { recordAudit } from "@/lib/audit";
+import { assertFeature, requireWritableTenant } from "@/lib/entitlements";
 
 /**
  * Discount codes (FR-08).
@@ -34,15 +35,29 @@ export async function listCoupons(storeId: string) {
   return prisma.coupon.findMany({ where: { storeId }, orderBy: { createdAt: "desc" } });
 }
 
-function toDate(value?: string): Date | null {
+/**
+ * Coupon dates come from `<input type="date">` (YYYY-MM-DD). Parse them in the
+ * platform timezone: `new Date("2026-10-31")` is UTC midnight, which at UTC+6
+ * would keep a "today" coupon inactive until 6 AM in Dhaka.
+ */
+const DHAKA_OFFSET = "+06:00";
+
+function toDate(value: string | undefined, boundary: "start" | "end"): Date | null {
   if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+  const parsed = dateOnly
+    ? new Date(
+        `${value}T${boundary === "start" ? "00:00:00.000" : "23:59:59.999"}${DHAKA_OFFSET}`,
+      )
+    : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 export async function createCoupon(actor: ActorContext, storeId: string, raw: unknown) {
   assertPermission(actor, "discounts:write");
   await assertStoreAccess(actor, storeId);
+  const snapshot = await requireWritableTenant(actor.tenantId);
+  assertFeature(snapshot, "discountCampaigns");
   const input = couponInputSchema.parse(raw);
 
   const clash = await prisma.coupon.findFirst({ where: { storeId, code: input.code }, select: { id: true } });
@@ -56,8 +71,8 @@ export async function createCoupon(actor: ActorContext, storeId: string, raw: un
       value: toDecimalString(input.value) as never,
       minOrder: toDecimalString(input.minOrder) as never,
       usageLimit: input.usageLimit && input.usageLimit > 0 ? input.usageLimit : null,
-      startsAt: toDate(input.startsAt),
-      endsAt: toDate(input.endsAt),
+      startsAt: toDate(input.startsAt, "start"),
+      endsAt: toDate(input.endsAt, "end"),
       status: input.status,
     },
   });
@@ -77,6 +92,8 @@ export async function createCoupon(actor: ActorContext, storeId: string, raw: un
 export async function updateCoupon(actor: ActorContext, storeId: string, couponId: string, raw: unknown) {
   assertPermission(actor, "discounts:write");
   await assertStoreAccess(actor, storeId);
+  const snapshot = await requireWritableTenant(actor.tenantId);
+  assertFeature(snapshot, "discountCampaigns");
   const input = couponInputSchema.parse(raw);
 
   const existing = await prisma.coupon.findFirst({ where: { id: couponId, storeId }, select: { id: true } });
@@ -96,8 +113,8 @@ export async function updateCoupon(actor: ActorContext, storeId: string, couponI
       value: toDecimalString(input.value) as never,
       minOrder: toDecimalString(input.minOrder) as never,
       usageLimit: input.usageLimit && input.usageLimit > 0 ? input.usageLimit : null,
-      startsAt: toDate(input.startsAt),
-      endsAt: toDate(input.endsAt),
+      startsAt: toDate(input.startsAt, "start"),
+      endsAt: toDate(input.endsAt, "end"),
       status: input.status,
     },
   });
@@ -106,6 +123,7 @@ export async function updateCoupon(actor: ActorContext, storeId: string, couponI
 export async function archiveCoupon(actor: ActorContext, storeId: string, couponId: string) {
   assertPermission(actor, "discounts:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const removed = await prisma.coupon.updateMany({
     where: { id: couponId, storeId },
     data: { status: "ARCHIVED" },

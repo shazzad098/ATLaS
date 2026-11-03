@@ -353,7 +353,7 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
       sections: THEME_SECTION_KEYS.map((key) => ({
         key,
         enabled: true,
-        title: key === "ProductGrid" ? "ফিচারড" : "",
+        title: key === "ProductGrid" ? "নির্বাচিত পণ্য" : "",
       })),
       promo: {
         enabled: true,

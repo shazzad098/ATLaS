@@ -112,17 +112,26 @@ export const nagadAdapter: PaymentAdapter = {
     const status = params.get("status") ?? (payload.status as string | undefined);
 
     if (paymentRefId) {
-      // The authoritative verification is the `verify/payment` call below.
+      // The callback query is untrusted. `verify/payment` is authoritative for
+      // status *and* for the order reference and amount.
       const verified =
         status === "Success"
           ? await verifyPayment(paymentRefId)
           : { ok: false as const, message: status ?? "unknown" };
 
+      const callbackOrderId =
+        params.get("orderId") ?? (payload.orderId ? String(payload.orderId) : null);
+      const verifiedOrderId = verified.ok ? (verified.orderId ?? null) : null;
+
       return {
         eventKey: `nagad:${paymentRefId}:${status ?? "unknown"}`,
         providerTxnId: paymentRefId,
         orderNo: params.get("order_id") ?? null,
-        amount: params.get("amount") ?? null,
+        orderId: verifiedOrderId ?? callbackOrderId,
+        verifiedOrderReference: Boolean(verifiedOrderId),
+        // Never credit an amount supplied only by the browser query string.
+        amount: verified.ok ? (verified.amount ?? null) : null,
+        currency: verified.ok ? (verified.currency ?? "BDT") : "BDT",
         status: verified.ok ? "SUCCEEDED" : "FAILED",
         signatureValid: true,
         failureReason: verified.ok ? undefined : verified.message,
@@ -134,7 +143,9 @@ export const nagadAdapter: PaymentAdapter = {
       eventKey: String(payload.eventKey ?? `nagad:${payload.providerTxnId ?? "unknown"}`),
       providerTxnId: payload.providerTxnId ? String(payload.providerTxnId) : null,
       orderNo: payload.orderNo ? String(payload.orderNo) : null,
+      orderId: payload.orderId ? String(payload.orderId) : null,
       amount: payload.amount ? String(payload.amount) : null,
+      currency: payload.currency ? String(payload.currency) : "BDT",
       status:
         payload.status === "FAILED"
           ? "FAILED"
@@ -162,7 +173,13 @@ export const nagadAdapter: PaymentAdapter = {
   },
 };
 
-async function verifyPayment(paymentRefId: string): Promise<{ ok: boolean; message?: string }> {
+async function verifyPayment(paymentRefId: string): Promise<{
+  ok: boolean;
+  message?: string;
+  orderId?: string;
+  amount?: string;
+  currency?: string;
+}> {
   const { baseUrl } = env.gateways.nagad;
   try {
     const response = await fetch(
@@ -170,8 +187,21 @@ async function verifyPayment(paymentRefId: string): Promise<{ ok: boolean; messa
       { headers: { "X-KM-Api-Version": "v-0.2.0" } },
     );
     if (!response.ok) return { ok: false, message: `verify HTTP ${response.status}` };
-    const data = (await response.json()) as { status?: string; reason?: string };
-    return { ok: data.status === "Success", message: data.reason };
+    const data = (await response.json()) as {
+      status?: string;
+      reason?: string;
+      orderId?: string;
+      order_id?: string;
+      amount?: string;
+      currency?: string;
+    };
+    return {
+      ok: data.status === "Success",
+      message: data.reason,
+      orderId: data.orderId ?? data.order_id,
+      amount: data.amount !== undefined ? String(data.amount) : undefined,
+      currency: data.currency,
+    };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "verify failed" };
   }

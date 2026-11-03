@@ -4,6 +4,7 @@ import { listStorefrontCategories, listStorefrontProducts } from "@/lib/storefro
 import { getTheme } from "@/themes";
 import type { ThemeComponents } from "@/themes/types";
 import type { ThemeConfig } from "@/lib/theme-catalog";
+import { trackEvent } from "@/lib/services/analytics-service";
 
 /**
  * Storefront homepage (PRD §7).
@@ -16,6 +17,13 @@ export default async function StorefrontHome({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const context = await getStorefrontContext(slug);
   if (!context) notFound();
+
+  await trackEvent({
+    tenantId: context.tenant.id,
+    storeId: context.store.id,
+    name: "store.view",
+    path: "/",
+  });
 
   const theme = getTheme(context.theme.code);
   const ctx = themeContextFrom(context);
@@ -54,7 +62,7 @@ function renderSection(
       // Rendered by the layout so they wrap every storefront page.
       return null;
     case "Hero":
-      return <theme.Hero key="Hero" ctx={ctx} />;
+      return <theme.Hero key="Hero" ctx={ctx} featured={products} />;
     case "CategoryGrid":
       return (
         <theme.CategoryGrid key="CategoryGrid" ctx={ctx} title={section.title} categories={categories} />

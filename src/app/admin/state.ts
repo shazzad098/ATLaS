@@ -9,6 +9,8 @@
 export type AdminState = {
   ok: boolean;
   message: string;
+  /** Optional one-time download link for report export jobs. */
+  downloadUrl?: string;
   /** Optional preview payload, e.g. the per-row outcome of a CSV dry-run. */
   data?: {
     results?: Array<{

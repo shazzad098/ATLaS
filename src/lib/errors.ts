@@ -17,6 +17,10 @@ export type AppErrorCode =
   | "RATE_LIMITED"
   | "PAYMENT_FAILED"
   | "TENANT_MISMATCH"
+  | "TRIAL_ALREADY_USED"
+  | "TRIAL_NOT_AVAILABLE"
+  | "INVOICE_NOT_PAYABLE"
+  | "PLAN_MISSING"
   | "INTERNAL";
 
 export class AppError extends Error {

@@ -1,5 +1,6 @@
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { formatBdt } from "@/lib/money";
+import { dhakaDateKey } from "@/lib/dates";
 import { listCoupons } from "@/lib/services/coupon-service";
 import { Badge, Card, CardBody, CardHeader } from "@/components/ui/shell";
 import { CouponForm } from "@/app/admin/_components/coupon-form";
@@ -11,11 +12,11 @@ import { archiveCouponAction } from "@/app/admin/actions";
 export const metadata = { title: "ডিসকাউন্ট" };
 
 function toDateInput(value: Date | null): string {
-  return value ? value.toISOString().slice(0, 10) : "";
+  return value ? dhakaDateKey(value) : "";
 }
 
 export default async function DiscountsPage() {
-  const { store } = await requireActiveStore();
+  const { store } = await requireActiveStorePermissionPage("discounts:read");
   const coupons = await listCoupons(store.id);
 
   return (

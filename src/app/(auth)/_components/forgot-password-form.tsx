@@ -38,17 +38,26 @@ export function ForgotPasswordForm() {
 
       {state.message ? <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert> : null}
 
-      <form action={action} className="space-y-4" key={inResetStep ? "reset" : "request"}>
-        <Field label="মোবাইল নম্বর বা ইমেইল" required={!inResetStep}>
-          <Input
-            name="identifier"
-            required
-            autoComplete="username"
-            placeholder="017XXXXXXXX"
-            readOnly={inResetStep}
-            defaultValue={resetState.step === "otp" ? undefined : ""}
-          />
-        </Field>
+      <form action={action} className="space-y-4">
+        {inResetStep ? (
+          <>
+            {/* Hidden so the reset request can re-resolve the same account. */}
+            <input type="hidden" name="identifier" value={state.identifier ?? ""} />
+            <Field label="মোবাইল নম্বর বা ইমেইল">
+              <Input value={state.identifier ?? ""} readOnly autoComplete="username" />
+            </Field>
+          </>
+        ) : (
+          <Field label="মোবাইল নম্বর বা ইমেইল" required>
+            <Input
+              name="identifier"
+              required
+              autoComplete="username"
+              placeholder="017XXXXXXXX"
+              defaultValue={state.identifier}
+            />
+          </Field>
+        )}
 
         {inResetStep ? (
           <>

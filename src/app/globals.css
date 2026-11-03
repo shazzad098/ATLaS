@@ -18,6 +18,11 @@
     system-ui, "Segoe UI", Roboto, Arial, sans-serif;
   --font-serif: "Noto Serif Bengali", "SolaimanLipi", Georgia, "Times New Roman", serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* The "Luminous Commerce" customizer (admin → ডিজাইন) uses Plus Jakarta Sans
+     for display/headings. No build-time webfont download: it resolves to the
+     installed font when present and falls back to Inter + Bengali stacks. */
+  --font-display: "Plus Jakarta Sans", "Inter", "Noto Sans Bengali", "Hind Siliguri",
+    "SolaimanLipi", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
 
   --color-ink-50: #f6f7f9;
   --color-ink-100: #eceef2;
@@ -60,6 +65,62 @@
   color-scheme: light;
 }
 
+/*
+ * Admin dark mode — toggled from সেটিংস → প্রদর্শন, stored in the
+ * `atlas_theme` cookie, and rendered server-side on the admin shell wrapper so
+ * there is no flash of light theme. The overrides are scoped to `.admin-dark`,
+ * so marketing pages and storefront themes keep their own palettes.
+ *
+ * The neutral "ink" scale is inverted by role: background steps (50–300) map to
+ * deep surfaces, text steps (400–950) map to light greys.
+ */
+.admin-dark {
+  color-scheme: dark;
+  background-color: var(--color-ink-50);
+  color: var(--color-ink-900);
+
+  --color-ink-50: #0c1322;
+  --color-ink-100: #141d30;
+  --color-ink-200: #222d47;
+  --color-ink-300: #333f60;
+  --color-ink-400: #606b83;
+  --color-ink-500: #939cb1;
+  --color-ink-600: #aeb6c6;
+  --color-ink-700: #ccd2de;
+  --color-ink-800: #dfe4ee;
+  --color-ink-900: #f1f4fa;
+  --color-ink-950: #fafbfd;
+}
+
+/* White surfaces become deep panels. */
+.admin-dark .bg-white {
+  background-color: #131c2f;
+}
+
+/* Tone chips and alerts: deep tinted surfaces… */
+.admin-dark .bg-emerald-50 { background-color: color-mix(in srgb, #10b981 12%, #131c2f); }
+.admin-dark .bg-amber-50 { background-color: color-mix(in srgb, #f59e0b 12%, #131c2f); }
+.admin-dark .bg-red-50 { background-color: color-mix(in srgb, #ef4444 12%, #131c2f); }
+.admin-dark .bg-sky-50 { background-color: color-mix(in srgb, #0ea5e9 12%, #131c2f); }
+.admin-dark .bg-brand-50 { background-color: color-mix(in srgb, #1fa383 14%, #131c2f); }
+.admin-dark .bg-brand-100 { background-color: color-mix(in srgb, #1fa383 16%, #131c2f); }
+
+/* …with lighter accent text for contrast. */
+.admin-dark .text-emerald-700 { color: #6ee7b7; }
+.admin-dark .text-amber-700 { color: #fcd34d; }
+.admin-dark .text-red-700 { color: #fda4af; }
+.admin-dark .text-sky-700 { color: #7dd3fc; }
+.admin-dark .text-brand-700 { color: #78d8ba; }
+.admin-dark .text-red-600 { color: #f87171; }
+.admin-dark .text-emerald-600 { color: #6ee7b7; }
+.admin-dark .text-emerald-500 { color: #34d399; }
+.admin-dark .text-red-500 { color: #fb7185; }
+
+/* The secondary (ink-900) button inverts: light chip, dark label. */
+.admin-dark .bg-ink-900 {
+  color: #0f172a;
+}
+
 html,
 body {
   height: 100%;
@@ -82,6 +143,7 @@ body {
   background: var(--store-background);
   color: var(--store-text);
   font-family: var(--store-body-font, var(--font-sans));
+  container-type: inline-size;
 }
 .store-surface h1,
 .store-surface h2,
@@ -95,11 +157,137 @@ body {
 .tone-surface {
   background: var(--store-surface);
 }
-.store-surface a {
-  color: inherit;
-}
+
 .store-btn {
   border-radius: var(--store-button-radius);
+}
+
+/* Merchant design studio chrome — intentionally scoped so storefront themes
+   and the rest of the admin remain on the platform's neutral system. */
+.design-studio {
+  --design-panel: #ffffff;
+  --design-border: #e2e8f0;
+  --design-muted: #64748b;
+}
+
+.design-preview-stage,
+.design-preview-scroll,
+.design-preview-frame,
+.design-preview-surface {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.design-preview-stage {
+  contain: layout paint;
+}
+
+.design-preview-scroll {
+  overscroll-behavior: contain;
+  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-width: thin;
+}
+
+.design-preview-surface {
+  container-type: inline-size;
+  container-name: storefront-preview;
+}
+
+.design-preview-surface img {
+  max-width: 100%;
+}
+
+.design-inspector-scroll {
+  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-width: thin;
+}
+
+.design-inspector-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.design-inspector-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.design-inspector-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #cbd5e1;
+  background-clip: padding-box;
+}
+
+/*
+ * Motion primitives.
+ *
+ * CSS-only on purpose: marketing pages stay server components, so there is no
+ * animation library to hydrate and no layout shift before JS lands. Scroll
+ * reveals use the native `view()` timeline and simply stay visible (no
+ * animation) in browsers without support.
+ */
+@keyframes atlas-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes atlas-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes atlas-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(28px, -22px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 16px) scale(0.95);
+  }
+}
+
+@keyframes atlas-gradient-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes atlas-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes atlas-pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgb(18 131 107 / 45%);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgb(18 131 107 / 0%);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(18 131 107 / 0%);
+  }
 }
 
 @layer utilities {
@@ -114,5 +302,86 @@ body {
   }
   .no-scrollbar {
     scrollbar-width: none;
+  }
+
+  .animate-fade-up {
+    animation: atlas-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-float {
+    animation: atlas-float 7s ease-in-out infinite;
+  }
+  .animate-float-slow {
+    animation: atlas-float 11s ease-in-out infinite;
+  }
+  .animate-drift {
+    animation: atlas-drift 20s ease-in-out infinite;
+  }
+  .animate-gradient-pan {
+    background-size: 220% 220%;
+    animation: atlas-gradient-pan 12s ease infinite;
+  }
+  .animate-marquee {
+    animation: atlas-marquee 34s linear infinite;
+  }
+  .animate-pulse-dot {
+    animation: atlas-pulse-dot 2.4s ease-out infinite;
+  }
+
+  .pause-on-hover:hover .animate-marquee {
+    animation-play-state: paused;
+  }
+
+  .marquee-mask {
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+
+  /* Sweeping light on hover — decorative, never blocks pointer events. */
+  .hover-shine {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hover-shine::after {
+    content: "";
+    position: absolute;
+    top: -60%;
+    bottom: -60%;
+    left: 0;
+    width: 42%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 60%), transparent);
+    transform: translateX(-170%) skewX(-16deg);
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .hover-shine:hover::after {
+    transform: translateX(320%) skewX(-16deg);
+  }
+}
+
+/* Progressive scroll reveal: no JS, degrades to "already visible". */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: atlas-fade-up both linear;
+      animation-timeline: view();
+      animation-range: entry 6% cover 32%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-float,
+  .animate-float-slow,
+  .animate-drift,
+  .animate-gradient-pan,
+  .animate-marquee,
+  .animate-pulse-dot,
+  .reveal {
+    animation: none !important;
+  }
+  .hover-shine::after {
+    display: none;
   }
 }

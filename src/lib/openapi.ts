@@ -239,7 +239,8 @@ export const OPENAPI_DOCUMENT = {
         summary: "Current user, tenant, plan and stores",
         description:
           "Tenant context resolves from `X-Tenant-Id`, then the tenant cookie, then the first active " +
-          "membership — never from client-supplied payload ids.",
+          "membership - never from client-supplied payload ids. A platform super admin with no " +
+          "merchant membership receives `superAdmin: true`, `tenant: null`, `plan: null`, `stores: []`.",
         operationId: "getMe",
         responses: { "200": jsonResponse("Identity and workspace."), "401": errorResponse("Not signed in.") },
       },
@@ -261,6 +262,206 @@ export const OPENAPI_DOCUMENT = {
           "402": errorResponse("Plan limit reached."),
           "409": errorResponse("Slug is taken."),
         },
+      },
+    },
+    "/api/v1/stores/{storeId}": {
+      get: {
+        tags: ["Stores"],
+        summary: "Read one store",
+        operationId: "getStore",
+        parameters: [STORE_ID],
+        responses: {
+          "200": jsonResponse("Store, settings, domains and theme."),
+          "403": errorResponse("Missing `store:read` or foreign store."),
+        },
+      },
+      patch: {
+        tags: ["Stores"],
+        summary: "Update store profile and settings",
+        description: "Partial update: omitted fields keep their current value.",
+        operationId: "updateStore",
+        parameters: [STORE_ID],
+        responses: {
+          "200": jsonResponse("Updated store."),
+          "422": errorResponse("Validation failed."),
+        },
+      },
+    },
+    "/api/v1/stores/{storeId}/publish": {
+      post: {
+        tags: ["Stores"],
+        summary: "Publish the storefront",
+        description: "Runs the readiness checklist, then provisions the subdomain.",
+        operationId: "publishStore",
+        parameters: [STORE_ID],
+        responses: {
+          "200": jsonResponse("Store published."),
+          "422": errorResponse("Readiness checks failed."),
+        },
+      },
+    },
+    "/api/v1/stores/{storeId}/themes/select": {
+      post: {
+        tags: ["Themes"],
+        summary: "Select a theme (PRD path)",
+        operationId: "selectThemeByPath",
+        parameters: [STORE_ID],
+        responses: {
+          "200": jsonResponse("Selection stored in draft."),
+          "402": errorResponse("Theme switching not allowed on this plan."),
+        },
+      },
+    },
+    "/api/v1/stores/{storeId}/theme-config": {
+      patch: {
+        tags: ["Themes"],
+        summary: "Save theme configuration as a draft",
+        operationId: "patchThemeConfig",
+        parameters: [STORE_ID],
+        responses: {
+          "200": jsonResponse("Draft saved; live storefront unchanged."),
+          "422": errorResponse("Config failed the theme schema."),
+        },
+      },
+    },
+    "/api/v1/stores/{storeId}/domains/verify": {
+      post: {
+        tags: ["Stores"],
+        summary: "Verify a custom domain",
+        description: "Resolves the TXT record server-side and activates DNS/TLS status.",
+        operationId: "verifyDomain",
+        parameters: [STORE_ID],
+        responses: {
+          "200": jsonResponse("Domain verified."),
+          "422": errorResponse("TXT record not found; response includes the expected record."),
+        },
+      },
+    },
+    "/api/v1/products/{productId}": {
+      get: {
+        tags: ["Catalog"],
+        summary: "Read a product",
+        operationId: "getProduct",
+        responses: { "200": jsonResponse("Product with variants and images.") },
+      },
+      patch: {
+        tags: ["Catalog"],
+        summary: "Partially update a product",
+        description: "Omitted fields and variants keep their current values.",
+        operationId: "patchProduct",
+        responses: {
+          "200": jsonResponse("Updated product."),
+          "422": errorResponse("Validation failed."),
+        },
+      },
+    },
+    "/api/v1/variants/{variantId}/inventory-adjustments": {
+      post: {
+        tags: ["Catalog"],
+        summary: "Adjust variant stock",
+        description: "Signed delta + reason; creates an inventory movement row.",
+        operationId: "adjustInventory",
+        responses: {
+          "200": jsonResponse("New stock level and movement."),
+          "422": errorResponse("Invalid delta or reason."),
+        },
+      },
+    },
+    "/api/v1/orders/{orderId}/status": {
+      patch: {
+        tags: ["Commerce"],
+        summary: "Transition an order",
+        description: "Only transitions in the state machine are accepted; side effects run in one place.",
+        operationId: "updateOrderStatus",
+        responses: {
+          "200": jsonResponse("Updated order and timeline."),
+          "422": errorResponse("Illegal transition; response lists allowed next states."),
+        },
+      },
+    },
+    "/api/v1/orders/{orderId}/refund-request": {
+      post: {
+        tags: ["Commerce"],
+        summary: "Request a return or refund",
+        description:
+          "`mode=return` opens the return workflow; `mode=refund` refunds through the original " +
+          "gateway and voids the platform fee.",
+        operationId: "requestRefund",
+        responses: {
+          "200": jsonResponse("Return/refund recorded."),
+          "402": errorResponse("Gateway refund failed."),
+        },
+      },
+    },
+    "/api/v1/stores/{storeId}/coupons": {
+      get: {
+        tags: ["Commerce"],
+        summary: "List coupons",
+        operationId: "listCoupons",
+        parameters: [STORE_ID],
+        responses: { "200": jsonResponse("Coupons for the store.") },
+      },
+      post: {
+        tags: ["Commerce"],
+        summary: "Create a coupon",
+        operationId: "createCoupon",
+        parameters: [STORE_ID],
+        responses: {
+          "201": jsonResponse("Coupon created."),
+          "403": errorResponse("Campaigns not available on this plan."),
+        },
+      },
+    },
+    "/api/v1/stores/{storeId}/api-keys": {
+      get: {
+        tags: ["Auth"],
+        summary: "List scoped API keys",
+        operationId: "listApiKeys",
+        parameters: [STORE_ID],
+        responses: { "200": jsonResponse("Keys without their secrets.") },
+      },
+      post: {
+        tags: ["Auth"],
+        summary: "Create a scoped API key",
+        description: "The raw key is returned once; only its SHA-256 hash is stored.",
+        operationId: "createApiKey",
+        parameters: [STORE_ID],
+        responses: {
+          "201": jsonResponse("Raw key and metadata (shown once)."),
+          "403": errorResponse("Plan does not include full API access."),
+        },
+      },
+      delete: {
+        tags: ["Auth"],
+        summary: "Revoke an API key",
+        operationId: "revokeApiKey",
+        parameters: [STORE_ID, { name: "keyId", in: "query", required: true, schema: { type: "string" } }],
+        responses: { "200": jsonResponse("Key revoked.") },
+      },
+    },
+    "/api/v1/billing/plans": {
+      get: {
+        tags: ["Billing"],
+        summary: "Public plan matrix",
+        security: [],
+        operationId: "listPlans",
+        responses: { "200": jsonResponse("Plan quotas, prices and fees.") },
+      },
+    },
+    "/api/v1/billing/usage": {
+      get: {
+        tags: ["Billing"],
+        summary: "Subscription usage and limits",
+        operationId: "getUsage",
+        responses: { "200": jsonResponse("Plan, usage, limits, overage and fee summary.") },
+      },
+    },
+    "/api/v1/billing/invoices": {
+      get: {
+        tags: ["Billing"],
+        summary: "Tenant invoices",
+        operationId: "listInvoices",
+        responses: { "200": jsonResponse("Invoices newest first.") },
       },
     },
     "/api/v1/stores/{storeId}/products": {
@@ -493,6 +694,33 @@ export const OPENAPI_DOCUMENT = {
           "201": jsonResponse("Order placed; includes tracking token."),
           "402": errorResponse("Store is read-only or suspended."),
           "409": errorResponse("Stock changed or coupon exhausted."),
+        },
+      },
+    },
+    "/api/v1/webhooks/couriers/{provider}": {
+      post: {
+        tags: ["Webhooks"],
+        summary: "Courier tracking callback",
+        description:
+          "HMAC-verified courier callback. Callbacks are matched to an existing shipment by " +
+          "consignment or tracking id; an order-number lookup is accepted only with `?store=<id-or-slug>` " +
+          "so one merchant's callback cannot update another merchant's order.",
+        security: [],
+        operationId: "courierWebhook",
+        parameters: [
+          {
+            name: "provider",
+            in: "path",
+            required: true,
+            schema: { type: "string", enum: ["pathao", "redx", "steadfast"] },
+          },
+          { name: "store", in: "query", description: "Store id or slug, required when the payload only has an order number.", schema: { type: "string" } },
+          { name: "token", in: "query", description: "Shared courier webhook secret for providers that cannot set headers.", schema: { type: "string" } },
+          { name: "x-atlas-signature", in: "header", schema: { type: "string" } },
+        ],
+        responses: {
+          "200": jsonResponse("Processed, duplicate, or unknown shipment."),
+          "401": errorResponse("Signature verification failed."),
         },
       },
     },

@@ -36,7 +36,17 @@ export type CallbackResult = {
   eventKey: string;
   providerTxnId: string | null;
   orderNo: string | null;
+  /** Server-verified order id when the provider echoes it back. */
+  orderId?: string | null;
+  /**
+   * True only when `orderId` came from a server-to-server gateway verification
+   * response (not from the untrusted callback query string). The payment
+   * service uses this to decide whether an order reference alone is enough to
+   * bind the callback to an existing payment attempt.
+   */
+  verifiedOrderReference?: boolean;
   amount: string | null;
+  currency?: string | null;
   status: "SUCCEEDED" | "FAILED" | "PENDING";
   signatureValid: boolean;
   failureReason?: string;

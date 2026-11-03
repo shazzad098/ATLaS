@@ -11,6 +11,14 @@ import {
   updateAccountProfile,
 } from "@/lib/services/account-service";
 import type { AdminState } from "@/app/admin/state";
+import type { TwoFactorState } from "@/app/account/state";
+import {
+  confirmTwoFactorSetup,
+  disableTwoFactor,
+  regenerateRecoveryCodes,
+  startTwoFactorSetup,
+} from "@/lib/services/two-factor-service";
+import { rateLimit } from "@/lib/api";
 
 /**
  * Account self-service actions (FR-01).
@@ -74,7 +82,7 @@ export async function revokeSessionAction(_prev: AdminState, formData: FormData)
       return { ok: false, message: "বর্তমান সেশন এখান থেকে বন্ধ করা যাবে না — লগআউট ব্যবহার করুন।" };
     }
 
-    await revokeSession(sessionId);
+    await revokeSession(userId, sessionId);
     revalidatePath("/account");
     return { ok: true, message: "সেশন বন্ধ করা হয়েছে।" };
   } catch (error) {
@@ -86,6 +94,8 @@ export async function revokeOtherSessionsAction(
   _prev: AdminState,
   _formData: FormData,
 ): Promise<AdminState> {
+  void _prev;
+  void _formData;
   try {
     const session = await readSession();
     if (!session) redirect("/login");
@@ -112,7 +122,119 @@ export async function requestDeletionAction(_prev: AdminState, formData: FormDat
   }
 }
 
+// ── Two-factor authentication (FR-01) ───────────────────────────────────────
+
+function twoFactorMessage(error: unknown, fallback: string): TwoFactorState {
+  if (error instanceof AppError) return { ok: false, message: error.message, step: "idle" };
+  if (error instanceof Error && error.message) {
+    return { ok: false, message: error.message, step: "idle" };
+  }
+  return { ok: false, message: fallback, step: "idle" };
+}
+
+function twoFactorLimit(userId: string): boolean {
+  try {
+    rateLimit(`2fa:verify:${userId}`, 10);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function startTwoFactorSetupAction(
+  _prev: TwoFactorState,
+  _formData: FormData,
+): Promise<TwoFactorState> {
+  void _prev;
+  void _formData;
+  const userId = await currentUserId();
+  if (!twoFactorLimit(userId)) {
+    return { ok: false, message: "খুব বেশি চেষ্টা হয়েছে। এক মিনিট পরে আবার চেষ্টা করুন।", step: "idle" };
+  }
+  try {
+    const result = await startTwoFactorSetup(userId);
+    return {
+      ok: true,
+      message: "Authenticator অ্যাপে secret-টি যোগ করে ৬ ডিজিটের কোড দিয়ে নিশ্চিত করুন।",
+      step: "setup",
+      secret: result.secret,
+      otpauthUri: result.otpauthUri,
+    };
+  } catch (error) {
+    return twoFactorMessage(error, "2FA সেটআপ শুরু করা যায়নি।");
+  }
+}
+
+export async function confirmTwoFactorSetupAction(
+  _prev: TwoFactorState,
+  formData: FormData,
+): Promise<TwoFactorState> {
+  const userId = await currentUserId();
+  if (!twoFactorLimit(userId)) {
+    return { ok: false, message: "খুব বেশি চেষ্টা হয়েছে। এক মিনিট পরে আবার চেষ্টা করুন।", step: "idle" };
+  }
+  try {
+    const codes = await confirmTwoFactorSetup(userId, text(formData, "code"));
+    revalidatePath("/account");
+    return {
+      ok: true,
+      message: "2FA চালু হয়েছে। Recovery code-গুলো এখনই নিরাপদ জায়গায় সংরক্ষণ করুন — এগুলো আর দেখানো হবে না।",
+      step: "recovery",
+      recoveryCodes: codes,
+    };
+  } catch (error) {
+    return twoFactorMessage(error, "2FA চালু করা যায়নি।");
+  }
+}
+
+export async function disableTwoFactorAction(
+  _prev: TwoFactorState,
+  formData: FormData,
+): Promise<TwoFactorState> {
+  const session = await readSession();
+  if (!session) redirect("/login");
+  if (!twoFactorLimit(session.user.id)) {
+    return { ok: false, message: "খুব বেশি চেষ্টা হয়েছে। এক মিনিট পরে আবার চেষ্টা করুন।", step: "idle" };
+  }
+  try {
+    await disableTwoFactor(session.user.id, {
+      code: text(formData, "code"),
+      password: text(formData, "password") || undefined,
+    });
+    // A compromised device may still hold a live session; cut every other one.
+    await revokeAllSessions(session.user.id, session.sessionId ?? undefined);
+    revalidatePath("/account");
+    return { ok: true, message: "2FA বন্ধ হয়েছে এবং অন্য সব সেশন বন্ধ করা হয়েছে।", step: "idle" };
+  } catch (error) {
+    return twoFactorMessage(error, "2FA বন্ধ করা যায়নি।");
+  }
+}
+
+export async function regenerateRecoveryCodesAction(
+  _prev: TwoFactorState,
+  formData: FormData,
+): Promise<TwoFactorState> {
+  const userId = await currentUserId();
+  if (!twoFactorLimit(userId)) {
+    return { ok: false, message: "খুব বেশি চেষ্টা হয়েছে। এক মিনিট পরে আবার চেষ্টা করুন।", step: "idle" };
+  }
+  try {
+    const codes = await regenerateRecoveryCodes(userId, text(formData, "code"));
+    revalidatePath("/account");
+    return {
+      ok: true,
+      message: "নতুন recovery code তৈরি হয়েছে — পুরোগুলো আর কাজ করবে না।",
+      step: "recovery",
+      recoveryCodes: codes,
+    };
+  } catch (error) {
+    return twoFactorMessage(error, "Recovery code তৈরি করা যায়নি।");
+  }
+}
+
 export async function cancelDeletionAction(_prev: AdminState, _formData: FormData): Promise<AdminState> {
+  void _prev;
+  void _formData;
   try {
     const userId = await currentUserId();
     await cancelAccountDeletion(userId);

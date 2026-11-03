@@ -6,8 +6,10 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { CART_COOKIE, CART_TTL_DAYS, addItem, removeItem, setCoupon, updateItem } from "@/lib/services/cart-service";
 import { checkoutInputSchema, placeOrder, CheckoutError } from "@/lib/services/checkout-service";
+import { runWithBypass } from "@/lib/db";
 import { AppError } from "@/lib/errors";
-import { storePath } from "@/lib/storefront";
+import { getStorefrontContext, storePath } from "@/lib/storefront";
+import { trackEvent } from "@/lib/services/analytics-service";
 import type { ActionState } from "@/app/store/[slug]/state";
 
 /**
@@ -48,6 +50,7 @@ export async function addToCartAction(_prev: ActionState, formData: FormData): P
   const slug = text(formData, "slug");
   const variantId = text(formData, "variantId");
   const quantity = Number.parseInt(text(formData, "quantity") || "1", 10);
+  const buyNow = text(formData, "buyNow") === "1";
 
   const storeId = text(formData, "storeId");
   if (!storeId || !variantId) return { ok: false, message: "পণ্য নির্বাচন করা যায়নি।" };
@@ -55,11 +58,22 @@ export async function addToCartAction(_prev: ActionState, formData: FormData): P
   try {
     const sessionKey = await cartSessionKey();
     await addItem(storeId, sessionKey, { variantId, quantity: Number.isFinite(quantity) ? quantity : 1 });
+    await trackEvent({
+      storeId,
+      name: "cart.add",
+      path: `/product/${text(formData, "productSlug")}`,
+      metadata: { variantId, quantity: Number.isFinite(quantity) ? quantity : 1 },
+    });
     refreshStorefront(slug, "/product");
-    return { ok: true, message: "কার্টে যোগ হয়েছে।" };
   } catch (error) {
     return { ok: false, message: error instanceof AppError ? error.message : "কার্টে যোগ করা যায়নি।" };
   }
+
+  // Buy Now: the item is already in the cart, so go straight to checkout.
+  // `redirect` throws, so it must stay outside the try/catch above.
+  if (buyNow) redirect(storePath(slug, "/checkout"));
+
+  return { ok: true, message: "কার্টে যোগ হয়েছে।" };
 }
 
 export async function updateCartLineAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -143,6 +157,16 @@ export async function applyCouponFormAction(formData: FormData): Promise<void> {
 export async function submitCheckoutAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const slug = text(formData, "slug");
 
+  // Resolve the store from the trusted host/slug context instead of passing
+  // `_host` (the custom-domain rewrite segment) into a slug-only lookup.
+  const context = await getStorefrontContext(slug);
+  if (!context) return { ok: false, message: "দোকান পাওয়া যায়নি।" };
+
+  const submittedStoreId = text(formData, "storeId");
+  if (submittedStoreId && submittedStoreId !== context.store.id) {
+    return { ok: false, message: "দোকানটি মেলেনি। পেজটি রিফ্রেশ করে আবার চেষ্টা করুন।" };
+  }
+
   const parsed = checkoutInputSchema.safeParse({
     customerName: text(formData, "customerName"),
     customerPhone: text(formData, "customerPhone"),
@@ -175,15 +199,22 @@ export async function submitCheckoutAction(_prev: ActionState, formData: FormDat
   let redirectTo: string | null = null;
 
   try {
-    const result = await placeOrder({
-      storeSlug: slug,
-      sessionKey,
-      payload: parsed.data,
-      idempotencyKey: text(formData, "idempotencyKey") || randomUUID(),
-      baseUrl,
-    });
+    const result = await runWithBypass(() =>
+      placeOrder({
+        storeId: context.store.id,
+        sessionKey,
+        payload: parsed.data,
+        idempotencyKey: text(formData, "idempotencyKey") || randomUUID(),
+        baseUrl,
+      }),
+    );
 
-    redirectTo = result.payment.redirectUrl ?? storePath(slug, `/order/${result.orderNo}`);
+    redirectTo =
+      result.payment.redirectUrl ??
+      storePath(
+        slug,
+        `/order/${result.orderNo}?t=${encodeURIComponent(result.accessToken)}`,
+      );
   } catch (error) {
     if (error instanceof CheckoutError || error instanceof AppError) {
       return { ok: false, message: error.message };

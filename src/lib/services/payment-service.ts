@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
-import { AppError, NotFoundError } from "@/lib/errors";
-import { createHash } from "node:crypto";
+import { AppError, ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
+import { createHash, randomUUID } from "node:crypto";
 import { compareMoney, fromPaisa, toPaisa } from "@/lib/money";
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import { recordAudit } from "@/lib/audit";
@@ -11,6 +11,8 @@ import { applyAllOrderFees, reverseFeesForOrder } from "@/lib/services/fee-servi
 import type { ActorContext } from "@/lib/rbac";
 import { assertPermission } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
+import { requireWritableTenant } from "@/lib/entitlements";
+import { emitWebhookEvent } from "@/lib/services/webhook-service";
 
 /**
  * Payment orchestration: webhooks, reconciliation and refunds (FR-05).
@@ -82,8 +84,8 @@ export async function handlePaymentWebhook(
       where: { id: event.id },
       data: { status: "REJECTED_SIGNATURE", processedAt: new Date(), error: "Signature invalid" },
     });
-    // PRD US-05: a failed verification leaves the payment pending/failed.
-    await markPaymentFailure(callback.providerTxnId, "Signature verification failed");
+    // A forged callback must never be able to fail a real pending payment. The
+    // payment is left untouched and the rejected event is kept for forensics.
     return {
       received: true,
       duplicate: false,
@@ -93,8 +95,30 @@ export async function handlePaymentWebhook(
     };
   }
 
-  const order = await findOrderForCallback(callback.orderNo, callback.providerTxnId);
-  if (!order) {
+  if (callback.status === "SUCCEEDED" && !callback.providerTxnId) {
+    await prisma.paymentWebhookEvent.update({
+      where: { id: event.id },
+      data: {
+        status: "TXN_MISSING",
+        processedAt: new Date(),
+        error: "Successful callback has no provider transaction id",
+      },
+    });
+    return {
+      received: true,
+      duplicate: false,
+      signatureValid: true,
+      status: "TXN_MISSING",
+      message: "Provider transaction id missing",
+    };
+  }
+
+  const match = await findOrderForCallback(provider, {
+    orderId: callback.orderId,
+    providerTxnId: callback.providerTxnId,
+    verifiedOrderReference: callback.verifiedOrderReference === true,
+  });
+  if (!match) {
     await prisma.paymentWebhookEvent.update({
       where: { id: event.id },
       data: { status: "ORDER_NOT_FOUND", processedAt: new Date() },
@@ -104,19 +128,65 @@ export async function handlePaymentWebhook(
       duplicate: false,
       signatureValid: true,
       status: "ORDER_NOT_FOUND",
-      message: "No matching order",
+      message: "No matching order/payment attempt",
+    };
+  }
+  const { order, paymentId } = match;
+
+  // The gateway's verified order reference must agree with the order that owns
+  // the payment attempt. A callback cannot re-route another transaction to this
+  // order by swapping the order number in the payload.
+  if (callback.orderNo && callback.orderNo !== order.orderNo) {
+    await prisma.paymentWebhookEvent.update({
+      where: { id: event.id },
+      data: {
+        storeId: order.storeId,
+        status: "ORDER_MISMATCH",
+        processedAt: new Date(),
+        error: "Callback order reference does not match the payment attempt",
+      },
+    });
+    return {
+      received: true,
+      duplicate: false,
+      signatureValid: true,
+      status: "ORDER_MISMATCH",
+      message: "Order reference mismatch",
     };
   }
 
+  // Store the tenant scope on the event as soon as the order is known. This is
+  // what lets Admin → Payments list only its own tenant's webhooks.
+  await prisma.paymentWebhookEvent.update({
+    where: { id: event.id },
+    data: { storeId: order.storeId },
+  });
+
   if (callback.status === "SUCCEEDED") {
+    // Amount is mandatory for a successful settlement. A provider that omits it
+    // is treated as unverified instead of being credited.
+    if (!callback.amount) {
+      await prisma.paymentWebhookEvent.update({
+        where: { id: event.id },
+        data: { status: "AMOUNT_MISSING", processedAt: new Date(), error: "Amount missing" },
+      });
+      return {
+        received: true,
+        duplicate: false,
+        signatureValid: true,
+        status: "AMOUNT_MISSING",
+        orderNo: order.orderNo,
+      };
+    }
+
     // Amount check before crediting: a tampered or mis-routed callback must not
     // settle an order for the wrong value.
-    if (callback.amount && compareMoney(callback.amount, order.grandTotal) !== 0) {
+    if (compareMoney(callback.amount, order.grandTotal) !== 0) {
       await prisma.paymentWebhookEvent.update({
         where: { id: event.id },
         data: { status: "AMOUNT_MISMATCH", processedAt: new Date(), error: "Amount mismatch" },
       });
-      await markPaymentFailure(callback.providerTxnId, "Amount mismatch");
+      await markPaymentFailure(paymentId, "Amount mismatch");
       return {
         received: true,
         duplicate: false,
@@ -126,14 +196,51 @@ export async function handlePaymentWebhook(
       };
     }
 
-    await prisma.payment.updateMany({
-      where: { orderId: order.id, status: { in: ["INITIATED", "PENDING"] } },
+    if (callback.currency && callback.currency.toUpperCase() !== order.currency.toUpperCase()) {
+      await prisma.paymentWebhookEvent.update({
+        where: { id: event.id },
+        data: { status: "CURRENCY_MISMATCH", processedAt: new Date(), error: "Currency mismatch" },
+      });
+      return {
+        received: true,
+        duplicate: false,
+        signatureValid: true,
+        status: "CURRENCY_MISMATCH",
+        orderNo: order.orderNo,
+      };
+    }
+
+    // Settle exactly the attempt the callback was bound to. Matching only by
+    // order + provider would let a second transaction reference settle an
+    // unrelated attempt for the same order.
+    const settled = await prisma.payment.updateMany({
+      where: {
+        id: paymentId,
+        status: { in: ["INITIATED", "PENDING"] },
+      },
       data: {
         status: "SUCCEEDED",
-        providerTxnId: callback.providerTxnId ?? undefined,
+        ...(callback.providerTxnId ? { providerTxnId: callback.providerTxnId } : {}),
         rawReference: JSON.stringify(callback.raw).slice(0, 2000),
       },
     });
+    if (settled.count === 0) {
+      await prisma.paymentWebhookEvent.update({
+        where: { id: event.id },
+        data: {
+          status: "PAYMENT_NOT_FOUND",
+          processedAt: new Date(),
+          error: "No pending payment for this provider",
+        },
+      });
+      return {
+        received: true,
+        duplicate: false,
+        signatureValid: true,
+        status: "PAYMENT_NOT_FOUND",
+        orderNo: order.orderNo,
+      };
+    }
 
     if (order.status === "PENDING_PAYMENT") {
       await applyTransition({
@@ -164,7 +271,7 @@ export async function handlePaymentWebhook(
   }
 
   if (callback.status === "FAILED") {
-    await markPaymentFailure(callback.providerTxnId, callback.failureReason ?? "Gateway declined");
+    await markPaymentFailure(paymentId, callback.failureReason ?? "Gateway declined");
     await prisma.paymentWebhookEvent.update({
       where: { id: event.id },
       data: { status: "FAILED", processedAt: new Date(), error: callback.failureReason },
@@ -181,6 +288,12 @@ export async function handlePaymentWebhook(
         title: `পেমেন্ট ব্যর্থ — ${order.orderNo}`,
         body: callback.failureReason ?? "Gateway declined the payment.",
         payload: { orderId: order.id, storeId: order.storeId },
+      });
+      await emitWebhookEvent(store.tenantId, "payment.failed", {
+        orderId: order.id,
+        orderNo: order.orderNo,
+        provider,
+        reason: callback.failureReason ?? "Gateway declined the payment.",
       });
     }
 
@@ -207,28 +320,76 @@ export async function handlePaymentWebhook(
   };
 }
 
-async function findOrderForCallback(orderNo: string | null, providerTxnId: string | null) {
-  if (orderNo) {
-    const byNo = await prisma.order.findFirst({
-      where: { orderNo },
-      include: { items: true },
-    });
-    if (byNo) return byNo;
-  }
-  if (providerTxnId) {
+/**
+ * Callbacks are matched only through server-issued identifiers. Order numbers
+ * are unique per store, not globally, so they are never used as a lookup key.
+ *
+ * The payment attempt is the anchor: a callback must resolve to an existing
+ * `Payment` row. `providerTxnId` does that for bKash/Nagad. SSLCommerz's
+ * validated response instead echoes the server-issued `orderId` (`value_a`);
+ * that is accepted only when `verifiedOrderReference` is set by the adapter
+ * after server-to-server validation, and it must still find a pending attempt.
+ */
+async function findOrderForCallback(
+  provider: PaymentProviderName,
+  input: {
+    orderId?: string | null;
+    providerTxnId?: string | null;
+    verifiedOrderReference?: boolean;
+  },
+): Promise<{
+  order: NonNullable<Awaited<ReturnType<typeof loadOrderForPayment>>>;
+  paymentId: string;
+} | null> {
+  if (input.providerTxnId) {
     const payment = await prisma.payment.findFirst({
-      where: { providerTxnId },
-      include: { order: { include: { items: true } } },
+      where: {
+        provider,
+        providerTxnId: input.providerTxnId,
+        order: { deletedAt: null },
+      },
+      select: { id: true, orderId: true },
+      orderBy: { createdAt: "desc" },
     });
-    if (payment) return payment.order;
+    if (payment) {
+      if (input.orderId && payment.orderId !== input.orderId) return null;
+      const order = await loadOrderForPayment(payment.orderId, provider);
+      return order ? { order, paymentId: payment.id } : null;
+    }
   }
+
+  if (input.orderId && input.verifiedOrderReference) {
+    const order = await loadOrderForPayment(input.orderId, provider);
+    if (!order) return null;
+    const payment = await prisma.payment.findFirst({
+      where: {
+        orderId: order.id,
+        provider,
+        status: { in: ["INITIATED", "PENDING"] },
+      },
+      select: { id: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return payment ? { order, paymentId: payment.id } : null;
+  }
+
   return null;
 }
 
-async function markPaymentFailure(providerTxnId: string | null, reason: string) {
-  if (!providerTxnId) return;
+async function loadOrderForPayment(orderId: string, provider: PaymentProviderName) {
+  return prisma.order.findFirst({
+    where: {
+      id: orderId,
+      deletedAt: null,
+      paymentProvider: provider,
+    },
+    include: { items: true },
+  });
+}
+
+async function markPaymentFailure(paymentId: string, reason: string) {
   await prisma.payment.updateMany({
-    where: { providerTxnId, status: { in: ["INITIATED", "PENDING"] } },
+    where: { id: paymentId, status: { in: ["INITIATED", "PENDING"] } },
     data: { status: "FAILED", failureReason: reason.slice(0, 300) },
   });
 }
@@ -267,6 +428,7 @@ export async function recordCodCollection(
 ) {
   assertPermission(actor, "orders:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const order = await prisma.order.findFirst({
     where: { id: orderId, storeId },
@@ -299,65 +461,200 @@ export async function recordCodCollection(
   return { ok: true, amount: fromPaisa(toPaisa(order.grandTotal)) };
 }
 
-/** Refund through the gateway, then void the platform fees for that order. */
+/**
+ * Refund through the gateway, then void the platform fees for that order.
+ *
+ * Guards added after the security review:
+ *  - positive, two-decimal amount only;
+ *  - never refund more than the captured amount minus previous refunds and
+ *    in-flight refund reservations;
+ *  - a terminal/fully-refunded order cannot start another gateway refund;
+ *  - `idempotencyKey` (or a generated one) becomes the unique refund reference,
+ *    so a retried request cannot double-refund.
+ */
 export async function refundOrder(
   actor: ActorContext,
   storeId: string,
   orderId: string,
-  input: { amount: string; reason: string },
+  input: { amount: string; reason: string; idempotencyKey?: string | null },
 ) {
   assertPermission(actor, "orders:refund");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
+
+  const rawAmount = (input.amount ?? "").trim();
+  if (!/^\d+(\.\d{1,2})?$/.test(rawAmount)) {
+    throw new ValidationError("Refund amount ধনাত্মক সংখ্যা, সর্বোচ্চ দুই দশমিক পর্যন্ত হতে হবে।");
+  }
+  const requestedPaisa = toPaisa(rawAmount);
+  if (requestedPaisa <= 0n) {
+    throw new ValidationError("Refund amount শূন্যের চেয়ে বড় হতে হবে।");
+  }
+  const amount = fromPaisa(requestedPaisa);
 
   const order = await prisma.order.findFirst({
     where: { id: orderId, storeId },
     include: { items: true, payments: { orderBy: { createdAt: "desc" } } },
   });
   if (!order) throw new NotFoundError("Order");
+  if (order.status === "REFUNDED") {
+    throw new ConflictError("এই অর্ডার ইতিমধ্যে সম্পূর্ণ রিফান্ড হয়েছে।");
+  }
 
-  const paid = order.payments.find((p) => p.status === "SUCCEEDED");
-  const amount = input.amount;
+  const successfulPayments = order.payments.filter((payment) => payment.status === "SUCCEEDED");
+  const capturedPaisa = successfulPayments.reduce(
+    (total, payment) => total + toPaisa(payment.amount),
+    0n,
+  );
+  if (capturedPaisa <= 0n) {
+    throw new ValidationError("এই অর্ডারে রিফান্ড করার মতো কোনো পরিশোধিত পেমেন্ট নেই।");
+  }
 
-  if (paid && paid.provider !== "COD") {
-    const adapter = getPaymentAdapter(paid.provider);
-    const result = await adapter.refund({
-      providerTxnId: paid.providerTxnId ?? order.orderNo,
-      amount,
-    });
-    if (!result.ok) {
-      throw new AppError(
-        "PAYMENT_FAILED",
-        result.message ?? "Gateway refund ব্যর্থ হয়েছে।",
-        502,
-        { provider: paid.provider },
-      );
+  const refundKey = (input.idempotencyKey?.trim() || randomUUID()).slice(0, 64);
+  const refundTxnId = `REFUND-${orderId}-${refundKey}`;
+
+  const existing = await prisma.payment.findFirst({
+    where: {
+      orderId,
+      provider: order.paymentProvider,
+      providerTxnId: refundTxnId,
+    },
+  });
+  if (existing) {
+    if (existing.status === "REFUNDED" || existing.status === "SUCCEEDED") {
+      return {
+        ok: true,
+        amount: fromPaisa(toPaisa(existing.amount)),
+        idempotent: true,
+      };
+    }
+    if (existing.status === "INITIATED" || existing.status === "PENDING") {
+      throw new ConflictError("এই রিফান্ডটি ইতিমধ্যে প্রসেস হচ্ছে।");
     }
   }
 
-  await prisma.payment.create({
-    data: {
-      orderId,
-      provider: order.paymentProvider,
-      providerTxnId: `REFUND-${order.orderNo}-${Date.now().toString(36)}`,
-      amount: amount as never,
-      status: "REFUNDED",
-      rawReference: input.reason,
-    },
+  // Serialise refunds for this order and reserve the amount before calling the
+  // gateway. A crash after the gateway call leaves a PENDING reservation that
+  // blocks a duplicate refund; finance can reconcile it explicitly.
+  const reservation = await prisma
+    .$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+
+      if (existing?.status === "FAILED") {
+        await tx.payment.delete({ where: { id: existing.id } });
+      }
+
+      const rows = await tx.payment.findMany({
+        where: { orderId },
+        select: { id: true, amount: true, status: true, providerTxnId: true },
+      });
+      const captured = rows
+        .filter((row) => row.status === "SUCCEEDED")
+        .reduce((total, row) => total + toPaisa(row.amount), 0n);
+      const refunded = rows
+        .filter((row) => row.status === "REFUNDED")
+        .reduce((total, row) => total + toPaisa(row.amount), 0n);
+      const reserved = rows
+        .filter(
+          (row) =>
+            (row.status === "INITIATED" || row.status === "PENDING") &&
+            Boolean(row.providerTxnId?.startsWith("REFUND-")),
+        )
+        .reduce((total, row) => total + toPaisa(row.amount), 0n);
+      const remaining = captured - refunded - reserved;
+
+      if (remaining <= 0n) {
+        throw new ConflictError("এই অর্ডারে আর রিফান্ড করার মতো ব্যালেন্স নেই।");
+      }
+      if (requestedPaisa > remaining) {
+        throw new ValidationError(
+          `সর্বোচ্চ ${fromPaisa(remaining)} BDT রিফান্ড করা যাবে।`,
+          { remaining: fromPaisa(remaining) },
+        );
+      }
+
+      return tx.payment.create({
+        data: {
+          orderId,
+          provider: order.paymentProvider,
+          providerTxnId: refundTxnId,
+          amount: amount as never,
+          status: "PENDING",
+          idempotencyKey: refundKey,
+          rawReference: input.reason,
+        },
+      });
+    })
+    .catch((error: unknown) => {
+      if ((error as { code?: string }).code === "P2002") {
+        throw new ConflictError("এই রিফান্ডটি ইতিমধ্যে প্রসেস হচ্ছে।");
+      }
+      throw error;
+    });
+
+  const gatewayPayment = successfulPayments.find((payment) => payment.provider !== "COD");
+
+  try {
+    if (gatewayPayment) {
+      if (!gatewayPayment.providerTxnId) {
+        throw new ValidationError("মূল পেমেন্টের gateway transaction id নেই, রিফান্ড করা যাবে না।");
+      }
+      const adapter = getPaymentAdapter(gatewayPayment.provider);
+      const result = await adapter.refund({
+        providerTxnId: gatewayPayment.providerTxnId,
+        amount,
+      });
+      if (!result.ok) {
+        throw new AppError(
+          "PAYMENT_FAILED",
+          result.message ?? "Gateway refund ব্যর্থ হয়েছে।",
+          502,
+          { provider: gatewayPayment.provider },
+        );
+      }
+    }
+  } catch (error) {
+    await prisma.payment.updateMany({
+      where: { id: reservation.id, status: { in: ["INITIATED", "PENDING"] } },
+      data: {
+        status: "FAILED",
+        failureReason: (error instanceof Error ? error.message : "refund failed").slice(0, 300),
+      },
+    });
+    throw error;
+  }
+
+  const refundedBeforePaisa = order.payments
+    .filter((payment) => payment.status === "REFUNDED")
+    .reduce((total, payment) => total + toPaisa(payment.amount), 0n);
+  const fullyRefunded = refundedBeforePaisa + requestedPaisa >= capturedPaisa;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.payment.update({
+      where: { id: reservation.id },
+      data: { status: "REFUNDED" },
+    });
+    await tx.order.update({
+      where: { id: orderId },
+      data: { paymentStatus: fullyRefunded ? "REFUNDED" : "PARTIALLY_REFUNDED" },
+    });
   });
 
-  await reverseFeesForOrder(orderId, `Refund: ${input.reason}`);
-
-  if (order.status !== "REFUNDED" && order.status !== "CANCELLED") {
-    await applyTransition({
-      orderId,
-      from: order.status as never,
-      to: "REFUNDED",
-      actorType: "STAFF",
-      actorId: actor.userId,
-      note: input.reason,
-      items: order.items,
-      storeId,
-    });
+  if (fullyRefunded) {
+    if (order.status !== "CANCELLED" && order.status !== "PENDING_PAYMENT") {
+      await applyTransition({
+        orderId,
+        from: order.status as never,
+        to: "REFUNDED",
+        actorType: "STAFF",
+        actorId: actor.userId,
+        note: input.reason,
+        items: order.items,
+        storeId,
+      });
+    } else if (order.status === "CANCELLED") {
+      await reverseFeesForOrder(orderId, `Refund: ${input.reason}`);
+    }
   }
 
   await recordAudit({
@@ -366,10 +663,15 @@ export async function refundOrder(
     actorId: actor.userId,
     resourceType: "Order",
     resourceId: orderId,
-    metadata: { amount, reason: input.reason },
+    metadata: {
+      amount,
+      reason: input.reason,
+      fullyRefunded,
+      idempotencyKey: refundKey,
+    },
   });
 
-  return { ok: true, amount };
+  return { ok: true, amount, fullyRefunded };
 }
 
 /**
@@ -385,11 +687,24 @@ export async function stalePendingPayments(minutes = 30) {
   return initiated + pending;
 }
 
-export async function listWebhookEvents(provider?: string, limit = 50) {
+/**
+ * Webhook health is tenant-scoped by default. Passing `storeId` is what the
+ * merchant Payments screen does; omitting it is only appropriate for the Super
+ * Admin console, which needs the cross-tenant feed.
+ */
+export async function listWebhookEvents(options: {
+  storeId?: string;
+  provider?: string;
+  limit?: number;
+} = {}) {
+  const { storeId, provider, limit = 50 } = options;
   return prisma.paymentWebhookEvent.findMany({
-    where: provider ? { provider: provider as never } : {},
+    where: {
+      ...(storeId ? { storeId } : {}),
+      ...(provider ? { provider: provider as never } : {}),
+    },
     orderBy: { createdAt: "desc" },
-    take: limit,
+    take: Math.min(Math.max(limit, 1), 200),
   });
 }
 

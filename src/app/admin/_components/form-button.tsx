@@ -21,6 +21,7 @@ export function FormButton({
   variant = "primary",
   size = "md",
   className,
+  buttonClassName,
   confirmText,
   showMessage = true,
   title,
@@ -32,6 +33,8 @@ export function FormButton({
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
+  /** Extra classes for the button itself (the form keeps `className`). */
+  buttonClassName?: string;
   confirmText?: string;
   showMessage?: boolean;
   title?: string;
@@ -52,7 +55,7 @@ export function FormButton({
           <input key={key} type="hidden" name={key} value={String(value)} />
         ),
       )}
-      <Button type="submit" variant={variant} size={size} disabled={pending || disabled} title={title}>
+      <Button type="submit" variant={variant} size={size} disabled={pending || disabled} title={title} className={buttonClassName}>
         {pending ? "…" : children}
       </Button>
       {showMessage && state.message ? (

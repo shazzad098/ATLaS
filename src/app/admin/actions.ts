@@ -3,7 +3,11 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { randomUUID } from "node:crypto";
+import { bnNumber } from "@/lib/dates";
 import { AppError } from "@/lib/errors";
+import { prisma } from "@/lib/db";
+import { storePath } from "@/lib/storefront";
 import { STORE_COOKIE, getWorkspace } from "@/lib/tenant";
 import type { ActorContext } from "@/lib/rbac";
 import {
@@ -11,6 +15,7 @@ import {
   createDeliveryZone,
   deleteDeliveryZone,
   publishStore,
+  saveDeliveryMethod,
   togglePaymentMethod,
   unpublishStore,
   updateDeliveryZone,
@@ -18,6 +23,7 @@ import {
 } from "@/lib/services/store-service";
 import {
   adjustVariantStock,
+  applyProductDiscount,
   archiveProduct,
   createCategory,
   createProduct,
@@ -28,18 +34,48 @@ import {
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/notifications";
 import { closeTicket, createTicket } from "@/lib/services/support-service";
 import { recordCodCollection, refundOrder } from "@/lib/services/payment-service";
+import {
+  createCourierShipment,
+  syncCourierShipment,
+} from "@/lib/services/courier-service";
 import { resolveReturn, updateOrderStatus, type OrderStatusValue } from "@/lib/services/order-service";
-import { cancelSubscription, changePlan, markInvoicePaid, startTrial } from "@/lib/services/billing-service";
+import { cancelSubscription, changePlan, startTrial } from "@/lib/services/billing-service";
 import { publishTheme, resetThemeDraft, saveThemeDraft, selectTheme } from "@/lib/services/theme-service";
 import {
   addCustomDomain,
+  provisionDomainTls,
   removeDomain,
   setPrimaryDomain,
   verifyDomain,
 } from "@/lib/services/domain-service";
 import { archiveCoupon, createCoupon, updateCoupon } from "@/lib/services/coupon-service";
-import { inviteStaff, removeStaff, updateStaffRole } from "@/lib/services/staff-service";
-import type { Permission, RoleCode } from "@/lib/rbac";
+import { archiveContentPage, saveContentPage } from "@/lib/services/content-service";
+import {
+  createRole,
+  deleteRole,
+  inviteStaff,
+  removeStaff,
+  updateRole,
+  updateStaffRole,
+} from "@/lib/services/staff-service";
+import { createApiKey, revokeApiKey } from "@/lib/services/api-key-service";
+import {
+  setCustomerBlacklist,
+  updateCustomerConsent,
+} from "@/lib/services/customer-service";
+import {
+  createExportJob,
+  createExportSchedule,
+  deleteExportSchedule,
+  EXPORT_TYPES,
+  processExportJob,
+  type ExportType,
+} from "@/lib/services/report-service";
+import {
+  createWebhookEndpoint,
+  deleteWebhookEndpoint,
+} from "@/lib/services/webhook-service";
+import type { Permission } from "@/lib/rbac";
 import type { AdminState } from "@/app/admin/state";
 
 /**
@@ -162,6 +198,22 @@ export async function updateStoreSettingsAction(_prev: AdminState, formData: For
         codAutoConfirm: formData.get("codAutoConfirm") === "on",
         minOrderTotal: text(formData, "minOrderTotal") || "0",
       },
+      tax: {
+        mode: (text(formData, "taxMode") || "INCLUSIVE") as "INCLUSIVE" | "EXCLUSIVE" | "NONE",
+        ratePercent: Number.parseFloat(text(formData, "taxRatePercent") || "0") || 0,
+        vatRegistered: formData.get("vatRegistered") === "on",
+      },
+      notifications: {
+        orderCreated: formData.get("notifyOrderCreated") === "on",
+        paymentReceived: formData.get("notifyPaymentReceived") === "on",
+        lowStock: formData.get("notifyLowStock") === "on",
+        customerOrderEmail: formData.get("customerOrderEmail") === "on",
+        customerOrderSms: formData.get("customerOrderSms") === "on",
+        customerPaymentEmail: formData.get("customerPaymentEmail") === "on",
+        customerPaymentSms: formData.get("customerPaymentSms") === "on",
+        customerShippingEmail: formData.get("customerShippingEmail") === "on",
+        customerShippingSms: formData.get("customerShippingSms") === "on",
+      },
       policy: {
         returnsDays: Number.parseInt(text(formData, "returnsDays") || "7", 10) || 7,
         returnsText: text(formData, "returnsText"),
@@ -211,6 +263,39 @@ function parseImages(formData: FormData): Array<{ url: string; altText: string }
     .filter((row) => row.url.length > 0);
 }
 
+// ── Product discount ─────────────────────────────────────────────────────────
+
+/**
+ * Apply or clear a percentage discount on one product. Writes real prices so
+ * cart, checkout and the storefront (badge + strikethrough) all pick it up.
+ */
+export async function applyProductDiscountAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("discounts:write");
+    const storeId = required(formData, "storeId");
+    const productId = required(formData, "productId");
+    const clear = text(formData, "mode") === "clear";
+    const percent = Number.parseInt(text(formData, "percent") || "0", 10) || 0;
+
+    const result = await applyProductDiscount(actor, storeId, productId, { percent, clear });
+
+    revalidateAdmin(
+      "/admin/products",
+      `/admin/products/${productId}`,
+      "/store/[slug]/shop",
+      "/store/[slug]/product/[productSlug]",
+    );
+    return {
+      ok: true,
+      message: result.cleared
+        ? "ডিসকাউন্ট সরিয়ে আগের দামে ফেরা হয়েছে।"
+        : `${bnNumber(result.percent)}% ডিসকাউন্ট প্রয়োগ হয়েছে।`,
+    };
+  } catch (error) {
+    return message(error, "ডিসকাউন্ট প্রয়োগ করা যায়নি।");
+  }
+}
+
 export async function saveProductAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
   try {
     const { actor } = await ctx("catalog:write");
@@ -237,6 +322,19 @@ export async function saveProductAction(_prev: AdminState, formData: FormData): 
       : await createProduct(actor, storeId, payload);
 
     revalidateAdmin("/admin/products", `/admin/products/${result.id}`);
+
+    // The storefront renders from the database on the next request; clear the
+    // public paths as well so a cached HTML copy cannot keep the old photo.
+    const store = await prisma.store.findUnique({
+      where: { id: storeId },
+      select: { slug: true },
+    });
+    if (store) {
+      revalidatePath(storePath(store.slug));
+      revalidatePath(storePath(store.slug, "/shop"));
+      revalidatePath(storePath(store.slug, `/product/${result.slug}`));
+    }
+
     return { ok: true, message: "পণ্য সংরক্ষণ হয়েছে।" };
   } catch (error) {
     return message(error, "পণ্য সংরক্ষণ করা যায়নি।");
@@ -295,6 +393,48 @@ export async function saveCategoryAction(_prev: AdminState, formData: FormData):
   }
 }
 
+/**
+ * Inline category creation from the product form.
+ *
+ * Returns the new row so the client can append it to the dropdown and select it
+ * without leaving the (possibly unsaved) product the merchant is editing.
+ */
+export type QuickCategoryResult = {
+  ok: boolean;
+  message: string;
+  category?: { id: string; name: string };
+};
+
+export async function createProductCategoryAction(input: {
+  storeId: string;
+  name: string;
+}): Promise<QuickCategoryResult> {
+  try {
+    const { actor } = await ctx("catalog:write");
+    const name = input.name.trim();
+    if (name.length < 2) {
+      return { ok: false, message: "ক্যাটাগরির নাম কমপক্ষে ২ অক্ষরের হতে হবে।" };
+    }
+    const category = await createCategory(actor, input.storeId, {
+      name,
+      sortOrder: 0,
+      status: "ACTIVE",
+      parentId: null,
+    });
+    revalidateAdmin("/admin/categories", "/admin/products");
+    return {
+      ok: true,
+      message: "ক্যাটাগরি তৈরি হয়েছে।",
+      category: { id: category.id, name: category.name },
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof AppError ? error.message : "ক্যাটাগরি তৈরি করা যায়নি।",
+    };
+  }
+}
+
 export async function archiveCategoryAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
   try {
     const { actor } = await ctx("catalog:write");
@@ -344,6 +484,7 @@ export async function refundOrderAction(_prev: AdminState, formData: FormData): 
     await refundOrder(actor, required(formData, "storeId"), required(formData, "orderId"), {
       amount: text(formData, "amount"),
       reason: text(formData, "reason") || "Merchant-initiated refund",
+      idempotencyKey: text(formData, "idempotencyKey") || randomUUID(),
     });
     revalidateAdmin("/admin/orders");
     return { ok: true, message: "রিফান্ড প্রক্রিয়া শুরু হয়েছে।" };
@@ -363,6 +504,55 @@ export async function resolveReturnAction(_prev: AdminState, formData: FormData)
     return { ok: true, message: "রিটার্ন হালনাগাদ হয়েছে।" };
   } catch (error) {
     return message(error, "হালনাগাদ করা যায়নি।");
+  }
+}
+
+// ── Customers ────────────────────────────────────────────────────────────────
+
+export async function updateCustomerConsentAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("customers:write");
+    const storeId = required(formData, "storeId");
+    const customerId = required(formData, "customerId");
+
+    await updateCustomerConsent(actor, storeId, customerId, {
+      marketingEmail: formData.get("marketingEmail") === "on",
+      marketingSms: formData.get("marketingSms") === "on",
+      source: "admin",
+    });
+    revalidatePath(`/admin/customers/${customerId}`);
+    revalidatePath("/admin/customers");
+    return { ok: true, message: "Consent সংরক্ষণ হয়েছে।" };
+  } catch (error) {
+    return message(error, "Consent সংরক্ষণ করা যায়নি।");
+  }
+}
+
+export async function setCustomerBlacklistAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("customers:write");
+    const storeId = required(formData, "storeId");
+    const customerId = required(formData, "customerId");
+    const isBlacklisted = text(formData, "isBlacklisted") === "1";
+
+    await setCustomerBlacklist(actor, storeId, customerId, {
+      isBlacklisted,
+      reason: text(formData, "reason") || undefined,
+    });
+    revalidatePath(`/admin/customers/${customerId}`);
+    revalidatePath("/admin/customers");
+    return {
+      ok: true,
+      message: isBlacklisted ? "ক্রেতাকে blacklist করা হয়েছে।" : "Blacklist উঠিয়ে নেওয়া হয়েছে।",
+    };
+  } catch (error) {
+    return message(error, "Blacklist হালনাগাদ করা যায়নি।");
   }
 }
 
@@ -408,6 +598,65 @@ export async function deleteDeliveryZoneAction(_prev: AdminState, formData: Form
     return { ok: true, message: "জোন মুছে ফেলা হয়েছে।" };
   } catch (error) {
     return message(error, "মুছে ফেলা যায়নি।");
+  }
+}
+
+export async function saveDeliveryMethodAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("delivery:write");
+    const storeId = required(formData, "storeId");
+    const provider = required(formData, "provider");
+
+    await saveDeliveryMethod(actor, storeId, provider, {
+      isEnabled: formData.get("isEnabled") === "on",
+      courierStoreId: text(formData, "courierStoreId"),
+    });
+
+    revalidateAdmin("/admin/delivery");
+    return { ok: true, message: "ডেলিভারি মেথড সংরক্ষণ হয়েছে।" };
+  } catch (error) {
+    return message(error, "সংরক্ষণ করা যায়নি।");
+  }
+}
+
+export async function createShipmentAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("delivery:write");
+    const storeId = required(formData, "storeId");
+    const orderId = required(formData, "orderId");
+    const provider = required(formData, "provider");
+
+    const result = await createCourierShipment(actor, storeId, orderId, provider);
+
+    revalidateAdmin(`/admin/orders/${orderId}`);
+    revalidateAdmin("/admin/orders");
+    return {
+      ok: true,
+      message: `${result.providerLabel}-এ পাঠানো হয়েছে — ট্র্যাকিং ${result.trackingCode}${
+        result.sandbox ? " (sandbox)" : ""
+      }`,
+    };
+  } catch (error) {
+    return message(error, "কুরিয়ারে পাঠানো যায়নি।");
+  }
+}
+
+export async function syncShipmentAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("delivery:write");
+    const storeId = required(formData, "storeId");
+    const shipmentId = required(formData, "shipmentId");
+    const orderId = required(formData, "orderId");
+
+    const result = await syncCourierShipment(actor, storeId, shipmentId);
+
+    revalidateAdmin(`/admin/orders/${orderId}`);
+    return {
+      ok: true,
+      message: `ট্র্যাকিং আপডেট: ${result.status}${result.sandbox ? " (sandbox)" : ""} · অর্ডার ${result.orderStatus}`,
+    };
+  } catch (error) {
+    return message(error, "ট্র্যাকিং আপডেট করা যায়নি।");
   }
 }
 
@@ -543,11 +792,50 @@ export async function verifyDomainAction(_prev: AdminState, formData: FormData):
     const { actor } = await ctx("settings:write");
     const result = await verifyDomain(actor, required(formData, "storeId"), required(formData, "domainId"));
     revalidateAdmin("/admin/settings");
-    const verified = (result as { verificationStatus?: string } | undefined)?.verificationStatus === "VERIFIED";
-    return { ok: true, message: verified ? "ডোমেইন যাচাই সম্পন্ন।" : "এখনো যাচাই হয়নি — DNS রেকর্ড যোগ করুন।" };
+    if (result?.verificationStatus !== "ACTIVE") {
+      return { ok: false, message: "এখনো যাচাই হয়নি — DNS রেকর্ড যোগ করুন।" };
+    }
+    return {
+      ok: true,
+      message:
+        result.tlsStatus === "ACTIVE"
+          ? "ডোমেইন ও TLS যাচাই সম্পন্ন।"
+          : "DNS যাচাই হয়েছে — TLS certificate provisioning চলছে।",
+    };
   } catch (error) {
     return message(error, "যাচাই করা যায়নি।");
   }
+}
+
+export async function provisionDomainTlsAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("settings:write");
+    const storeId = required(formData, "storeId");
+    const domainId = required(formData, "domainId");
+    const domains = await listDomainsForActor(actor, storeId);
+    if (!domains.some((domain) => domain.id === domainId)) {
+      throw new AppError("NOT_FOUND", "ডোমেইন পাওয়া যায়নি।", 404);
+    }
+    const updated = await provisionDomainTls(domainId);
+    revalidateAdmin("/admin/settings");
+    return {
+      ok: updated?.tlsStatus === "ACTIVE",
+      message:
+        updated?.tlsStatus === "ACTIVE"
+          ? "TLS certificate সক্রিয় হয়েছে।"
+          : updated?.tlsError ?? "TLS এখনো সক্রিয় হয়নি — DNS propagation শেষ হলে আবার চেষ্টা করুন।",
+    };
+  } catch (error) {
+    return message(error, "TLS যাচাই করা যায়নি।");
+  }
+}
+
+/** Domain rows are tenant-scoped; this is the guard for direct-id actions. */
+async function listDomainsForActor(actor: ActorContext, storeId: string) {
+  const { listDomains } = await import("@/lib/services/domain-service");
+  const { assertStoreAccess } = await import("@/lib/tenant");
+  await assertStoreAccess(actor, storeId);
+  return listDomains(storeId);
 }
 
 export async function setPrimaryDomainAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
@@ -592,15 +880,50 @@ export async function inviteStaffAction(_prev: AdminState, formData: FormData): 
 export async function updateStaffRoleAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
   try {
     const { actor } = await ctx("staff:write");
-    await updateStaffRole(
-      actor,
-      required(formData, "membershipId"),
-      required(formData, "roleCode") as RoleCode,
-    );
+    await updateStaffRole(actor, required(formData, "membershipId"), required(formData, "roleCode"));
     revalidateAdmin("/admin/staff");
     return { ok: true, message: "Role হালনাগাদ হয়েছে।" };
   } catch (error) {
     return message(error, "Role হালনাগাদ করা যায়নি।");
+  }
+}
+
+export async function createRoleAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("staff:write");
+    await createRole(actor, {
+      name: text(formData, "name"),
+      permissions: formData.getAll("permissions").filter((value): value is string => typeof value === "string"),
+    });
+    revalidateAdmin("/admin/staff");
+    return { ok: true, message: "নতুন রোল তৈরি হয়েছে।" };
+  } catch (error) {
+    return message(error, "রোল তৈরি করা যায়নি।");
+  }
+}
+
+export async function updateRoleAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("staff:write");
+    await updateRole(actor, required(formData, "roleId"), {
+      name: text(formData, "name"),
+      permissions: formData.getAll("permissions").filter((value): value is string => typeof value === "string"),
+    });
+    revalidateAdmin("/admin/staff");
+    return { ok: true, message: "রোল হালনাগাদ হয়েছে।" };
+  } catch (error) {
+    return message(error, "রোল হালনাগাদ করা যায়নি।");
+  }
+}
+
+export async function deleteRoleAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("staff:write");
+    await deleteRole(actor, required(formData, "roleId"));
+    revalidateAdmin("/admin/staff");
+    return { ok: true, message: "রোল মুছে ফেলা হয়েছে।" };
+  } catch (error) {
+    return message(error, "রোল মুছে ফেলা যায়নি।");
   }
 }
 
@@ -626,12 +949,18 @@ export async function changePlanAction(_prev: AdminState, formData: FormData): P
 
     if (asTrial && planCode !== "free") {
       await startTrial(actor, planCode, billingPeriod);
-    } else {
-      await changePlan(actor, planCode, billingPeriod);
+      revalidateAdmin("/admin/billing");
+      return { ok: true, message: "Trial শুরু হয়েছে।" };
     }
 
+    const result = await changePlan(actor, planCode, billingPeriod);
     revalidateAdmin("/admin/billing");
-    return { ok: true, message: `প্ল্যান ${planCode} সেট হয়েছে।` };
+    return {
+      ok: true,
+      message: result.pending
+        ? `Invoice ${result.invoice?.number ?? ""} তৈরি হয়েছে। Super Admin payment যাচাই করলে ${planCode} plan চালু হবে।`
+        : `প্ল্যান ${planCode} সেট হয়েছে।`,
+    };
   } catch (error) {
     return message(error, "প্ল্যান পরিবর্তন করা যায়নি।");
   }
@@ -648,16 +977,8 @@ export async function cancelSubscriptionAction(_prev: AdminState, formData: Form
   }
 }
 
-export async function markInvoicePaidAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
-  try {
-    const { actor } = await ctx("billing:write");
-    await markInvoicePaid(actor, required(formData, "invoiceId"));
-    revalidateAdmin("/admin/billing");
-    return { ok: true, message: "ইনভয়েস পরিশোধিত হিসেবে চিহ্নিত।" };
-  } catch (error) {
-    return message(error, "হালনাগাদ করা যায়নি।");
-  }
-}
+// Manual invoice settlement is a Super Admin action. Merchants never get a
+// "mark paid" control; see `src/app/super-admin/actions.ts`.
 
 // ── Catalog import ───────────────────────────────────────────────────────────
 
@@ -701,6 +1022,8 @@ export async function markNotificationReadAction(_prev: AdminState, formData: Fo
 }
 
 export async function markAllNotificationsReadAction(_prev: AdminState, _formData: FormData): Promise<AdminState> {
+  void _prev;
+  void _formData;
   try {
     const { actor } = await ctx();
     await markAllNotificationsRead(actor.userId);
@@ -739,9 +1062,173 @@ export async function closeTicketAction(_prev: AdminState, formData: FormData): 
   }
 }
 
+// ── Developer integrations ───────────────────────────────────────────────────
+
+export async function createApiKeyAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("settings:write");
+    const expiry = text(formData, "expiresAt");
+    const key = await createApiKey(actor, {
+      name: text(formData, "name"),
+      scopes: formData.getAll("scopes"),
+      expiresAt: expiry ? new Date(`${expiry}T23:59:59.999Z`) : null,
+    });
+    revalidateAdmin("/admin/developers");
+    return {
+      ok: true,
+      message: `API key তৈরি হয়েছে। এটি শুধু একবার দেখা যাবে — এখনই কপি করুন:\n${key.raw}`,
+    };
+  } catch (error) {
+    return message(error, "API key তৈরি করা যায়নি।");
+  }
+}
+
+export async function revokeApiKeyAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("settings:write");
+    await revokeApiKey(actor, required(formData, "keyId"));
+    revalidateAdmin("/admin/developers");
+    return { ok: true, message: "API key বাতিল করা হয়েছে।" };
+  } catch (error) {
+    return message(error, "Key বাতিল করা যায়নি।");
+  }
+}
+
+export async function createWebhookAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("settings:write");
+    const endpoint = await createWebhookEndpoint(actor, {
+      url: text(formData, "url"),
+      events: formData.getAll("events"),
+    });
+    revalidateAdmin("/admin/developers");
+    return {
+      ok: true,
+      message: `Webhook endpoint যোগ হয়েছে। Signing secret (একবার দেখানো হবে):\n${endpoint.secret}`,
+    };
+  } catch (error) {
+    return message(error, "Webhook endpoint যোগ করা যায়নি।");
+  }
+}
+
+export async function deleteWebhookAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("settings:write");
+    await deleteWebhookEndpoint(actor, required(formData, "endpointId"));
+    revalidateAdmin("/admin/developers");
+    return { ok: true, message: "Webhook endpoint মুছে ফেলা হয়েছে।" };
+  } catch (error) {
+    return message(error, "Endpoint মুছে ফেলা যায়নি।");
+  }
+}
+
+// ── Reports & exports ────────────────────────────────────────────────────────
+
+function dateField(formData: FormData, key: string, endOfDay = false): Date | undefined {
+  const value = text(formData, key);
+  if (!value) return undefined;
+  const date = new Date(`${value}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}+06:00`);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function exportTypeField(formData: FormData): ExportType {
+  const type = text(formData, "type") as ExportType;
+  if (!EXPORT_TYPES.includes(type)) {
+    throw new AppError("VALIDATION_FAILED", "সঠিক export type নির্বাচন করুন।", 422);
+  }
+  return type;
+}
+
+export async function createExportJobAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("reports:export");
+    const job = await createExportJob(actor, required(formData, "storeId"), {
+      type: exportTypeField(formData),
+      from: dateField(formData, "from"),
+      to: dateField(formData, "to", true),
+    });
+    await processExportJob(job.id);
+    revalidateAdmin("/admin/reports");
+    return {
+      ok: true,
+      message: "Export তৈরি হয়েছে। ডাউনলোড লিংক প্রস্তুত।",
+      downloadUrl: `/admin/reports/exports/${job.id}`,
+    };
+  } catch (error) {
+    return message(error, "Export তৈরি করা যায়নি।");
+  }
+}
+
+export async function createExportScheduleAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("reports:export");
+    const frequency = text(formData, "frequency") === "WEEKLY" ? "WEEKLY" : "DAILY";
+    const recipients = text(formData, "recipients")
+      .split(/[\s,;]+/)
+      .map((value) => value.trim())
+      .filter(Boolean);
+    await createExportSchedule(actor, required(formData, "storeId"), {
+      type: exportTypeField(formData),
+      frequency,
+      recipients,
+    });
+    revalidateAdmin("/admin/reports");
+    return { ok: true, message: "Scheduled export চালু হয়েছে।" };
+  } catch (error) {
+    return message(error, "Schedule তৈরি করা যায়নি।");
+  }
+}
+
+export async function deleteExportScheduleAction(_prev: AdminState, formData: FormData): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("reports:export");
+    await deleteExportSchedule(actor, required(formData, "storeId"), required(formData, "scheduleId"));
+    revalidateAdmin("/admin/reports");
+    return { ok: true, message: "Schedule মুছে ফেলা হয়েছে।" };
+  } catch (error) {
+    return message(error, "Schedule মুছে ফেলা যায়নি।");
+  }
+}
+
 // ── Navigation helper ────────────────────────────────────────────────────────
 
 /** Reusable form-data reader for the client forms. */
+// ── Storefront content pages ─────────────────────────────────────────────────
+
+export async function saveContentPageAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("design:write");
+    await saveContentPage(actor, required(formData, "storeId"), {
+      id: text(formData, "pageId") || undefined,
+      slug: text(formData, "slug"),
+      title: text(formData, "title"),
+      body: text(formData, "body"),
+      status: text(formData, "status") || "ACTIVE",
+    });
+    revalidateAdmin("/admin/pages");
+    return { ok: true, message: "পেজ সংরক্ষণ হয়েছে।" };
+  } catch (error) {
+    return message(error, "পেজ সংরক্ষণ করা যায়নি।");
+  }
+}
+
+export async function archiveContentPageAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  try {
+    const { actor } = await ctx("design:write");
+    await archiveContentPage(actor, required(formData, "storeId"), required(formData, "pageId"));
+    revalidateAdmin("/admin/pages");
+    return { ok: true, message: "পেজ আর্কাইভ হয়েছে।" };
+  } catch (error) {
+    return message(error, "পেজ আর্কাইভ করা যায়নি।");
+  }
+}
+
 export async function noopAction(): Promise<void> {
   return;
 }

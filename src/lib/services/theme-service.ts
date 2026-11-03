@@ -9,14 +9,18 @@ import {
   getThemeEntry,
   resolveThemeConfig,
   themeSwitchWarnings,
+  type ThemeCatalogEntry,
   type ThemeConfig,
 } from "@/lib/theme-catalog";
+import { addMonths, startOfMonth } from "@/lib/dates";
 import {
   canSwitchTheme,
   loadEntitlementSnapshot,
+  requireWritableTenant,
   themeAllowedOnPlan,
 } from "@/lib/entitlements";
 import { recordAudit } from "@/lib/audit";
+import type { PlanCode } from "@/lib/plans";
 
 /**
  * Theme lifecycle (FR-06, PRD §7).
@@ -42,12 +46,13 @@ export async function ensureThemeCatalog(): Promise<{ themes: number; versions: 
         style: entry.style,
         status: "ACTIVE",
       },
+      // `status` is intentionally not overwritten: a Super Admin can retire a
+      // theme from the merchant catalog without the next sync reviving it.
       update: {
         name: entry.name,
         description: entry.description,
         industry: entry.industry,
         style: entry.style,
-        status: "ACTIVE",
       },
     });
     themes += 1;
@@ -66,7 +71,6 @@ export async function ensureThemeCatalog(): Promise<{ themes: number; versions: 
       update: {
         configSchemaJson: { sections: THEME_SECTION_KEYS } as never,
         compatiblePlansJson: entry.compatiblePlans as never,
-        status: "ACTIVE",
       },
     });
     versions += 1;
@@ -94,15 +98,20 @@ export async function listThemeOptions(
 ): Promise<ThemeOption[]> {
   await ensureThemeCatalog();
   const snapshot = await loadEntitlementSnapshot(tenantId);
-  const storeThemes = await prisma.storeTheme.findMany({
-    where: { storeId },
-    include: { themeVersion: { include: { theme: true } } },
-  });
+  const [storeThemes, retired] = await Promise.all([
+    prisma.storeTheme.findMany({
+      where: { storeId },
+      include: { themeVersion: { include: { theme: true } } },
+    }),
+    // Themes a Super Admin retired never show up in the merchant picker.
+    prisma.theme.findMany({ where: { status: { not: "ACTIVE" } }, select: { code: true } }),
+  ]);
+  const retiredCodes = new Set(retired.map((row) => row.code));
   const selectedCodes = new Set(
     storeThemes.filter((row) => row.isSelected).map((row) => row.themeVersion.theme.code),
   );
 
-  return THEME_CATALOG.map((entry) => ({
+  return THEME_CATALOG.filter((entry) => !retiredCodes.has(entry.code)).map((entry) => ({
     code: entry.code,
     name: entry.name,
     description: entry.description,
@@ -223,7 +232,7 @@ export async function selectTheme(
   const entry = getThemeEntry(themeCode);
   if (!entry) throw new NotFoundError("Theme");
 
-  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  const snapshot = await requireWritableTenant(actor.tenantId);
   if (!themeAllowedOnPlan(snapshot, themeCode)) {
     throw new AppError(
       "FEATURE_NOT_AVAILABLE",
@@ -257,6 +266,11 @@ export async function selectTheme(
     include: { theme: true },
   });
   if (!version) throw new NotFoundError("Theme version");
+  if (version.theme.status !== "ACTIVE") {
+    throw new AppError("FEATURE_NOT_AVAILABLE", `${entry.name} theme এই মুহূর্তে ক্যাটালগে নেই।`, 404, {
+      theme: themeCode,
+    });
+  }
 
   const previous = await prisma.storeTheme.findFirst({
     where: { storeId, isSelected: true },
@@ -310,6 +324,7 @@ function assertThemeWrite(actor: ActorContext) {
 
 async function loadStoreThemeForWrite(actor: ActorContext, storeId: string, themeVersionId: string) {
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const row = await prisma.storeTheme.findFirst({
     where: { storeId, themeVersionId },
     include: { themeVersion: { include: { theme: true } } },
@@ -402,3 +417,264 @@ export async function resetThemeDraft(
 }
 
 export const themeConfigPatchSchema = z.record(z.string(), z.unknown());
+
+// ── Platform control: catalog health, drift and lifecycle ────────────────────
+
+/**
+ * The Super Admin theme screen is a *platform* surface, so it needs a different
+ * shape than the merchant picker: shipped catalog vs. database rows (drift),
+ * usage, and the last successful sync. Everything below is read-only except
+ * `setThemeStatus`, which retires a theme from the merchant catalog.
+ */
+
+export type ThemeCatalogCard = {
+  code: string;
+  name: string;
+  description: string;
+  industry: string;
+  style: string;
+  version: string;
+  compatiblePlans: PlanCode[];
+  preview: { gradient: string; swatches: string[] };
+  tags: string[];
+  status: "ACTIVE" | "ARCHIVED";
+  storeCount: number;
+  dbSynced: boolean;
+};
+
+export type ThemeCatalogSnapshot = {
+  cards: ThemeCatalogCard[];
+  totals: { catalog: number; active: number; storesUsingThemes: number };
+  growth: { newThisMonth: number; lastMonth: number; percent: number | null };
+  sync: {
+    lastSyncedAt: Date | null;
+    missingThemes: string[];
+    missingVersions: string[];
+    upToDate: boolean;
+  };
+  health: { latencyMs: number; score: number };
+};
+
+function catalogTags(industry: string): string[] {
+  return industry
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .map((tag) => tag.charAt(0).toUpperCase() + tag.slice(1));
+}
+
+/** Catalog + database state for the Super Admin theme catalog screen. */
+export async function getThemeCatalogSnapshot(): Promise<ThemeCatalogSnapshot> {
+  const started = performance.now();
+  const now = new Date();
+  const thisMonthStart = startOfMonth(now);
+  const lastMonthStart = startOfMonth(addMonths(now, -1));
+
+  const [dbThemes, versionRows, usageRows, lastSync, newThisMonth, lastMonth, storesUsingThemes] =
+    await Promise.all([
+      prisma.theme.findMany({
+        select: {
+          id: true,
+          code: true,
+          status: true,
+          versions: { select: { version: true } },
+        },
+      }),
+      prisma.themeVersion.findMany({ select: { id: true, themeId: true } }),
+      prisma.storeTheme.groupBy({
+        by: ["themeVersionId"],
+        where: { isSelected: true },
+        _count: { _all: true },
+      }),
+      prisma.auditLog.findFirst({
+        where: { action: "platform.theme_catalog_synced" },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
+      prisma.store.count({ where: { deletedAt: null, publishedAt: { gte: thisMonthStart } } }),
+      prisma.store.count({
+        where: { deletedAt: null, publishedAt: { gte: lastMonthStart, lt: thisMonthStart } },
+      }),
+      prisma.storeTheme.count({ where: { isSelected: true } }),
+    ]);
+
+  const latencyMs = Math.round(performance.now() - started);
+
+  const themeOfVersion = new Map(versionRows.map((row) => [row.id, row.themeId]));
+  const usageByTheme = new Map<string, number>();
+  for (const row of usageRows) {
+    const themeId = themeOfVersion.get(row.themeVersionId);
+    if (!themeId) continue;
+    usageByTheme.set(themeId, (usageByTheme.get(themeId) ?? 0) + row._count._all);
+  }
+
+  const dbByCode = new Map(dbThemes.map((theme) => [theme.code, theme]));
+
+  const missingThemes: string[] = [];
+  const missingVersions: string[] = [];
+  for (const entry of THEME_CATALOG) {
+    const row = dbByCode.get(entry.code);
+    if (!row) {
+      missingThemes.push(entry.code);
+      continue;
+    }
+    if (!row.versions.some((version) => version.version === entry.version)) {
+      missingVersions.push(`${entry.code}@${entry.version}`);
+    }
+  }
+
+  const cards: ThemeCatalogCard[] = THEME_CATALOG.map((entry) => {
+    const row = dbByCode.get(entry.code);
+    return {
+      code: entry.code,
+      name: entry.name,
+      description: entry.description,
+      industry: entry.industry,
+      style: entry.style,
+      version: entry.version,
+      compatiblePlans: entry.compatiblePlans,
+      preview: entry.preview,
+      tags: catalogTags(entry.industry),
+      status: row && row.status !== "ACTIVE" ? "ARCHIVED" : "ACTIVE",
+      storeCount: row ? (usageByTheme.get(row.id) ?? 0) : 0,
+      dbSynced: Boolean(row),
+    };
+  });
+
+  const active = cards.filter((card) => card.status === "ACTIVE").length;
+  const percent =
+    lastMonth === 0 ? null : Math.round(((newThisMonth - lastMonth) / lastMonth) * 100);
+  const driftCount = missingThemes.length + missingVersions.length;
+
+  // A transparent, deterministic score: schema drift and slow catalog queries
+  // are the two things this screen can actually measure.
+  const score = Math.max(
+    55,
+    100 - (driftCount > 0 ? 8 : 0) - (latencyMs > 400 ? 8 : latencyMs > 200 ? 4 : 0),
+  );
+
+  return {
+    cards,
+    totals: { catalog: THEME_CATALOG.length, active, storesUsingThemes },
+    growth: { newThisMonth, lastMonth, percent },
+    sync: {
+      lastSyncedAt: lastSync?.createdAt ?? null,
+      missingThemes,
+      missingVersions,
+      upToDate: driftCount === 0,
+    },
+    health: { latencyMs, score },
+  };
+}
+
+export type ThemeDetail = {
+  entry: ThemeCatalogEntry;
+  theme: {
+    id: string;
+    status: string;
+    updatedAt: Date;
+  } | null;
+  versions: Array<{
+    id: string;
+    version: string;
+    status: string;
+    changelog: string | null;
+    createdAt: Date;
+    storeCount: number;
+  }>;
+  stores: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    publishedAt: Date | null;
+    version: string;
+  }>;
+  lastSyncedAt: Date | null;
+};
+
+/** One theme: versions, stores using it and the last sync — the configure screen. */
+export async function getThemeDetail(themeCode: string): Promise<ThemeDetail> {
+  const entry = getThemeEntry(themeCode);
+  if (!entry) throw new NotFoundError("Theme");
+
+  await ensureThemeCatalog();
+
+  const [theme, lastSync] = await Promise.all([
+    prisma.theme.findUnique({
+      where: { code: themeCode },
+      include: {
+        versions: {
+          orderBy: { createdAt: "asc" },
+          include: { _count: { select: { storeThemes: { where: { isSelected: true } } } } },
+        },
+      },
+    }),
+    prisma.auditLog.findFirst({
+      where: { action: "platform.theme_catalog_synced" },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    }),
+  ]);
+
+  if (!theme) throw new NotFoundError("Theme");
+
+  const storeRows = await prisma.storeTheme.findMany({
+    where: { isSelected: true, themeVersion: { themeId: theme.id } },
+    include: {
+      store: { select: { id: true, name: true, slug: true, status: true, publishedAt: true } },
+      themeVersion: { select: { version: true } },
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 25,
+  });
+
+  return {
+    entry,
+    theme: { id: theme.id, status: theme.status, updatedAt: theme.updatedAt },
+    versions: theme.versions.map((version) => ({
+      id: version.id,
+      version: version.version,
+      status: version.status,
+      changelog: version.changelog,
+      createdAt: version.createdAt,
+      storeCount: version._count.storeThemes,
+    })),
+    stores: storeRows.map((row) => ({
+      id: row.store.id,
+      name: row.store.name,
+      slug: row.store.slug,
+      status: row.store.status,
+      publishedAt: row.store.publishedAt,
+      version: row.themeVersion.version,
+    })),
+    lastSyncedAt: lastSync?.createdAt ?? null,
+  };
+}
+
+/**
+ * Retires or restores a theme. Existing stores keep rendering the theme they
+ * already selected; the catalog picker stops offering a retired one.
+ */
+export async function setThemeStatus(
+  actorId: string,
+  themeCode: string,
+  status: "ACTIVE" | "ARCHIVED",
+) {
+  await ensureThemeCatalog();
+
+  const theme = await prisma.theme.findUnique({ where: { code: themeCode } });
+  if (!theme) throw new NotFoundError("Theme");
+
+  const updated = await prisma.theme.update({ where: { code: themeCode }, data: { status } });
+
+  await recordAudit({
+    action: "platform.theme_status_changed",
+    actorId,
+    resourceType: "Theme",
+    resourceId: theme.id,
+    metadata: { code: themeCode, from: theme.status, to: status },
+  });
+
+  return updated;
+}

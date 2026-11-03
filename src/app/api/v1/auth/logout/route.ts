@@ -14,7 +14,7 @@ export const POST = route(async (request: Request) => {
 
   const session = await readSession();
   if (session?.sessionId) {
-    await revokeSession(session.sessionId);
+    await revokeSession(session.user.id, session.sessionId);
   }
   await clearAuthCookies();
 

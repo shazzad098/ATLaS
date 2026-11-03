@@ -1,17 +1,27 @@
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@/generated/prisma/client";
 import { AppError, NotFoundError } from "@/lib/errors";
 import { addMoney, formatBdt, fromPaisa, toPaisa, type MoneyInput } from "@/lib/money";
 import type { ActorContext } from "@/lib/rbac";
 import { assertPermission } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
 import { recordAudit } from "@/lib/audit";
-import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
+import {
+  customerMessage,
+  notify,
+  notifyCustomer,
+  NOTIFICATION_TYPES,
+} from "@/lib/notifications";
+import { emitWebhookEvent, type WebhookEvent } from "@/lib/services/webhook-service";
+import { requireWritableTenant } from "@/lib/entitlements";
 import {
   commitReservedSale,
   releaseReservation,
   restockVariant,
 } from "@/lib/services/inventory-service";
 import { applyAllOrderFees, reverseFeesForOrder } from "@/lib/services/fee-service";
+import { normalizePhone } from "@/lib/auth/phone";
+import { orderAccessTokenMatches } from "@/lib/order-access";
 import {
   COMMITTED_STATUSES,
   ORDER_STATUS_LABELS,
@@ -46,9 +56,25 @@ export async function listOrders(
     limit?: number;
     from?: Date;
     to?: Date;
+    sort?: string;
+    dir?: "asc" | "desc";
   } = {},
 ) {
   const limit = options.limit ?? 20;
+  const dir = options.dir === "asc" ? "asc" : "desc";
+
+  // Whitelisted sort keys keep the dynamic orderBy inside known model fields.
+  const sort = options.sort ?? "placedAt";
+  const sorters: Record<string, unknown[]> = {
+    placedAt: [{ placedAt: dir }, { id: "desc" as const }],
+    customerName: [{ customerName: dir }, { id: "desc" as const }],
+    status: [{ status: dir }, { id: "desc" as const }],
+    paymentProvider: [{ paymentProvider: dir }, { id: "desc" as const }],
+    items: [{ items: { _count: dir } }, { id: "desc" as const }],
+    grandTotal: [{ grandTotal: dir }, { id: "desc" as const }],
+  };
+  const orderBy = (sorters[sort] ?? sorters.placedAt) as Prisma.OrderOrderByWithRelationInput[];
+
   const rows = await prisma.order.findMany({
     where: {
       storeId,
@@ -73,7 +99,7 @@ export async function listOrders(
           }
         : {}),
     },
-    orderBy: [{ placedAt: "desc" }, { id: "desc" }],
+    orderBy,
     take: limit + 1,
     ...(options.cursor ? { cursor: { id: options.cursor }, skip: 1 } : {}),
     include: { _count: { select: { items: true } } },
@@ -94,6 +120,7 @@ export async function getOrderDetail(storeId: string, idOrNo: string) {
       returns: { orderBy: { requestedAt: "desc" } },
       customer: true,
       feeLedger: true,
+      shipments: { orderBy: { createdAt: "desc" } },
     },
   });
   if (!order) throw new NotFoundError("Order");
@@ -129,6 +156,7 @@ export async function updateOrderStatus(
 ) {
   assertPermission(actor, "orders:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const order = await prisma.order.findFirst({
     where: { id: orderId, storeId },
@@ -254,24 +282,58 @@ export async function applyTransition(params: {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     select: {
+      id: true,
       orderNo: true,
       grandTotal: true,
       storeId: true,
-      store: { select: { tenantId: true, tenant: { select: { ownerUserId: true } } } },
+      customerPhone: true,
+      customer: { select: { email: true } },
+      store: {
+        select: {
+          name: true,
+          tenantId: true,
+          tenant: { select: { ownerUserId: true } },
+        },
+      },
     },
   });
 
   if (order) {
-    await notifyStoreOwner(order, to);
+    await notifyOrderParties(order, to);
+    const event = WEBHOOK_EVENT_BY_STATUS[to];
+    if (event) {
+      await emitWebhookEvent(order.store.tenantId, event, {
+        orderId: order.id,
+        orderNo: order.orderNo,
+        status: to,
+        grandTotal: String(order.grandTotal),
+        currency: "BDT",
+      });
+    }
   }
 }
 
-async function notifyStoreOwner(
+const WEBHOOK_EVENT_BY_STATUS: Partial<Record<OrderStatusValue, WebhookEvent>> = {
+  PAID: "order.paid",
+  SHIPPED: "order.shipped",
+  DELIVERED: "order.delivered",
+  CANCELLED: "order.cancelled",
+  REFUNDED: "order.refunded",
+};
+
+async function notifyOrderParties(
   order: {
+    id: string;
     orderNo: string;
     grandTotal: MoneyInput;
     storeId: string;
-    store: { tenantId: string; tenant: { ownerUserId: string } };
+    customerPhone: string;
+    customer: { email: string | null } | null;
+    store: {
+      name: string;
+      tenantId: string;
+      tenant: { ownerUserId: string };
+    };
   },
   status: OrderStatusValue,
 ) {
@@ -285,33 +347,85 @@ async function notifyStoreOwner(
       body: `${formatBdt(order.grandTotal)} পরিশোধিত হয়েছে।`,
       payload: { orderNo: order.orderNo, storeId: order.storeId },
     });
-    return;
   }
 
   if (status === "CANCELLED") {
     await notify({
       userId,
-      type: "order.cancelled",
+      type: NOTIFICATION_TYPES.ORDER_CANCELLED,
       title: `অর্ডার বাতিল — ${order.orderNo}`,
       payload: { orderNo: order.orderNo, storeId: order.storeId },
     });
   }
+
+  const customerEvent =
+    status === "PAID"
+      ? ("payment.received" as const)
+      : status === "SHIPPED"
+        ? ("order.shipped" as const)
+        : status === "DELIVERED"
+          ? ("order.delivered" as const)
+          : status === "CANCELLED"
+            ? ("order.cancelled" as const)
+            : null;
+  if (!customerEvent) return;
+
+  const message = customerMessage(customerEvent, {
+    storeName: order.store.name,
+    orderNo: order.orderNo,
+    amount: formatBdt(order.grandTotal),
+    status: status === "CANCELLED" ? "অর্ডার বাতিল হয়েছে" : undefined,
+  });
+  await notifyCustomer({
+    storeId: order.storeId,
+    orderId: order.id,
+    type: customerEvent,
+    ...message,
+    email: order.customer?.email ?? null,
+    phone: order.customerPhone,
+    payload: { orderNo: order.orderNo },
+  });
 }
 
-/** Public order tracking for the storefront success/tracking page. */
-export async function findPublicOrder(storeId: string, orderNo: string, phone?: string) {
+/**
+ * Public order tracking for the storefront success/tracking page.
+ *
+ * Access requires either the signed capability token issued at checkout or the
+ * phone number used to place the order. An order number alone must never expose
+ * the customer's name, phone or delivery address.
+ */
+export async function findPublicOrder(
+  storeId: string,
+  orderNo: string,
+  access: { phone?: string | null; token?: string | null } = {},
+) {
+  const { phone, token } = access;
+
+  let phoneMatch: string | null = null;
+  if (phone?.trim()) {
+    try {
+      phoneMatch = normalizePhone(phone);
+    } catch {
+      phoneMatch = null;
+    }
+  }
+
+  const tokenValid = orderAccessTokenMatches(token, { storeId, orderNo });
+  if (!tokenValid && !phoneMatch) return null;
+
   const order = await prisma.order.findFirst({
-    where: {
-      storeId,
-      orderNo,
-      ...(phone ? { customerPhone: phone } : {}),
-    },
+    where: { storeId, orderNo },
     include: {
       items: true,
       events: { orderBy: { createdAt: "asc" } },
     },
   });
-  return order;
+  if (!order) return null;
+
+  if (tokenValid) return order;
+  // Phone numbers are stored exactly as the shopper typed them, so compare
+  // normalized forms rather than relying on textual equality in SQL.
+  return normalizePhone(order.customerPhone) === phoneMatch ? order : null;
 }
 
 // ── Returns ─────────────────────────────────────────────────────────────────
@@ -324,6 +438,7 @@ export async function requestReturn(
 ) {
   assertPermission(actor, "orders:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const order = await prisma.order.findFirst({ where: { id: orderId, storeId }, include: { items: true } });
   if (!order) throw new NotFoundError("Order");
 
@@ -362,6 +477,7 @@ export async function resolveReturn(
 ) {
   assertPermission(actor, "orders:refund");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const record = await prisma.return.findFirst({
     where: { id: returnId, order: { storeId } },

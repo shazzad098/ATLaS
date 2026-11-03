@@ -50,6 +50,66 @@ export function formatDateTime(value: Date | string | null | undefined): string 
   return dateTimeFormatter.format(typeof value === "string" ? new Date(value) : value);
 }
 
+/** "২ মিনিট আগে" — used by the Super Admin sync badge. */
+export function formatRelativeBn(value: Date | string | null | undefined, now: Date = new Date()): string {
+  if (!value) return "কখনো সিঙ্ক হয়নি";
+  const date = typeof value === "string" ? new Date(value) : value;
+  const diffMs = now.getTime() - date.getTime();
+  if (Number.isNaN(diffMs)) return "—";
+  if (diffMs < 60_000) return "এইমাত্র";
+
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 60) return `${bnNumber(minutes)} মিনিট আগে`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${bnNumber(hours)} ঘণ্টা আগে`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${bnNumber(days)} দিন আগে`;
+
+  return formatDate(date);
+}
+
+// ── Chart label helpers (Asia/Dhaka buckets) ─────────────────────────────────
+
+const dhakaDayFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: PLATFORM_TIMEZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+/** "2026-10-22" style key for Asia/Dhaka — chart day-bucketing. */
+export function dhakaDateKey(value: Date): string {
+  return dhakaDayFormatter.format(value);
+}
+
+const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+const BN_MONTHS_SHORT = [
+  "জানু",
+  "ফেব্রু",
+  "মার্চ",
+  "এপ্রিল",
+  "মে",
+  "জুন",
+  "জুলাই",
+  "আগস্ট",
+  "সেপ্টে",
+  "অক্টো",
+  "নভে",
+  "ডিসে",
+];
+
+export function bnNumber(value: number): string {
+  return String(value).replace(/[0-9]/g, (digit) => BN_DIGITS[Number(digit)]);
+}
+
+/** "2026-10-22" → "২২ অক্টো" */
+export function bnDayLabel(dateKey: string): string {
+  const [, month, day] = dateKey.split("-");
+  return `${bnNumber(Number(day))} ${BN_MONTHS_SHORT[Number(month) - 1]}`;
+}
+
 /** Order number: stable, sortable, and unique per store (PRD §10.7). */
 export function buildOrderNo(date: Date = new Date()): string {
   const stamp = date.toISOString().slice(2, 10).replace(/-/g, "");

@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { AppError, ConflictError, NotFoundError } from "@/lib/errors";
+import { AppError, ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import { assertPermission, type ActorContext } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
-import { assertFeature, loadEntitlementSnapshot } from "@/lib/entitlements";
+import { assertFeature, requireWritableTenant } from "@/lib/entitlements";
 import { isValidSlug, randomSuffix, slugify } from "@/lib/slug";
 import { toDecimalString } from "@/lib/money";
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import { recordAudit } from "@/lib/audit";
+import { encryptSecret, isEncryptedSecret } from "@/lib/crypto";
 import { ensureThemeCatalog, resolveStoreTheme, selectTheme } from "@/lib/services/theme-service";
 import { ensureSubdomain, subdomainHost } from "@/lib/services/domain-service";
 
@@ -64,7 +65,7 @@ export async function createStore(actor: ActorContext, raw: unknown) {
   assertPermission(actor, "store:write");
 
   const input = storeInputSchema.parse(raw);
-  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  const snapshot = await requireWritableTenant(actor.tenantId);
   assertFeature(snapshot, "publishStore");
 
   const slug = await uniqueStoreSlug(input.slug || input.name);
@@ -103,6 +104,12 @@ export async function createStore(actor: ActorContext, raw: unknown) {
           paymentReceived: true,
           lowStock: true,
           channels: ["in_app"],
+          customerOrderEmail: true,
+          customerOrderSms: true,
+          customerPaymentEmail: true,
+          customerPaymentSms: true,
+          customerShippingEmail: true,
+          customerShippingSms: true,
         } as never,
       },
     });
@@ -264,6 +271,12 @@ export const storeSettingsSchema = z.object({
       paymentReceived: z.boolean().default(true),
       lowStock: z.boolean().default(true),
       channels: z.array(z.enum(["in_app", "email", "sms"])).default(["in_app"]),
+      customerOrderEmail: z.boolean().default(true),
+      customerOrderSms: z.boolean().default(true),
+      customerPaymentEmail: z.boolean().default(true),
+      customerPaymentSms: z.boolean().default(true),
+      customerShippingEmail: z.boolean().default(true),
+      customerShippingSms: z.boolean().default(true),
     })
     .partial()
     .optional(),
@@ -278,6 +291,7 @@ export async function updateStoreSettings(
 ) {
   assertPermission(actor, "settings:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const input = storeSettingsSchema.parse(raw);
   const existing = await prisma.store.findFirst({
@@ -385,15 +399,7 @@ export async function publishStore(actor: ActorContext, storeId: string) {
   assertPermission(actor, "store:publish");
   await assertStoreAccess(actor, storeId);
 
-  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
-  if (snapshot.readOnly) {
-    throw new AppError(
-      "FORBIDDEN",
-      "Subscription read-only অবস্থায় আছে — publish করা যাবে না।",
-      403,
-      { planCode: snapshot.planCode },
-    );
-  }
+  await requireWritableTenant(actor.tenantId);
 
   const checks = await publishReadiness(storeId);
   const blocking = checks.filter((check) => !check.ok && ["theme", "products", "delivery", "payment"].includes(check.key));
@@ -435,6 +441,7 @@ export async function publishStore(actor: ActorContext, storeId: string) {
 export async function unpublishStore(actor: ActorContext, storeId: string) {
   assertPermission(actor, "store:publish");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const store = await prisma.store.update({
     where: { id: storeId },
@@ -456,6 +463,7 @@ export async function unpublishStore(actor: ActorContext, storeId: string) {
 export async function archiveStore(actor: ActorContext, storeId: string) {
   assertPermission(actor, "store:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const store = await prisma.store.update({
     where: { id: storeId },
@@ -489,6 +497,7 @@ export const deliveryZoneSchema = z.object({
 export async function createDeliveryZone(actor: ActorContext, storeId: string, raw: unknown) {
   assertPermission(actor, "delivery:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const input = deliveryZoneSchema.parse(raw);
 
   const zone = await prisma.$transaction(async (tx) => {
@@ -529,6 +538,7 @@ export async function updateDeliveryZone(
 ) {
   assertPermission(actor, "delivery:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const input = deliveryZoneSchema.parse(raw);
 
   const existing = await prisma.deliveryZone.findFirst({ where: { id: zoneId, storeId } });
@@ -556,6 +566,7 @@ export async function updateDeliveryZone(
 export async function deleteDeliveryZone(actor: ActorContext, storeId: string, zoneId: string) {
   assertPermission(actor, "delivery:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const removed = await prisma.deliveryZone.deleteMany({ where: { id: zoneId, storeId } });
   if (removed.count === 0) throw new NotFoundError("Delivery zone");
 }
@@ -570,6 +581,16 @@ export async function togglePaymentMethod(
 ) {
   assertPermission(actor, "payments:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
+
+  // Gateway credentials are sealed with AES-256-GCM before they touch the
+  // database (PRD §13). Re-saving an existing sealed value is a no-op.
+  const sealedSecret =
+    input.secretRef == null || input.secretRef === ""
+      ? input.secretRef
+      : isEncryptedSecret(input.secretRef)
+        ? input.secretRef
+        : encryptSecret(input.secretRef);
 
   const method = await prisma.paymentMethod.upsert({
     where: { storeId_provider: { storeId, provider } },
@@ -578,12 +599,12 @@ export async function togglePaymentMethod(
       provider,
       isEnabled: input.isEnabled,
       publicConfigJson: (input.publicConfig ?? {}) as never,
-      encryptedSecretRef: input.secretRef ?? null,
+      encryptedSecretRef: sealedSecret ?? null,
     },
     update: {
       isEnabled: input.isEnabled,
       ...(input.publicConfig ? { publicConfigJson: input.publicConfig as never } : {}),
-      ...(input.secretRef !== undefined ? { encryptedSecretRef: input.secretRef } : {}),
+      ...(input.secretRef !== undefined ? { encryptedSecretRef: sealedSecret } : {}),
     },
   });
 
@@ -592,6 +613,66 @@ export async function togglePaymentMethod(
     tenantId: actor.tenantId,
     actorId: actor.userId,
     resourceType: "PaymentMethod",
+    resourceId: method.id,
+    metadata: { storeId, provider, isEnabled: input.isEnabled },
+  });
+
+  return method;
+}
+
+// ── Courier delivery methods ─────────────────────────────────────────────────
+
+/** The couriers merchants can connect (pathao, redX, steadfast). */
+export const COURIER_PROVIDERS = [
+  { provider: "PATHAO", name: "Pathao", label: "পাঠাও" },
+  { provider: "REDX", name: "RedX", label: "রেডএক্স" },
+  { provider: "STEADFAST", name: "Steadfast", label: "স্টেডফাস্ট" },
+] as const;
+
+export type CourierProviderValue = (typeof COURIER_PROVIDERS)[number]["provider"];
+
+export async function listDeliveryMethods(storeId: string) {
+  return prisma.deliveryMethod.findMany({ where: { storeId } });
+}
+
+export async function saveDeliveryMethod(
+  actor: ActorContext,
+  storeId: string,
+  provider: string,
+  input: { isEnabled: boolean; courierStoreId: string },
+) {
+  assertPermission(actor, "delivery:write");
+  await assertStoreAccess(actor, storeId);
+  const snapshot = await requireWritableTenant(actor.tenantId);
+  if (input.isEnabled) assertFeature(snapshot, "thirdPartyCouriers");
+
+  if (!COURIER_PROVIDERS.some((entry) => entry.provider === provider)) {
+    throw new NotFoundError("Courier");
+  }
+  const courierStoreId = input.courierStoreId.trim().slice(0, 100);
+  if (input.isEnabled && !courierStoreId) {
+    throw new ValidationError("কুরিয়ারের Store ID ছাড়া চালু করা যাবে না।");
+  }
+
+  const method = await prisma.deliveryMethod.upsert({
+    where: { storeId_provider: { storeId, provider: provider as CourierProviderValue } },
+    create: {
+      storeId,
+      provider: provider as CourierProviderValue,
+      courierStoreId,
+      isEnabled: input.isEnabled,
+    },
+    update: {
+      courierStoreId,
+      isEnabled: input.isEnabled,
+    },
+  });
+
+  await recordAudit({
+    action: "delivery_method.updated",
+    tenantId: actor.tenantId,
+    actorId: actor.userId,
+    resourceType: "DeliveryMethod",
     resourceId: method.id,
     metadata: { storeId, provider, isEnabled: input.isEnabled },
   });

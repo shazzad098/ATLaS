@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { AppError, ConflictError, NotFoundError } from "@/lib/errors";
 import { assertPermission, type ActorContext } from "@/lib/rbac";
 import { assertStoreAccess } from "@/lib/tenant";
-import { assertCustomDomain, loadEntitlementSnapshot } from "@/lib/entitlements";
+import { assertCustomDomain, requireWritableTenant } from "@/lib/entitlements";
 import { env } from "@/lib/env";
 import { randomSuffix } from "@/lib/slug";
 import { recordAudit } from "@/lib/audit";
@@ -50,6 +50,11 @@ export function verificationRecordValue(token: string): string {
   return `atlas-verify=${token}`;
 }
 
+/** Heuristic apex check (e.g. example.com vs shop.example.com). */
+export function isApexHost(host: string): boolean {
+  return normalizeHost(host).split(".").filter(Boolean).length <= 2;
+}
+
 export async function listDomains(storeId: string) {
   await assertStoreExists(storeId);
   const domains = await prisma.domain.findMany({
@@ -64,6 +69,17 @@ export async function listDomains(storeId: string) {
           value: verificationRecordValue(domain.verificationToken),
         }
       : null,
+    routingRecord:
+      domain.type === "CUSTOM"
+        ? {
+            type: isApexHost(domain.host) ? "A" : "CNAME",
+            name: domain.host,
+            value: domain.routingTarget ?? env.domainCnameTarget,
+            note: isApexHost(domain.host)
+              ? `Apex domain-এ CNAME সমর্থিত নয় — provider-এর A/ALIAS রেকর্ড ${env.domainCnameTarget}-এ point করুন।`
+              : `CNAME ${domain.host} → ${env.domainCnameTarget}`,
+          }
+        : null,
     editUrl: `https://${domain.host}`,
   }));
 }
@@ -101,7 +117,7 @@ export async function addCustomDomain(actor: ActorContext, storeId: string, raw:
   await assertStoreAccess(actor, storeId);
   await assertStoreExists(storeId);
 
-  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  const snapshot = await requireWritableTenant(actor.tenantId);
   assertCustomDomain(snapshot);
 
   const { host } = customDomainInputSchema.parse(raw);
@@ -131,6 +147,7 @@ export async function addCustomDomain(actor: ActorContext, storeId: string, raw:
       verificationToken: `${randomSuffix(20)}${randomSuffix(12)}`,
       verificationStatus: "PENDING",
       tlsStatus: "PENDING",
+      routingTarget: env.domainCnameTarget,
       isPrimary: false,
     },
   });
@@ -154,6 +171,7 @@ export async function addCustomDomain(actor: ActorContext, storeId: string, raw:
 export async function verifyDomain(actor: ActorContext, storeId: string, domainId: string) {
   assertPermission(actor, "settings:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const domain = await prisma.domain.findFirst({ where: { id: domainId, storeId } });
   if (!domain) throw new NotFoundError("Domain");
@@ -164,24 +182,42 @@ export async function verifyDomain(actor: ActorContext, storeId: string, domainI
     domain.host.endsWith(".localhost") ||
     /\.(test|example|invalid|local)$/.test(domain.host);
 
-  let verified = sandboxHost;
-  if (!verified) {
-    verified = await hasVerificationRecord(domain.host, domain.verificationToken);
+  let txtVerified = true;
+  let routing: { ok: boolean; detail?: string } = { ok: true, detail: "sandbox host auto-verified" };
+  if (!sandboxHost) {
+    [txtVerified, routing] = await Promise.all([
+      hasVerificationRecord(domain.host, domain.verificationToken),
+      hasRoutingRecord(domain.host),
+    ]);
   }
 
-  if (!verified) {
+  const checkedAt = new Date();
+  if (!txtVerified || !routing.ok) {
+    const dnsError = !txtVerified
+      ? `TXT ${verificationRecordName(domain.host)} → ${verificationRecordValue(domain.verificationToken)} পাওয়া যায়নি।`
+      : (routing.detail ?? "DNS routing record পাওয়া যায়নি।");
     await prisma.domain.update({
       where: { id: domain.id },
-      data: { verificationStatus: "FAILED" },
+      data: {
+        verificationStatus: "FAILED",
+        dnsLastCheckedAt: checkedAt,
+        dnsError,
+        routingTarget: env.domainCnameTarget,
+      },
     });
     throw new AppError(
       "VALIDATION_FAILED",
-      `TXT record এখনো পাওয়া যায়নি। ${verificationRecordName(domain.host)} → ${verificationRecordValue(domain.verificationToken)} যোগ করে আবার চেষ্টা করুন।`,
+      `ডোমেইন এখনো যাচাই হয়নি। ${dnsError}`,
       422,
       {
-        record: {
+        txtRecord: {
           name: verificationRecordName(domain.host),
           value: verificationRecordValue(domain.verificationToken),
+        },
+        routingRecord: {
+          type: isApexHost(domain.host) ? "A/ALIAS" : "CNAME",
+          name: domain.host,
+          value: env.domainCnameTarget,
         },
       },
     );
@@ -191,8 +227,14 @@ export async function verifyDomain(actor: ActorContext, storeId: string, domainI
     where: { id: domain.id },
     data: {
       verificationStatus: "ACTIVE",
-      tlsStatus: "ACTIVE",
-      verifiedAt: new Date(),
+      // TLS is issued separately: the ACTIVE flag is only set after a real
+      // HTTPS handshake succeeds, never merely because DNS passed.
+      tlsStatus: sandboxHost ? "ACTIVE" : "PENDING",
+      tlsIssuedAt: sandboxHost ? checkedAt : null,
+      verifiedAt: checkedAt,
+      dnsLastCheckedAt: checkedAt,
+      dnsError: null,
+      routingTarget: env.domainCnameTarget,
     },
   });
 
@@ -202,10 +244,127 @@ export async function verifyDomain(actor: ActorContext, storeId: string, domainI
     actorId: actor.userId,
     resourceType: "Domain",
     resourceId: domain.id,
-    metadata: { storeId, host: domain.host, sandbox: sandboxHost },
+    metadata: { storeId, host: domain.host, sandbox: sandboxHost, routing: routing.detail },
   });
 
+  // Trigger provisioning right away. On managed hosting the proxy issues the
+  // certificate on first TLS handshake; the cron retries if DNS is still
+  // propagating.
+  if (!sandboxHost) {
+    return provisionDomainTls(updated.id);
+  }
   return updated;
+}
+
+/** Verify that the merchant's DNS points at the platform edge. */
+async function hasRoutingRecord(host: string): Promise<{ ok: boolean; detail?: string }> {
+  const target = normalizeHost(env.domainCnameTarget);
+  const dns = await import("node:dns/promises");
+
+  if (!isApexHost(host)) {
+    try {
+      const cnames = await dns.resolveCname(host);
+      if (cnames.map(normalizeHost).includes(target)) {
+        return { ok: true, detail: `CNAME → ${target}` };
+      }
+      return { ok: false, detail: `CNAME ${host} → ${target} পাওয়া যায়নি (পাওয়া গেছে: ${cnames.join(", ") || "কিছুই না"})।` };
+    } catch {
+      return { ok: false, detail: `CNAME ${host} → ${target} যোগ করুন।` };
+    }
+  }
+
+  // Apex domains cannot normally use CNAME; require at least one A/AAAA record
+  // and let the TLS handshake prove it reaches this platform.
+  try {
+    const [a, aaaa] = await Promise.all([
+      dns.resolve4(host).catch(() => [] as string[]),
+      dns.resolve6(host).catch(() => [] as string[]),
+    ]);
+    if (a.length + aaaa.length > 0) {
+      return { ok: true, detail: `A/AAAA → ${[...a, ...aaaa].join(", ")}` };
+    }
+  } catch {
+    // fall through
+  }
+  return { ok: false, detail: `Apex domain-এর জন্য A/ALIAS রেকর্ড ${target}-এ point করুন।` };
+}
+
+/**
+ * Probes `https://<host>/api/v1/health`. A successful response proves both that
+ * the host routes here and that a valid certificate is being served; only then
+ * is `tlsStatus` set to ACTIVE.
+ */
+export async function provisionDomainTls(domainId: string) {
+  const domain = await prisma.domain.findUnique({ where: { id: domainId } });
+  if (!domain || domain.type !== "CUSTOM") return domain;
+
+  const checkedAt = new Date();
+  const attempts = domain.tlsAttempts + 1;
+  let ok = false;
+  let error = "";
+
+  if (domain.verificationStatus !== "ACTIVE") {
+    error = "DNS verification is not active yet.";
+  } else if (domain.host.endsWith(".localhost") || /\.(test|example|invalid|local)$/.test(domain.host)) {
+    ok = true;
+  } else {
+    try {
+      // Resolve first so a merchant cannot point us at a private address.
+      const dns = await import("node:dns/promises");
+      const answers = await dns.lookup(domain.host, { all: true, verbatim: true });
+      const { isPrivateAddress } = await import("@/lib/ip-address");
+      if (answers.length === 0 || answers.some((answer) => isPrivateAddress(answer.address))) {
+        throw new Error("Domain resolves to a private address.");
+      }
+      const response = await fetch(`https://${domain.host}/api/v1/health`, {
+        method: "GET",
+        redirect: "manual",
+        signal: AbortSignal.timeout(8_000),
+        headers: { "user-agent": "ATLaS-TLS-Check/1.0" },
+      });
+      ok = response.status > 0 && response.status < 500;
+      if (!ok) error = `HTTPS health check returned ${response.status}.`;
+    } catch (cause) {
+      error = cause instanceof Error ? cause.message : "TLS handshake failed.";
+    }
+  }
+
+  return prisma.domain.update({
+    where: { id: domain.id },
+    data: {
+      tlsStatus: ok ? "ACTIVE" : attempts >= 8 ? "FAILED" : "PENDING",
+      tlsIssuedAt: ok ? domain.tlsIssuedAt ?? checkedAt : domain.tlsIssuedAt,
+      tlsLastCheckedAt: checkedAt,
+      tlsAttempts: attempts,
+      tlsError: ok ? null : error.slice(0, 300),
+    },
+  });
+}
+
+/** Cron entry point for pending/retrying custom-domain certificates. */
+export async function runDomainMaintenance(limit = 20) {
+  const domains = await prisma.domain.findMany({
+    where: {
+      type: "CUSTOM",
+      verificationStatus: "ACTIVE",
+      tlsStatus: { in: ["PENDING", "FAILED"] },
+      tlsAttempts: { lt: 8 },
+    },
+    orderBy: { updatedAt: "asc" },
+    take: limit,
+    select: { id: true },
+  });
+
+  let provisioned = 0;
+  for (const domain of domains) {
+    try {
+      const updated = await provisionDomainTls(domain.id);
+      if (updated?.tlsStatus === "ACTIVE") provisioned += 1;
+    } catch (error) {
+      console.error("[domains] TLS check failed", domain.id, error);
+    }
+  }
+  return { checked: domains.length, provisioned };
 }
 
 async function hasVerificationRecord(host: string, token: string): Promise<boolean> {
@@ -222,17 +381,21 @@ async function hasVerificationRecord(host: string, token: string): Promise<boole
 export async function setPrimaryDomain(actor: ActorContext, storeId: string, domainId: string) {
   assertPermission(actor, "settings:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const domain = await prisma.domain.findFirst({ where: { id: domainId, storeId } });
   if (!domain) throw new NotFoundError("Domain");
   if (domain.verificationStatus !== "ACTIVE") {
     throw new AppError("VALIDATION_FAILED", "শুধু verified domain-ই primary করা যায়।", 422);
   }
+  if (domain.tlsStatus !== "ACTIVE") {
+    throw new AppError("VALIDATION_FAILED", "TLS certificate এখনো সক্রিয় হয়নি — কিছুক্ষণ পর আবার চেষ্টা করুন।", 422);
+  }
 
-  await prisma.$transaction([
-    prisma.domain.updateMany({ where: { storeId }, data: { isPrimary: false } }),
-    prisma.domain.update({ where: { id: domain.id }, data: { isPrimary: true } }),
-  ]);
+  await prisma.$transaction(async (tx) => {
+    await tx.domain.updateMany({ where: { storeId }, data: { isPrimary: false } });
+    await tx.domain.update({ where: { id: domain.id }, data: { isPrimary: true } });
+  });
 
   await recordAudit({
     action: "domain.primary_changed",
@@ -249,6 +412,7 @@ export async function setPrimaryDomain(actor: ActorContext, storeId: string, dom
 export async function removeDomain(actor: ActorContext, storeId: string, domainId: string) {
   assertPermission(actor, "settings:write");
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
 
   const domain = await prisma.domain.findFirst({ where: { id: domainId, storeId } });
   if (!domain) throw new NotFoundError("Domain");

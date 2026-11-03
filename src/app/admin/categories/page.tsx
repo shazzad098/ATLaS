@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { listCategories } from "@/lib/services/catalog-service";
 import { Badge, Card, CardHeader, EmptyState, Table, Td, Th } from "@/components/ui/shell";
 import { CategoryForm } from "@/app/admin/_components/category-form";
@@ -11,7 +11,8 @@ import { archiveCategoryAction } from "@/app/admin/actions";
 export const metadata = { title: "ক্যাটাগরি" };
 
 export default async function CategoriesPage() {
-  const { store } = await requireActiveStore();
+  const { store, workspace } = await requireActiveStorePermissionPage("catalog:read");
+  const canWrite = workspace.actor.permissions.includes("catalog:write");
   const categories = await listCategories(store.id, { includeArchived: true });
 
   return (
@@ -22,7 +23,13 @@ export default async function CategoriesPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr]">
-        <CategoryForm storeId={store.id} />
+        {canWrite ? (
+          <CategoryForm storeId={store.id} />
+        ) : (
+          <div className="rounded-xl border border-ink-200 bg-white p-4 text-sm text-ink-500">
+            আপনার role-এ ক্যাটাগরি তৈরি বা সম্পাদনার অনুমতি নেই।
+          </div>
+        )}
 
         {categories.length === 0 ? (
           <EmptyState title="কোনো ক্যাটাগরি নেই" description="বাম দিকের ফর্ম দিয়ে প্রথম ক্যাটাগরি তৈরি করুন।" />
@@ -43,12 +50,16 @@ export default async function CategoriesPage() {
                 {categories.map((category) => (
                   <tr key={category.id}>
                     <Td>
-                      <Link
-                        href={`/admin/categories/${category.id}`}
-                        className="font-medium text-brand-700 hover:underline"
-                      >
-                        {category.name}
-                      </Link>
+                      {canWrite ? (
+                        <Link
+                          href={`/admin/categories/${category.id}`}
+                          className="font-medium text-brand-700 hover:underline"
+                        >
+                          {category.name}
+                        </Link>
+                      ) : (
+                        <span className="font-medium text-ink-900">{category.name}</span>
+                      )}
                     </Td>
                     <Td className="text-xs text-ink-500">{category.slug}</Td>
                     <Td className="text-right">{category._count.products}</Td>
@@ -58,7 +69,7 @@ export default async function CategoriesPage() {
                       </Badge>
                     </Td>
                     <Td>
-                      {category.status !== "ARCHIVED" ? (
+                      {canWrite && category.status !== "ARCHIVED" ? (
                         <FormButton
                           action={archiveCategoryAction}
                           fields={{ storeId: store.id, categoryId: category.id, name: category.name }}

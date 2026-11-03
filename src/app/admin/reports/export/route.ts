@@ -58,6 +58,7 @@ export async function GET(request: Request) {
     "subtotal",
     "discountTotal",
     "shippingTotal",
+    "taxTotal",
     "grandTotal",
   ];
 
@@ -76,6 +77,7 @@ export async function GET(request: Request) {
         order.subtotal,
         order.discountTotal,
         order.shippingTotal,
+        order.taxTotal,
         order.grandTotal,
       ]
         .map(csvCell)

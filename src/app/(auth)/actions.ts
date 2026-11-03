@@ -8,6 +8,14 @@ import { checkPasswordStrength, verifyPassword } from "@/lib/auth/password";
 import { normalizePhone, requestOtp, verifyOtp } from "@/lib/auth/otp";
 import { clearAuthCookies, establishSession, readSession, revokeSession, setAuthCookies } from "@/lib/auth/session";
 import {
+  beginTwoFactorChallenge,
+  clearTwoFactorChallenge,
+  completeTwoFactorChallenge,
+  readChallengeToken,
+} from "@/lib/auth/two-factor";
+import { rateLimit } from "@/lib/api";
+import { endImpersonation } from "@/lib/auth/impersonation";
+import {
   findUserByIdentifier,
   provisionAccount,
   resetPassword,
@@ -43,12 +51,23 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
 
   if (!identifier) return { ok: false, message: "মোবাইল নম্বর বা ইমেইল দিন।" };
 
+  // Throttle password guessing per IP and per identifier. The OTP flow has its
+  // own per-phone limit inside `requestOtp`; this covers the credential path.
+  const meta = await requestMeta();
+  try {
+    rateLimit(`login:ip:${meta.ip ?? "unknown"}`, 20);
+    rateLimit(`login:id:${identifier.toLowerCase().slice(0, 80)}`, 10);
+  } catch {
+    return { ok: false, message: "খুব বেশি চেষ্টা হয়েছে। এক মিনিট পরে আবার চেষ্টা করুন।" };
+  }
+
   if (wantsOtp) {
     try {
       const result = await requestOtp(identifier, { purpose: "LOGIN", ip: (await requestMeta()).ip });
       return {
         ok: true,
         step: "otp",
+        identifier: result.phone,
         message: result.devCode
           ? `ডেমো মোডে SMS নেই — আপনার কোড: ${result.devCode}`
           : "OTP পাঠানো হয়েছে।",
@@ -67,15 +86,31 @@ export async function loginAction(_prev: AuthState, formData: FormData): Promise
   });
 
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    await recordAudit({ action: "auth.login_failed", metadata: { method: "password" }, ip: meta.ip });
     return { ok: false, message: "নম্বর বা পাসওয়ার্ড মিলছে না।" };
   }
   if (user.status !== "ACTIVE") {
     return { ok: false, message: "এই অ্যাকাউন্টটি এখন সক্রিয় নয়। সহায়তা টিমের সাথে যোগাযোগ করুন।" };
   }
 
-  const tokens = await establishSession(user.id, await requestMeta());
+  // Second factor: no session is issued until the TOTP/recovery code passes.
+  if (user.twoFactorEnabled) {
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    await beginTwoFactorChallenge(user.id, { ip: meta.ip });
+    redirect("/login/2fa");
+  }
+
+  const tokens = await establishSession(user.id, meta);
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await setAuthCookies(tokens);
+  await recordAudit({
+    action: "auth.login_succeeded",
+    actorId: user.id,
+    resourceType: "User",
+    resourceId: user.id,
+    metadata: { method: "password", twoFactor: false },
+    ip: meta.ip,
+  });
 
   redirect(await landingPathFor(user.id, user.isSuperAdmin));
 }
@@ -84,7 +119,10 @@ export async function verifyLoginOtpAction(_prev: AuthState, formData: FormData)
   const phone = text(formData, "identifier").trim();
   const code = text(formData, "code").trim();
 
-  if (!code) return { ok: false, step: "otp", message: "৬ ডিজিটের কোড দিন।" };
+  if (!phone) {
+    return { ok: false, step: "credentials", message: "মোবাইল নম্বর দিন — আবার OTP পাঠান।" };
+  }
+  if (!code) return { ok: false, step: "otp", identifier: phone, message: "৬ ডিজিটের কোড দিন।" };
 
   const result = await verifyOtp(phone, code, { purpose: "LOGIN" });
   if (!result.ok) {
@@ -94,25 +132,85 @@ export async function verifyLoginOtpAction(_prev: AuthState, formData: FormData)
         : result.reason === "LOCKED"
           ? "অনেকবার ভুল হয়েছে। নতুন কোড চেয়ে নিন।"
           : "কোডটি মিলছে না।";
-    return { ok: false, step: "otp", message };
+    return { ok: false, step: "otp", identifier: phone, message };
   }
 
   const user = await prisma.user.findFirst({ where: { phone: normalizePhone(phone), deletedAt: null } });
   if (!user || user.status !== "ACTIVE") {
-    return { ok: false, message: "এই নম্বরে কোনো সক্রিয় অ্যাকাউন্ট নেই। আগে সাইনআপ করুন।" };
+    return { ok: false, identifier: phone, message: "এই নম্বরে কোনো সক্রিয় অ্যাকাউন্ট নেই। আগে সাইনআপ করুন।" };
   }
 
-  const tokens = await establishSession(user.id, await requestMeta());
+  const meta = await requestMeta();
+  if (user.twoFactorEnabled) {
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    await beginTwoFactorChallenge(user.id, { ip: meta.ip });
+    redirect("/login/2fa");
+  }
+
+  const tokens = await establishSession(user.id, meta);
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await setAuthCookies(tokens);
+  await recordAudit({
+    action: "auth.login_succeeded",
+    actorId: user.id,
+    resourceType: "User",
+    resourceId: user.id,
+    metadata: { method: "otp", twoFactor: false },
+    ip: meta.ip,
+  });
 
   redirect(await landingPathFor(user.id, user.isSuperAdmin));
+}
+
+/**
+ * Second-factor step. The pending user id comes from the hashed challenge row,
+ * never from the form, so this cannot be pointed at another account.
+ */
+export async function verifyTwoFactorLoginAction(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const code = text(formData, "code").trim();
+  if (!code) return { ok: false, step: "credentials", message: "৬ ডিজিটের কোড বা recovery code দিন।" };
+
+  let destination: string | null = null;
+  try {
+    const token = await readChallengeToken();
+    const result = await completeTwoFactorChallenge(token, code);
+    await clearTwoFactorChallenge();
+
+    const user = await prisma.user.findUnique({
+      where: { id: result.userId },
+      select: { id: true, isSuperAdmin: true, status: true },
+    });
+    if (!user || user.status !== "ACTIVE") {
+      return { ok: false, message: "এই অ্যাকাউন্টটি এখন সক্রিয় নয়।" };
+    }
+
+    const tokens = await establishSession(user.id, await requestMeta());
+    await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+    await setAuthCookies(tokens);
+    await recordAudit({
+      action: "auth.login_succeeded",
+      actorId: user.id,
+      resourceType: "User",
+      resourceId: user.id,
+      metadata: { method: "2fa", via: result.via },
+    });
+
+    destination = await landingPathFor(user.id, user.isSuperAdmin);
+  } catch (error) {
+    if (error instanceof AppError) return { ok: false, message: error.message };
+    return { ok: false, message: "যাচাই করা যায়নি — আবার লগইন করুন।" };
+  }
+
+  redirect(destination ?? "/admin");
 }
 
 export async function signupAction(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const intent = text(formData, "intent") || "request";
   const name = text(formData, "name").trim();
-  const phone = text(formData, "phone").trim();
+  const phone = text(formData, "phone").trim() || text(formData, "identifier").trim();
   const email = text(formData, "email").trim();
   const password = text(formData, "password");
 
@@ -136,9 +234,12 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
       return {
         ok: true,
         step: "otp",
+        identifier: result.phone,
+        name,
+        email: email || undefined,
         message: result.devCode
           ? `ডেমো মোডে SMS নেই — আপনার কোড: ${result.devCode}`
-          : `${result.phone} নম্বরে OTP পাঠানো হয়েছে।`,
+          : `${result.phone} নম্বরে OTP পাঠানো হয়েছে। ৫ মিনিটের মধ্যে দিন।`,
         devCode: result.devCode,
       };
     } catch (error) {
@@ -147,11 +248,22 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
   }
 
   const code = text(formData, "code").trim();
-  if (!code) return { ok: false, step: "otp", message: "OTP কোড দিন।" };
+  const signupFields = { step: "otp" as const, identifier: phone || undefined, name, email: email || undefined };
+
+  if (!phone) {
+    return { ok: false, message: "মোবাইল নম্বর পাওয়া যায়নি — আবার OTP পাঠান।" };
+  }
+  if (!code) return { ok: false, ...signupFields, message: "OTP কোড দিন।" };
 
   const verified = await verifyOtp(phone, code, { purpose: "SIGNUP" });
   if (!verified.ok) {
-    return { ok: false, step: "otp", message: "কোডটি মেলেনি বা মেয়াদ শেষ। আবার চেষ্টা করুন।" };
+    const message =
+      verified.reason === "EXPIRED"
+        ? "কোডটির মেয়াদ শেষ হয়েছে — আবার পাঠান।"
+        : verified.reason === "LOCKED"
+          ? "অনেকবার ভুল হয়েছে। নতুন কোড চেয়ে নিন।"
+          : "কোডটি মিলছে না।";
+    return { ok: false, ...signupFields, message };
   }
 
   try {
@@ -159,11 +271,11 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
     const tokens = await establishSession(account.userId, await requestMeta());
     await setAuthCookies(tokens);
   } catch (error) {
-    if (error instanceof AppError) return { ok: false, step: "otp", message: error.message };
+    if (error instanceof AppError) return { ok: false, ...signupFields, message: error.message };
     if ((error as { code?: string })?.code === "P2002") {
-      return { ok: false, step: "otp", message: "এই তথ্য দিয়ে আগেই অ্যাকাউন্ট আছে।" };
+      return { ok: false, ...signupFields, message: "এই তথ্য দিয়ে আগেই অ্যাকাউন্ট আছে।" };
     }
-    return { ok: false, step: "otp", message: "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
+    return { ok: false, ...signupFields, message: "অ্যাকাউন্ট তৈরি করা যায়নি। আবার চেষ্টা করুন।" };
   }
 
   redirect("/onboarding");
@@ -190,6 +302,7 @@ export async function requestPasswordResetAction(
     return {
       ok: true,
       step: "otp",
+      identifier,
       message: "এই তথ্য দিয়ে অ্যাকাউন্ট থাকলে OTP পাঠানো হয়েছে।",
     };
   }
@@ -202,6 +315,7 @@ export async function requestPasswordResetAction(
     return {
       ok: true,
       step: "otp",
+      identifier,
       message: result.devCode
         ? `ডেমো মোডে SMS নেই — আপনার কোড: ${result.devCode}`
         : `${result.phone} নম্বরে রিসেট কোড পাঠানো হয়েছে।`,
@@ -225,6 +339,7 @@ export async function resetPasswordAction(_prev: AuthState, formData: FormData):
     return {
       ok: false,
       step: "otp",
+      identifier,
       message: verified.reason === "LOCKED" ? "অনেকবার ভুল হয়েছে — নতুন কোড নিন।" : "কোডটি মেলেনি।",
     };
   }
@@ -238,8 +353,8 @@ export async function resetPasswordAction(_prev: AuthState, formData: FormData):
       resourceId: user.id,
     });
   } catch (error) {
-    if (error instanceof AppError) return { ok: false, step: "otp", message: error.message };
-    return { ok: false, step: "otp", message: "পাসওয়ার্ড রিসেট করা যায়নি।" };
+    if (error instanceof AppError) return { ok: false, step: "otp", identifier, message: error.message };
+    return { ok: false, step: "otp", identifier, message: "পাসওয়ার্ড রিসেট করা যায়নি।" };
   }
 
   redirect("/login?reset=1");
@@ -247,7 +362,11 @@ export async function resetPasswordAction(_prev: AuthState, formData: FormData):
 
 export async function logoutAction(): Promise<void> {
   const session = await readSession();
-  if (session?.sessionId) await revokeSession(session.sessionId);
+  if (session) {
+    // Close any live impersonation first, so the audit trail has an end event.
+    if (session.user.isSuperAdmin) await endImpersonation(session.user.id);
+    if (session.sessionId) await revokeSession(session.user.id, session.sessionId);
+  }
   await clearAuthCookies();
   redirect("/login");
 }

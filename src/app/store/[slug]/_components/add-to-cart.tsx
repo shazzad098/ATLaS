@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { ShoppingBag } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import { addToCartAction } from "@/app/store/[slug]/actions";
 import { EMPTY_ACTION_STATE } from "@/app/store/[slug]/state";
 
@@ -16,6 +16,7 @@ export type VariantOption = {
   id: string;
   label: string;
   priceLabel: string;
+  comparePriceLabel: string | null;
   available: number;
 };
 
@@ -53,12 +54,22 @@ export function AddToCart({
       <input type="hidden" name="variantId" value={selectedId} />
       <input type="hidden" name="quantity" value={quantity} />
 
+      <div className="flex items-baseline gap-3">
+        <span className="text-2xl font-bold" style={{ color: "var(--store-primary)" }}>
+          {selected?.priceLabel}
+        </span>
+        {selected?.comparePriceLabel ? (
+          <span className="muted text-base line-through">{selected.comparePriceLabel}</span>
+        ) : null}
+      </div>
+
       {options.length > 1 ? (
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-ink-600">ভ্যারিয়েন্ট বাছুন</p>
+          <p className="text-xs font-semibold text-ink-600">ভ্যারিয়েন্ট ও দাম</p>
           <div className="flex flex-wrap gap-2">
             {options.map((option) => {
               const active = option.id === selectedId;
+              const soldOut = option.available <= 0;
               return (
                 <button
                   key={option.id}
@@ -67,16 +78,20 @@ export function AddToCart({
                     setSelectedId(option.id);
                     setQuantity(1);
                   }}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                    active ? "border-transparent text-white" : "border-black/15 hover:border-black/40"
+                  disabled={soldOut}
+                  aria-pressed={active}
+                  title={soldOut ? "স্টক নেই" : undefined}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition ${
+                    soldOut
+                      ? "cursor-not-allowed border-black/10 opacity-50"
+                      : active
+                        ? "border-transparent text-white"
+                        : "border-black/15 hover:border-black/40"
                   }`}
                   style={active ? { background: "var(--store-primary)" } : undefined}
-                  disabled={option.available <= 0}
                 >
-                  {option.label}
-                  <span className={`ml-1.5 ${active ? "text-white/80" : "muted"}`}>
-                    {option.priceLabel}
-                  </span>
+                  <span>{option.label}</span>
+                  <span className={active ? "text-white/80" : "muted"}>{option.priceLabel}</span>
                 </button>
               );
             })}
@@ -111,15 +126,28 @@ export function AddToCart({
         ) : null}
       </div>
 
-      <button
-        type="submit"
-        disabled={pending || soldOut}
-        className="store-btn inline-flex w-full items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white transition disabled:opacity-60"
-        style={{ background: "var(--store-primary)" }}
-      >
-        <ShoppingBag className="h-4 w-4" />
-        {pending ? "যোগ করা হচ্ছে…" : soldOut ? "স্টক নেই" : "কার্টে যোগ করুন"}
-      </button>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <button
+          type="submit"
+          disabled={pending || soldOut}
+          className="store-btn inline-flex w-full items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white transition disabled:opacity-60"
+          style={{ background: "var(--store-primary)" }}
+        >
+          <ShoppingBag className="h-4 w-4" />
+          {pending ? "যোগ করা হচ্ছে…" : soldOut ? "স্টক নেই" : "কার্টে যোগ করুন"}
+        </button>
+        <button
+          type="submit"
+          name="buyNow"
+          value="1"
+          disabled={pending || soldOut}
+          className="store-btn inline-flex w-full items-center justify-center gap-2 border-2 bg-transparent px-6 py-3 text-sm font-semibold transition disabled:opacity-60"
+          style={{ borderColor: "var(--store-primary)", color: "var(--store-primary)" }}
+        >
+          <ArrowRight className="h-4 w-4" />
+          এখনই কিনুন
+        </button>
+      </div>
 
       {state.message ? (
         <p

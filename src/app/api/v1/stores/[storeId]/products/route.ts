@@ -1,9 +1,10 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { assertCsrf } from "@/lib/auth/session";
-import { clientIp, ok, parseBody, parsePagination, rateLimit, route } from "@/lib/api";
+import { clientIp, ok, parseBody, parsePagination, rateLimitForTenant, route } from "@/lib/api";
+import { assertApiAccess, loadEntitlementSnapshot } from "@/lib/entitlements";
 import { assertPermission } from "@/lib/rbac";
-import { assertStoreAccess, authenticateRequest, resolveApiActor } from "@/lib/tenant";
+import { assertStoreAccess, authorizeApiRequest } from "@/lib/tenant";
 import { createProduct, listProducts, productInputSchema } from "@/lib/services/catalog-service";
 
 /**
@@ -28,11 +29,12 @@ const listQuerySchema = z.object({
 export const GET = route(async (request: NextRequest, context: StoreRouteContext) => {
   const { storeId } = await context.params;
 
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
+  const { actor } = await authorizeApiRequest(request);
   assertPermission(actor, "catalog:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`products:list:${actor.tenantId}`, 240);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "products:list");
 
   const pagination = parsePagination(request.nextUrl.searchParams);
   const query = listQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
@@ -52,9 +54,10 @@ export const POST = route(async (request: NextRequest, context: StoreRouteContex
   const { storeId } = await context.params;
 
   assertCsrf(request);
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
-  rateLimit(`products:create:${actor.tenantId}`, 60);
+  const { actor } = await authorizeApiRequest(request);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "products:create");
 
   const input = await parseBody(request, productInputSchema);
   const product = await createProduct(actor, storeId, input, { ip: clientIp(request) });

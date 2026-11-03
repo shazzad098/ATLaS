@@ -34,6 +34,9 @@ export type UserMinAggregateOutputType = {
   isSuperAdmin: boolean | null
   phoneVerifiedAt: Date | null
   lastLoginAt: Date | null
+  twoFactorSecret: string | null
+  twoFactorEnabled: boolean | null
+  twoFactorConfirmedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -49,6 +52,9 @@ export type UserMaxAggregateOutputType = {
   isSuperAdmin: boolean | null
   phoneVerifiedAt: Date | null
   lastLoginAt: Date | null
+  twoFactorSecret: string | null
+  twoFactorEnabled: boolean | null
+  twoFactorConfirmedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -64,6 +70,9 @@ export type UserCountAggregateOutputType = {
   isSuperAdmin: number
   phoneVerifiedAt: number
   lastLoginAt: number
+  twoFactorSecret: number
+  twoFactorEnabled: number
+  twoFactorConfirmedAt: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -81,6 +90,9 @@ export type UserMinAggregateInputType = {
   isSuperAdmin?: true
   phoneVerifiedAt?: true
   lastLoginAt?: true
+  twoFactorSecret?: true
+  twoFactorEnabled?: true
+  twoFactorConfirmedAt?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -96,6 +108,9 @@ export type UserMaxAggregateInputType = {
   isSuperAdmin?: true
   phoneVerifiedAt?: true
   lastLoginAt?: true
+  twoFactorSecret?: true
+  twoFactorEnabled?: true
+  twoFactorConfirmedAt?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -111,6 +126,9 @@ export type UserCountAggregateInputType = {
   isSuperAdmin?: true
   phoneVerifiedAt?: true
   lastLoginAt?: true
+  twoFactorSecret?: true
+  twoFactorEnabled?: true
+  twoFactorConfirmedAt?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -199,6 +217,9 @@ export type UserGroupByOutputType = {
   isSuperAdmin: boolean
   phoneVerifiedAt: Date | null
   lastLoginAt: Date | null
+  twoFactorSecret: string | null
+  twoFactorEnabled: boolean
+  twoFactorConfirmedAt: Date | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -235,6 +256,9 @@ export type UserWhereInput = {
   isSuperAdmin?: Prisma.BoolFilter<"User"> | boolean
   phoneVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  twoFactorSecret?: Prisma.StringNullableFilter<"User"> | string | null
+  twoFactorEnabled?: Prisma.BoolFilter<"User"> | boolean
+  twoFactorConfirmedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -243,6 +267,9 @@ export type UserWhereInput = {
   sessions?: Prisma.SessionListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeListRelationFilter
+  twoFactorChallenges?: Prisma.TwoFactorChallengeListRelationFilter
+  impersonations?: Prisma.ImpersonationSessionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -255,6 +282,9 @@ export type UserOrderByWithRelationInput = {
   isSuperAdmin?: Prisma.SortOrder
   phoneVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  twoFactorSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  twoFactorEnabled?: Prisma.SortOrder
+  twoFactorConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -263,6 +293,9 @@ export type UserOrderByWithRelationInput = {
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeOrderByRelationAggregateInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeOrderByRelationAggregateInput
+  impersonations?: Prisma.ImpersonationSessionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -278,6 +311,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   isSuperAdmin?: Prisma.BoolFilter<"User"> | boolean
   phoneVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   lastLoginAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  twoFactorSecret?: Prisma.StringNullableFilter<"User"> | string | null
+  twoFactorEnabled?: Prisma.BoolFilter<"User"> | boolean
+  twoFactorConfirmedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -286,6 +322,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   sessions?: Prisma.SessionListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeListRelationFilter
+  twoFactorChallenges?: Prisma.TwoFactorChallengeListRelationFilter
+  impersonations?: Prisma.ImpersonationSessionListRelationFilter
 }, "id" | "phone" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -298,6 +337,9 @@ export type UserOrderByWithAggregationInput = {
   isSuperAdmin?: Prisma.SortOrder
   phoneVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  twoFactorSecret?: Prisma.SortOrderInput | Prisma.SortOrder
+  twoFactorEnabled?: Prisma.SortOrder
+  twoFactorConfirmedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -319,6 +361,9 @@ export type UserScalarWhereWithAggregatesInput = {
   isSuperAdmin?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   phoneVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   lastLoginAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  twoFactorSecret?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  twoFactorEnabled?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
+  twoFactorConfirmedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -334,6 +379,9 @@ export type UserCreateInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -342,6 +390,9 @@ export type UserCreateInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -354,6 +405,9 @@ export type UserUncheckedCreateInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -362,6 +416,9 @@ export type UserUncheckedCreateInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserUpdateInput = {
@@ -374,6 +431,9 @@ export type UserUpdateInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -382,6 +442,9 @@ export type UserUpdateInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -394,6 +457,9 @@ export type UserUncheckedUpdateInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -402,6 +468,9 @@ export type UserUncheckedUpdateInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -414,6 +483,9 @@ export type UserCreateManyInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -429,6 +501,9 @@ export type UserUpdateManyMutationInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -444,6 +519,9 @@ export type UserUncheckedUpdateManyInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -459,6 +537,9 @@ export type UserCountOrderByAggregateInput = {
   isSuperAdmin?: Prisma.SortOrder
   phoneVerifiedAt?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
+  twoFactorSecret?: Prisma.SortOrder
+  twoFactorEnabled?: Prisma.SortOrder
+  twoFactorConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -474,6 +555,9 @@ export type UserMaxOrderByAggregateInput = {
   isSuperAdmin?: Prisma.SortOrder
   phoneVerifiedAt?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
+  twoFactorSecret?: Prisma.SortOrder
+  twoFactorEnabled?: Prisma.SortOrder
+  twoFactorConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -489,6 +573,9 @@ export type UserMinOrderByAggregateInput = {
   isSuperAdmin?: Prisma.SortOrder
   phoneVerifiedAt?: Prisma.SortOrder
   lastLoginAt?: Prisma.SortOrder
+  twoFactorSecret?: Prisma.SortOrder
+  twoFactorEnabled?: Prisma.SortOrder
+  twoFactorConfirmedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -570,6 +657,48 @@ export type UserUpdateOneRequiredWithoutSessionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSessionsInput, Prisma.UserUpdateWithoutSessionsInput>, Prisma.UserUncheckedUpdateWithoutSessionsInput>
 }
 
+export type UserCreateNestedOneWithoutTwoFactorChallengesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTwoFactorChallengesInput, Prisma.UserUncheckedCreateWithoutTwoFactorChallengesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTwoFactorChallengesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutTwoFactorChallengesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTwoFactorChallengesInput, Prisma.UserUncheckedCreateWithoutTwoFactorChallengesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTwoFactorChallengesInput
+  upsert?: Prisma.UserUpsertWithoutTwoFactorChallengesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTwoFactorChallengesInput, Prisma.UserUpdateWithoutTwoFactorChallengesInput>, Prisma.UserUncheckedUpdateWithoutTwoFactorChallengesInput>
+}
+
+export type UserCreateNestedOneWithoutRecoveryCodesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRecoveryCodesInput, Prisma.UserUncheckedCreateWithoutRecoveryCodesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecoveryCodesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutRecoveryCodesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRecoveryCodesInput, Prisma.UserUncheckedCreateWithoutRecoveryCodesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRecoveryCodesInput
+  upsert?: Prisma.UserUpsertWithoutRecoveryCodesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRecoveryCodesInput, Prisma.UserUpdateWithoutRecoveryCodesInput>, Prisma.UserUncheckedUpdateWithoutRecoveryCodesInput>
+}
+
+export type UserCreateNestedOneWithoutImpersonationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutImpersonationsInput, Prisma.UserUncheckedCreateWithoutImpersonationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutImpersonationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutImpersonationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutImpersonationsInput, Prisma.UserUncheckedCreateWithoutImpersonationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutImpersonationsInput
+  upsert?: Prisma.UserUpsertWithoutImpersonationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutImpersonationsInput, Prisma.UserUpdateWithoutImpersonationsInput>, Prisma.UserUncheckedUpdateWithoutImpersonationsInput>
+}
+
 export type UserCreateNestedOneWithoutAuditLogsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutAuditLogsInput, Prisma.UserUncheckedCreateWithoutAuditLogsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutAuditLogsInput
@@ -610,6 +739,9 @@ export type UserCreateWithoutTenantsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -617,6 +749,9 @@ export type UserCreateWithoutTenantsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserUncheckedCreateWithoutTenantsInput = {
@@ -629,6 +764,9 @@ export type UserUncheckedCreateWithoutTenantsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -636,6 +774,9 @@ export type UserUncheckedCreateWithoutTenantsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserCreateOrConnectWithoutTenantsInput = {
@@ -664,6 +805,9 @@ export type UserUpdateWithoutTenantsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -671,6 +815,9 @@ export type UserUpdateWithoutTenantsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTenantsInput = {
@@ -683,6 +830,9 @@ export type UserUncheckedUpdateWithoutTenantsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -690,6 +840,9 @@ export type UserUncheckedUpdateWithoutTenantsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -702,6 +855,9 @@ export type UserCreateWithoutMembershipsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -709,6 +865,9 @@ export type UserCreateWithoutMembershipsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -721,6 +880,9 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -728,6 +890,9 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -756,6 +921,9 @@ export type UserUpdateWithoutMembershipsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -763,6 +931,9 @@ export type UserUpdateWithoutMembershipsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -775,6 +946,9 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -782,6 +956,9 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -794,6 +971,9 @@ export type UserCreateWithoutSessionsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -801,6 +981,9 @@ export type UserCreateWithoutSessionsInput = {
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -813,6 +996,9 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -820,6 +1006,9 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -848,6 +1037,9 @@ export type UserUpdateWithoutSessionsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -855,6 +1047,9 @@ export type UserUpdateWithoutSessionsInput = {
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -867,6 +1062,9 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -874,6 +1072,357 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
+}
+
+export type UserCreateWithoutTwoFactorChallengesInput = {
+  id?: string
+  phone: string
+  email?: string | null
+  name?: string | null
+  passwordHash?: string | null
+  status?: $Enums.UserStatus
+  isSuperAdmin?: boolean
+  phoneVerifiedAt?: Date | string | null
+  lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenants?: Prisma.TenantCreateNestedManyWithoutOwnerInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
+}
+
+export type UserUncheckedCreateWithoutTwoFactorChallengesInput = {
+  id?: string
+  phone: string
+  email?: string | null
+  name?: string | null
+  passwordHash?: string | null
+  status?: $Enums.UserStatus
+  isSuperAdmin?: boolean
+  phoneVerifiedAt?: Date | string | null
+  lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenants?: Prisma.TenantUncheckedCreateNestedManyWithoutOwnerInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
+}
+
+export type UserCreateOrConnectWithoutTwoFactorChallengesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTwoFactorChallengesInput, Prisma.UserUncheckedCreateWithoutTwoFactorChallengesInput>
+}
+
+export type UserUpsertWithoutTwoFactorChallengesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTwoFactorChallengesInput, Prisma.UserUncheckedUpdateWithoutTwoFactorChallengesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTwoFactorChallengesInput, Prisma.UserUncheckedCreateWithoutTwoFactorChallengesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTwoFactorChallengesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTwoFactorChallengesInput, Prisma.UserUncheckedUpdateWithoutTwoFactorChallengesInput>
+}
+
+export type UserUpdateWithoutTwoFactorChallengesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenants?: Prisma.TenantUpdateManyWithoutOwnerNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTwoFactorChallengesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenants?: Prisma.TenantUncheckedUpdateManyWithoutOwnerNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
+}
+
+export type UserCreateWithoutRecoveryCodesInput = {
+  id?: string
+  phone: string
+  email?: string | null
+  name?: string | null
+  passwordHash?: string | null
+  status?: $Enums.UserStatus
+  isSuperAdmin?: boolean
+  phoneVerifiedAt?: Date | string | null
+  lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenants?: Prisma.TenantCreateNestedManyWithoutOwnerInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
+}
+
+export type UserUncheckedCreateWithoutRecoveryCodesInput = {
+  id?: string
+  phone: string
+  email?: string | null
+  name?: string | null
+  passwordHash?: string | null
+  status?: $Enums.UserStatus
+  isSuperAdmin?: boolean
+  phoneVerifiedAt?: Date | string | null
+  lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenants?: Prisma.TenantUncheckedCreateNestedManyWithoutOwnerInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
+}
+
+export type UserCreateOrConnectWithoutRecoveryCodesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutRecoveryCodesInput, Prisma.UserUncheckedCreateWithoutRecoveryCodesInput>
+}
+
+export type UserUpsertWithoutRecoveryCodesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutRecoveryCodesInput, Prisma.UserUncheckedUpdateWithoutRecoveryCodesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutRecoveryCodesInput, Prisma.UserUncheckedCreateWithoutRecoveryCodesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutRecoveryCodesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutRecoveryCodesInput, Prisma.UserUncheckedUpdateWithoutRecoveryCodesInput>
+}
+
+export type UserUpdateWithoutRecoveryCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenants?: Prisma.TenantUpdateManyWithoutOwnerNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
+}
+
+export type UserUncheckedUpdateWithoutRecoveryCodesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenants?: Prisma.TenantUncheckedUpdateManyWithoutOwnerNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
+}
+
+export type UserCreateWithoutImpersonationsInput = {
+  id?: string
+  phone: string
+  email?: string | null
+  name?: string | null
+  passwordHash?: string | null
+  status?: $Enums.UserStatus
+  isSuperAdmin?: boolean
+  phoneVerifiedAt?: Date | string | null
+  lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenants?: Prisma.TenantCreateNestedManyWithoutOwnerInput
+  memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutImpersonationsInput = {
+  id?: string
+  phone: string
+  email?: string | null
+  name?: string | null
+  passwordHash?: string | null
+  status?: $Enums.UserStatus
+  isSuperAdmin?: boolean
+  phoneVerifiedAt?: Date | string | null
+  lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenants?: Prisma.TenantUncheckedCreateNestedManyWithoutOwnerInput
+  memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutImpersonationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutImpersonationsInput, Prisma.UserUncheckedCreateWithoutImpersonationsInput>
+}
+
+export type UserUpsertWithoutImpersonationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutImpersonationsInput, Prisma.UserUncheckedUpdateWithoutImpersonationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutImpersonationsInput, Prisma.UserUncheckedCreateWithoutImpersonationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutImpersonationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutImpersonationsInput, Prisma.UserUncheckedUpdateWithoutImpersonationsInput>
+}
+
+export type UserUpdateWithoutImpersonationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenants?: Prisma.TenantUpdateManyWithoutOwnerNestedInput
+  memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutImpersonationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenants?: Prisma.TenantUncheckedUpdateManyWithoutOwnerNestedInput
+  memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -886,6 +1435,9 @@ export type UserCreateWithoutAuditLogsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -893,6 +1445,9 @@ export type UserCreateWithoutAuditLogsInput = {
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -905,6 +1460,9 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -912,6 +1470,9 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -940,6 +1501,9 @@ export type UserUpdateWithoutAuditLogsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -947,6 +1511,9 @@ export type UserUpdateWithoutAuditLogsInput = {
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -959,6 +1526,9 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -966,6 +1536,9 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -978,6 +1551,9 @@ export type UserCreateWithoutNotificationsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -985,6 +1561,9 @@ export type UserCreateWithoutNotificationsInput = {
   memberships?: Prisma.MembershipCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -997,6 +1576,9 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: Date | string | null
   lastLoginAt?: Date | string | null
+  twoFactorSecret?: string | null
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1004,6 +1586,9 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   memberships?: Prisma.MembershipUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedCreateNestedManyWithoutUserInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedCreateNestedManyWithoutUserInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedCreateNestedManyWithoutSuperAdminInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -1032,6 +1617,9 @@ export type UserUpdateWithoutNotificationsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1039,6 +1627,9 @@ export type UserUpdateWithoutNotificationsInput = {
   memberships?: Prisma.MembershipUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUpdateManyWithoutSuperAdminNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -1051,6 +1642,9 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   isSuperAdmin?: Prisma.BoolFieldUpdateOperationsInput | boolean
   phoneVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  twoFactorSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  twoFactorEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twoFactorConfirmedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1058,6 +1652,9 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   memberships?: Prisma.MembershipUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  recoveryCodes?: Prisma.TwoFactorRecoveryCodeUncheckedUpdateManyWithoutUserNestedInput
+  twoFactorChallenges?: Prisma.TwoFactorChallengeUncheckedUpdateManyWithoutUserNestedInput
+  impersonations?: Prisma.ImpersonationSessionUncheckedUpdateManyWithoutSuperAdminNestedInput
 }
 
 
@@ -1071,6 +1668,9 @@ export type UserCountOutputType = {
   sessions: number
   notifications: number
   auditLogs: number
+  recoveryCodes: number
+  twoFactorChallenges: number
+  impersonations: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1079,6 +1679,9 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+  recoveryCodes?: boolean | UserCountOutputTypeCountRecoveryCodesArgs
+  twoFactorChallenges?: boolean | UserCountOutputTypeCountTwoFactorChallengesArgs
+  impersonations?: boolean | UserCountOutputTypeCountImpersonationsArgs
 }
 
 /**
@@ -1126,6 +1729,27 @@ export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.AuditLogWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountRecoveryCodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TwoFactorRecoveryCodeWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTwoFactorChallengesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TwoFactorChallengeWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountImpersonationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ImpersonationSessionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1137,6 +1761,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   isSuperAdmin?: boolean
   phoneVerifiedAt?: boolean
   lastLoginAt?: boolean
+  twoFactorSecret?: boolean
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1145,6 +1772,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  recoveryCodes?: boolean | Prisma.User$recoveryCodesArgs<ExtArgs>
+  twoFactorChallenges?: boolean | Prisma.User$twoFactorChallengesArgs<ExtArgs>
+  impersonations?: boolean | Prisma.User$impersonationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1158,6 +1788,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isSuperAdmin?: boolean
   phoneVerifiedAt?: boolean
   lastLoginAt?: boolean
+  twoFactorSecret?: boolean
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1173,6 +1806,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   isSuperAdmin?: boolean
   phoneVerifiedAt?: boolean
   lastLoginAt?: boolean
+  twoFactorSecret?: boolean
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1188,18 +1824,24 @@ export type UserSelectScalar = {
   isSuperAdmin?: boolean
   phoneVerifiedAt?: boolean
   lastLoginAt?: boolean
+  twoFactorSecret?: boolean
+  twoFactorEnabled?: boolean
+  twoFactorConfirmedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "email" | "name" | "passwordHash" | "status" | "isSuperAdmin" | "phoneVerifiedAt" | "lastLoginAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "email" | "name" | "passwordHash" | "status" | "isSuperAdmin" | "phoneVerifiedAt" | "lastLoginAt" | "twoFactorSecret" | "twoFactorEnabled" | "twoFactorConfirmedAt" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenants?: boolean | Prisma.User$tenantsArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  recoveryCodes?: boolean | Prisma.User$recoveryCodesArgs<ExtArgs>
+  twoFactorChallenges?: boolean | Prisma.User$twoFactorChallengesArgs<ExtArgs>
+  impersonations?: boolean | Prisma.User$impersonationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1213,6 +1855,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    recoveryCodes: Prisma.$TwoFactorRecoveryCodePayload<ExtArgs>[]
+    twoFactorChallenges: Prisma.$TwoFactorChallengePayload<ExtArgs>[]
+    impersonations: Prisma.$ImpersonationSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1224,6 +1869,14 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     isSuperAdmin: boolean
     phoneVerifiedAt: Date | null
     lastLoginAt: Date | null
+    /**
+     * *
+     *    * TOTP secret, base32. Kept encrypted with `SECRETS_KEY` while at rest; the
+     *    * plaintext only exists in memory during setup/verification (FR-01, §13).
+     */
+    twoFactorSecret: string | null
+    twoFactorEnabled: boolean
+    twoFactorConfirmedAt: Date | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -1626,6 +2279,9 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  recoveryCodes<T extends Prisma.User$recoveryCodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$recoveryCodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TwoFactorRecoveryCodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  twoFactorChallenges<T extends Prisma.User$twoFactorChallengesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$twoFactorChallengesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TwoFactorChallengePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  impersonations<T extends Prisma.User$impersonationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$impersonationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ImpersonationSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1664,6 +2320,9 @@ export interface UserFieldRefs {
   readonly isSuperAdmin: Prisma.FieldRef<"User", 'Boolean'>
   readonly phoneVerifiedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly lastLoginAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly twoFactorSecret: Prisma.FieldRef<"User", 'String'>
+  readonly twoFactorEnabled: Prisma.FieldRef<"User", 'Boolean'>
+  readonly twoFactorConfirmedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"User", 'DateTime'>
@@ -2177,6 +2836,78 @@ export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * User.recoveryCodes
+ */
+export type User$recoveryCodesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TwoFactorRecoveryCode
+   */
+  select?: Prisma.TwoFactorRecoveryCodeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TwoFactorRecoveryCode
+   */
+  omit?: Prisma.TwoFactorRecoveryCodeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TwoFactorRecoveryCodeInclude<ExtArgs> | null
+  where?: Prisma.TwoFactorRecoveryCodeWhereInput
+  orderBy?: Prisma.TwoFactorRecoveryCodeOrderByWithRelationInput | Prisma.TwoFactorRecoveryCodeOrderByWithRelationInput[]
+  cursor?: Prisma.TwoFactorRecoveryCodeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TwoFactorRecoveryCodeScalarFieldEnum | Prisma.TwoFactorRecoveryCodeScalarFieldEnum[]
+}
+
+/**
+ * User.twoFactorChallenges
+ */
+export type User$twoFactorChallengesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TwoFactorChallenge
+   */
+  select?: Prisma.TwoFactorChallengeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TwoFactorChallenge
+   */
+  omit?: Prisma.TwoFactorChallengeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TwoFactorChallengeInclude<ExtArgs> | null
+  where?: Prisma.TwoFactorChallengeWhereInput
+  orderBy?: Prisma.TwoFactorChallengeOrderByWithRelationInput | Prisma.TwoFactorChallengeOrderByWithRelationInput[]
+  cursor?: Prisma.TwoFactorChallengeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TwoFactorChallengeScalarFieldEnum | Prisma.TwoFactorChallengeScalarFieldEnum[]
+}
+
+/**
+ * User.impersonations
+ */
+export type User$impersonationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ImpersonationSession
+   */
+  select?: Prisma.ImpersonationSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ImpersonationSession
+   */
+  omit?: Prisma.ImpersonationSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ImpersonationSessionInclude<ExtArgs> | null
+  where?: Prisma.ImpersonationSessionWhereInput
+  orderBy?: Prisma.ImpersonationSessionOrderByWithRelationInput | Prisma.ImpersonationSessionOrderByWithRelationInput[]
+  cursor?: Prisma.ImpersonationSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ImpersonationSessionScalarFieldEnum | Prisma.ImpersonationSessionScalarFieldEnum[]
 }
 
 /**

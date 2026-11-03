@@ -7,6 +7,9 @@ dist/
 build/
 *.dist
 
+# Runtime-uploaded media (product photos etc.)
+public/uploads/
+
 # Environment variables
 .env
 .env.local

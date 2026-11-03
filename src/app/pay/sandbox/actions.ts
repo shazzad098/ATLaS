@@ -4,11 +4,14 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { toDecimalString } from "@/lib/money";
+import { getPaymentAdapter } from "@/lib/payments";
 import {
   SANDBOX_SIGNATURE_HEADER,
   sandboxTxnId,
   signSandboxPayload,
+  verifySandboxOrderToken,
 } from "@/lib/payments/sandbox";
+import { signOrderAccessToken } from "@/lib/order-access";
 
 /**
  * Sandbox gateway simulator (PRD §17).
@@ -19,8 +22,10 @@ import {
  * transition, inventory and platform-fee side effects are all exercised exactly
  * as they will be in production.
  *
- * Nothing is trusted from the URL: the order number identifies the order, and
- * provider, amount, callback URL and return URL are all derived server-side.
+ * The form carries a short-lived HMAC token issued by `initiate()`. A bare
+ * order number is never enough: without a valid token (or when the provider now
+ * has live credentials) this action refuses to emit a callback, so it cannot be
+ * used to mark a real order paid.
  */
 
 function sameHostBaseUrl(): Promise<string> {
@@ -35,34 +40,67 @@ function sameHostBaseUrl(): Promise<string> {
 
 export async function simulateSandboxPaymentAction(formData: FormData): Promise<void> {
   const orderNo = String(formData.get("orderNo") ?? "").trim();
+  const token = String(formData.get("t") ?? "").trim();
   const outcome = String(formData.get("outcome") ?? "") === "FAILED" ? "FAILED" : "SUCCEEDED";
 
+  const claims = verifySandboxOrderToken(token);
+  if (!claims || claims.orderNo !== orderNo) redirect("/pay/sandbox?error=invalid");
+
   const order = await prisma.order.findFirst({
-    where: { orderNo },
+    where: { id: claims.orderId, orderNo: claims.orderNo, deletedAt: null },
     select: {
       id: true,
       orderNo: true,
+      status: true,
       grandTotal: true,
       paymentProvider: true,
+      storeId: true,
       store: { select: { slug: true } },
       payments: {
         orderBy: { createdAt: "desc" },
         take: 1,
-        select: { providerTxnId: true },
+        select: { providerTxnId: true, status: true },
       },
     },
   });
 
-  if (!order) redirect("/pay/sandbox?error=not_found");
+  if (!order || order.paymentProvider !== claims.provider) {
+    redirect("/pay/sandbox?error=invalid");
+  }
+
+  // Never simulate against a live-configured gateway or an order that already
+  // left the payment step.
+  if (
+    getPaymentAdapter(order.paymentProvider).isConfigured() ||
+    order.status !== "PENDING_PAYMENT"
+  ) {
+    redirect("/pay/sandbox?error=not_pending");
+  }
+
+  const latestPayment = order.payments[0];
+  if (
+    !latestPayment ||
+    (latestPayment.status !== "INITIATED" && latestPayment.status !== "PENDING")
+  ) {
+    redirect("/pay/sandbox?error=not_pending");
+  }
 
   const provider = order.paymentProvider;
   const baseUrl = await sameHostBaseUrl();
-  const returnUrl = `/store/${order.store.slug}/order/${order.orderNo}`;
+  const returnToken = signOrderAccessToken({
+    storeId: order.storeId,
+    orderId: order.id,
+    orderNo: order.orderNo,
+  });
+  const returnUrl = `/store/${order.store.slug}/order/${order.orderNo}?t=${encodeURIComponent(
+    returnToken,
+  )}`;
 
   const rawBody = JSON.stringify({
     eventKey: `sandbox:${provider.toLowerCase()}:${order.orderNo}:${outcome}`,
-    providerTxnId: order.payments[0]?.providerTxnId ?? sandboxTxnId("SBX", order.orderNo),
+    providerTxnId: latestPayment.providerTxnId ?? sandboxTxnId("SBX", order.orderNo),
     orderNo: order.orderNo,
+    orderId: order.id,
     amount: toDecimalString(order.grandTotal),
     status: outcome,
     failureReason:
@@ -90,5 +128,5 @@ export async function simulateSandboxPaymentAction(formData: FormData): Promise<
     delivered = false;
   }
 
-  redirect(delivered ? returnUrl : `${returnUrl}?sandbox=unreachable`);
+  redirect(delivered ? returnUrl : `${returnUrl}${returnUrl.includes("?") ? "&" : "?"}sandbox=unreachable`);
 }

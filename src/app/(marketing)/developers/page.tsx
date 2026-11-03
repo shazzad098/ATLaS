@@ -137,7 +137,7 @@ export default function DevelopersPage() {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           <h2 className="text-xl font-semibold tracking-tight text-ink-900">Response envelope</h2>
           <p className="text-sm text-ink-600">
             সফল হলেও, ব্যর্থ হলেও একই খাম — ক্লায়েন্টে আলাদা parsing path লাগে না।
@@ -146,7 +146,7 @@ export default function DevelopersPage() {
             {ENVELOPE_SAMPLE}
           </pre>
         </div>
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           <h2 className="text-xl font-semibold tracking-tight text-ink-900">Error envelope</h2>
           <p className="text-sm text-ink-600">
             কোড stable, মেসেজ মানুষ-পাঠ্য। `PLAN_LIMIT_REACHED` বা `FEATURE_NOT_AVAILABLE` এলে

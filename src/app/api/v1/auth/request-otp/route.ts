@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { clientIp, ok, parseBody, rateLimit, route } from "@/lib/api";
-import { requestOtp } from "@/lib/auth/otp";
+import { requestOtp, OTP_TTL_SECONDS } from "@/lib/auth/otp";
 
 /**
  * Passwordless login — step 1 (FR-01, PRD §11.1 "auth").
@@ -31,7 +31,7 @@ export const POST = route(async (request: Request) => {
     {
       phone: result.phone,
       expiresAt: result.expiresAt,
-      expiresInSeconds: 300,
+      expiresInSeconds: OTP_TTL_SECONDS,
       sentVia: result.sentVia,
       ...(result.devCode ? { devCode: result.devCode } : {}),
     },

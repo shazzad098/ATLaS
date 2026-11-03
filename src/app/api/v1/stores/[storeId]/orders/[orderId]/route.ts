@@ -1,9 +1,10 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { assertCsrf } from "@/lib/auth/session";
-import { ok, parseBody, rateLimit, route } from "@/lib/api";
+import { ok, parseBody, rateLimitForTenant, route } from "@/lib/api";
+import { assertApiAccess, loadEntitlementSnapshot } from "@/lib/entitlements";
 import { assertPermission } from "@/lib/rbac";
-import { assertStoreAccess, authenticateRequest, resolveApiActor } from "@/lib/tenant";
+import { assertStoreAccess, authorizeApiRequest } from "@/lib/tenant";
 import { getOrderDetail, ORDER_STATUSES, updateOrderStatus } from "@/lib/services/order-service";
 
 /**
@@ -24,11 +25,12 @@ const patchSchema = z.object({
 export const GET = route(async (request: NextRequest, context: OrderRouteContext) => {
   const { storeId, orderId } = await context.params;
 
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
+  const { actor } = await authorizeApiRequest(request);
   assertPermission(actor, "orders:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`orders:get:${actor.tenantId}`, 240);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "orders:get");
 
   const order = await getOrderDetail(storeId, orderId);
   return ok(order);
@@ -38,9 +40,10 @@ export const PATCH = route(async (request: NextRequest, context: OrderRouteConte
   const { storeId, orderId } = await context.params;
 
   assertCsrf(request);
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
-  rateLimit(`orders:update:${actor.tenantId}`, 120);
+  const { actor } = await authorizeApiRequest(request);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "orders:update");
 
   const input = await parseBody(request, patchSchema);
   const order = await updateOrderStatus(actor, storeId, orderId, {

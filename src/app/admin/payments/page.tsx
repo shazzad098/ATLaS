@@ -1,4 +1,4 @@
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { listPaymentMethods } from "@/lib/services/store-service";
 import { paymentAdapterStatus } from "@/lib/payments";
 import { formatDateTime } from "@/lib/dates";
@@ -18,11 +18,11 @@ const PROVIDER_LABEL: Record<string, string> = {
 };
 
 export default async function PaymentsPage() {
-  const { store } = await requireActiveStore();
+  const { store } = await requireActiveStorePermissionPage("payments:read");
   const [methods, adapterStatus, events] = await Promise.all([
     listPaymentMethods(store.id),
     Promise.resolve(paymentAdapterStatus()),
-    listWebhookEvents(undefined, 10),
+    listWebhookEvents({ storeId: store.id, limit: 10 }),
   ]);
 
   const statusByProvider = new Map<string, (typeof adapterStatus)[number]>(

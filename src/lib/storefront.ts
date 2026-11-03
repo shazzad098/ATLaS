@@ -5,7 +5,11 @@ import {
   loadStorefrontByHost,
   type StorefrontContext,
 } from "@/lib/services/store-service";
+import { env } from "@/lib/env";
 import type { ThemeContext } from "@/themes/types";
+import { HOST_SEGMENT, storePath } from "@/lib/store-path";
+
+export { HOST_SEGMENT, storePath };
 
 /**
  * Storefront request context.
@@ -14,8 +18,6 @@ import type { ThemeContext } from "@/themes/types";
  * trusting the URL segment, because the proxy rewrites custom domains to the
  * synthetic `_host` segment. React's `cache` keeps it to one query per request.
  */
-
-export const HOST_SEGMENT = "_host";
 
 export const getStorefrontContext = cache(
   async (slugSegment: string): Promise<StorefrontContext | null> => {
@@ -42,10 +44,28 @@ export function storefrontAvailability(context: StorefrontContext): {
   return { visible: true, reason: "OK" };
 }
 
-/** Canonical, always-correct storefront href (works on subdomains and paths). */
-export function storePath(slug: string, path = ""): string {
+/**
+ * Canonical origin for SEO metadata. In production a published store is served
+ * from its primary custom domain / platform subdomain, so links must never leak
+ * the internal `/store/[slug]` path. Local development keeps the path form.
+ */
+export function storefrontOrigin(context: StorefrontContext): string {
+  try {
+    const configured = new URL(env.appUrl);
+    if (configured.hostname === "localhost" || configured.hostname === "127.0.0.1") {
+      return `${configured.origin}${storePath(context.store.slug)}`;
+    }
+  } catch {
+    // Fall through to the tenant host.
+  }
+  return `https://${context.host}`;
+}
+
+/** Absolute canonical URL for a storefront path. */
+export function storefrontUrl(context: StorefrontContext, path = ""): string {
+  const origin = storefrontOrigin(context).replace(/\/$/, "");
   const suffix = path && !path.startsWith("/") ? `/${path}` : path;
-  return `/store/${slug}${suffix === "/" ? "" : suffix}`;
+  return `${origin}${suffix === "/" ? "" : suffix}`;
 }
 
 /**

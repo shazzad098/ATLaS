@@ -8,11 +8,12 @@ import { assertPermission } from "@/lib/rbac";
 import {
   EntitlementError,
   assertProductQuota,
-  loadEntitlementSnapshot,
   recordUsage,
+  requireWritableTenant,
 } from "@/lib/entitlements";
 import { assertStoreAccess } from "@/lib/tenant";
 import { adjustStock } from "@/lib/services/inventory-service";
+import { deleteAssetsByUrls } from "@/lib/services/storage-service";
 import { recordAudit } from "@/lib/audit";
 
 /**
@@ -24,7 +25,9 @@ import { recordAudit } from "@/lib/audit";
 
 export const variantInputSchema = z.object({
   id: z.string().optional(),
-  sku: z.string().min(1).max(64),
+  // Blank SKUs are allowed; createProduct/updateProduct generate a unique one
+  // (and suffix duplicates) so the [productId, sku] constraint cannot fail.
+  sku: z.string().max(64).default(""),
   optionValues: z.record(z.string(), z.string()).default({}),
   price: z.union([z.string(), z.number()]),
   comparePrice: z.union([z.string(), z.number()]).nullable().optional(),
@@ -57,6 +60,35 @@ export const productInputSchema = z.object({
 });
 
 export type ProductInput = z.infer<typeof productInputSchema>;
+
+/**
+ * Make every variant SKU unique within the product.
+ *
+ * SKUs are unique per product in the database. Merchants often leave them blank
+ * or reuse one while adding variants, which used to surface a raw Prisma
+ * `ProductVariant_productId_sku_key` error. Blank SKUs get `<slug>-<n>` and
+ * duplicates get a numeric suffix; `reserved` holds SKUs that stay occupied by
+ * archived variants during an edit.
+ */
+function assignUniqueSkus(
+  variants: ProductInput["variants"],
+  base: string,
+  reserved: Iterable<string> = [],
+): void {
+  const used = new Set([...reserved].map((sku) => sku.trim().toLowerCase()));
+  variants.forEach((variant, index) => {
+    const fallback = `${base}-${index + 1}`;
+    const stem = variant.sku.trim() || fallback;
+    let candidate = stem;
+    let suffix = 2;
+    while (used.has(candidate.toLowerCase())) {
+      candidate = `${stem}-${suffix}`;
+      suffix += 1;
+    }
+    used.add(candidate.toLowerCase());
+    variant.sku = candidate;
+  });
+}
 
 function assertCatalogWrite(actor: ActorContext) {
   assertPermission(actor, "catalog:write");
@@ -109,7 +141,7 @@ export async function listProducts(
     include: {
       category: { select: { id: true, name: true, slug: true } },
       images: { orderBy: { sortOrder: "asc" }, take: 1 },
-      variants: { select: { id: true, sku: true, price: true, stockQty: true, reservedQty: true } },
+      variants: { select: { id: true, sku: true, price: true, comparePrice: true, stockQty: true, reservedQty: true } },
       _count: { select: { variants: true } },
     },
   });
@@ -149,13 +181,16 @@ export async function createProduct(
   assertCatalogWrite(actor);
   await assertStoreAccess(actor, storeId);
 
+  // Read-only/suspended tenants cannot create new commerce data. This runs
+  // before validation so the billing reason is unambiguous.
+  const snapshot = await requireWritableTenant(actor.tenantId);
   const input = productInputSchema.parse(raw);
 
   // Server-side quota check (PRD US-02). Never trust a hidden button.
-  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
   assertProductQuota(snapshot, 1);
 
   const slug = await uniqueProductSlug(storeId, input.slug || input.name);
+  assignUniqueSkus(input.variants, slug);
 
   if (input.categoryId) {
     const category = await prisma.category.findFirst({
@@ -250,11 +285,12 @@ export async function updateProduct(
 ) {
   assertCatalogWrite(actor);
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const input = productInputSchema.parse(raw);
 
   const existing = await prisma.product.findFirst({
     where: { id: productId, storeId, deletedAt: null },
-    include: { variants: true },
+    include: { variants: true, images: true },
   });
   if (!existing) throw new NotFoundError("Product");
 
@@ -263,7 +299,27 @@ export async function updateProduct(
       ? await uniqueProductSlug(storeId, input.slug, productId)
       : existing.slug;
 
+  // SKUs stay unique per product; archived variants (not in this submission)
+  // keep theirs reserved, and blanks/duplicates get generated suffixes.
+  const existingById = new Map(existing.variants.map((variant) => [variant.id, variant]));
+  const retainedIds = input.variants
+    .map((variant) => variant.id)
+    .filter((id): id is string => Boolean(id && existingById.has(id)));
+  assignUniqueSkus(
+    input.variants,
+    slug,
+    existing.variants
+      .filter((variant) => !retainedIds.includes(variant.id))
+      .map((variant) => variant.sku),
+  );
+
   await prisma.$transaction(async (tx) => {
+    // Park retained SKUs in a temporary namespace first: swapping or suffixing
+    // two variants' SKUs must not collide with the other one's old value.
+    for (const id of retainedIds) {
+      await tx.productVariant.update({ where: { id }, data: { sku: `__tmp_${id}` } });
+    }
+
     await tx.product.update({
       where: { id: productId },
       data: {
@@ -351,6 +407,13 @@ export async function updateProduct(
     }
   });
 
+  // Remove objects that are no longer referenced by any image of this product.
+  const keptUrls = new Set(input.images.map((image) => image.url));
+  const removedUrls = existing.images
+    .map((image) => image.url)
+    .filter((url): url is string => typeof url === "string" && !keptUrls.has(url));
+  if (removedUrls.length > 0) await deleteAssetsByUrls(storeId, removedUrls);
+
   await recordAudit({
     action: "product.updated",
     tenantId: actor.tenantId,
@@ -363,9 +426,157 @@ export async function updateProduct(
 }
 
 /** Soft delete (PRD Appendix B): financial history stays intact. */
+/**
+ * Percentage discount on every variant of one product.
+ *
+ * The discount is written onto the real prices: `comparePrice` keeps the
+ * original amount (so the storefront shows the strikethrough, badge and % off
+ * automatically), and `clear` restores the price from `comparePrice`. There is
+ * intentionally no separate "effective price" code path — cart, checkout and
+ * CSV export all see the discounted price.
+ */
+export async function applyProductDiscount(
+  actor: ActorContext,
+  storeId: string,
+  productId: string,
+  input: { percent?: number; clear?: boolean } = {},
+) {
+  assertCatalogWrite(actor);
+  await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
+
+  const product = await prisma.product.findFirst({
+    where: { id: productId, storeId, deletedAt: null },
+    select: { id: true, name: true, variants: { select: { id: true, price: true, comparePrice: true } } },
+  });
+  if (!product) throw new NotFoundError("Product");
+  if (product.variants.length === 0) {
+    throw new AppError("VALIDATION_FAILED", "এই পণ্যে কোনো variant নেই।", 422);
+  }
+
+  if (input.clear) {
+    await prisma.$transaction(
+      product.variants.map((variant) =>
+        prisma.productVariant.update({
+          where: { id: variant.id },
+          data: {
+            price: variant.comparePrice ?? variant.price,
+            comparePrice: null,
+          },
+        }),
+      ),
+    );
+    await recordAudit({
+      action: "product.discount_removed",
+      tenantId: actor.tenantId,
+      actorId: actor.userId,
+      resourceType: "Product",
+      resourceId: productId,
+      metadata: { name: product.name },
+    });
+    return { cleared: true, percent: 0 };
+  }
+
+  const percent = input.percent ?? 0;
+  if (!Number.isInteger(percent) || percent < 1 || percent > 90) {
+    throw new AppError("VALIDATION_FAILED", "ডিসকাউন্ট ১% থেকে ৯০% এর মধ্যে দিন।", 422);
+  }
+
+  await prisma.$transaction(
+    product.variants.map((variant) => {
+      const current = Number(variant.price);
+      // An existing higher compare-at price is the base: re-discounting stacks
+      // from the original price, not from the discounted one.
+      const base = variant.comparePrice !== null && Number(variant.comparePrice) > current
+        ? Number(variant.comparePrice)
+        : current;
+      const discounted = Math.max(0.01, Math.round(base * (1 - percent / 100) * 100) / 100);
+      return prisma.productVariant.update({
+        where: { id: variant.id },
+        data: {
+          price: toDecimalString(discounted) as never,
+          comparePrice: discounted >= base ? null : (toDecimalString(base) as never),
+        },
+      });
+    }),
+  );
+  await recordAudit({
+    action: "product.discount_applied",
+    tenantId: actor.tenantId,
+    actorId: actor.userId,
+    resourceType: "Product",
+    resourceId: productId,
+    metadata: { name: product.name, percent },
+  });
+  return { cleared: false, percent };
+}
+
+/**
+ * Partial product update (REST `PATCH /products/{productId}`).
+ *
+ * The full-update service stays the single write path: this reads the current
+ * row, merges the submitted fields and re-validates the complete shape. Variants
+ * omitted from the patch keep their ids and stock ledgers intact.
+ */
+export async function patchProduct(
+  actor: ActorContext,
+  storeId: string,
+  productId: string,
+  raw: unknown,
+) {
+  assertCatalogWrite(actor);
+  await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
+
+  const existing = await prisma.product.findFirst({
+    where: { id: productId, storeId, deletedAt: null },
+    include: { variants: true, images: { orderBy: { sortOrder: "asc" } } },
+  });
+  if (!existing) throw new NotFoundError("Product");
+
+  const patch = productInputSchema.partial().parse(raw);
+  const description = (existing.descriptionJson ?? {}) as { html?: string };
+  const seo = (existing.seoJson ?? {}) as Record<string, unknown>;
+
+  const merged = {
+    name: patch.name ?? existing.name,
+    slug: patch.slug ?? existing.slug,
+    categoryId: patch.categoryId !== undefined ? patch.categoryId : existing.categoryId,
+    description: patch.description ?? description.html ?? "",
+    tags: patch.tags ?? existing.tags,
+    status: patch.status ?? existing.status,
+    lowStockThreshold: patch.lowStockThreshold ?? existing.lowStockThreshold,
+    seo: {
+      title: String(seo.title ?? ""),
+      description: String(seo.description ?? ""),
+      ogImage: String(seo.ogImage ?? ""),
+      ...(patch.seo ?? {}),
+    },
+    images:
+      patch.images ??
+      existing.images.map((image) => ({ url: image.url ?? "", altText: image.altText ?? "" })),
+    variants:
+      patch.variants ??
+      existing.variants.map((variant) => ({
+        id: variant.id,
+        sku: variant.sku,
+        optionValues: (variant.optionValuesJson ?? {}) as Record<string, string>,
+        price: String(variant.price),
+        comparePrice: variant.comparePrice == null ? null : String(variant.comparePrice),
+        costPrice: variant.costPrice == null ? null : String(variant.costPrice),
+        stockQty: variant.stockQty,
+        weightGrams: variant.weightGrams,
+        status: variant.status,
+      })),
+  };
+
+  return updateProduct(actor, storeId, productId, merged);
+}
+
 export async function archiveProduct(actor: ActorContext, storeId: string, productId: string) {
   assertCatalogWrite(actor);
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const product = await prisma.product.findFirst({
     where: { id: productId, storeId, deletedAt: null },
     select: { id: true },
@@ -393,7 +604,8 @@ export async function adjustVariantStock(
 ) {
   assertCatalogWrite(actor);
   await assertStoreAccess(actor, storeId);
-  return adjustStock({
+  await requireWritableTenant(actor.tenantId);
+  const result = await adjustStock({
     storeId,
     variantId,
     delta: input.delta,
@@ -401,6 +613,21 @@ export async function adjustVariantStock(
     reason: input.reason,
     actorId: actor.userId,
   });
+
+  await recordAudit({
+    action: "inventory.adjusted",
+    tenantId: actor.tenantId,
+    actorId: actor.userId,
+    resourceType: "ProductVariant",
+    resourceId: variantId,
+    metadata: {
+      delta: input.delta,
+      reason: input.reason,
+      stockQty: result.stockQty,
+    },
+  });
+
+  return result;
 }
 
 // ── Categories ───────────────────────────────────────────────────────────────
@@ -424,6 +651,7 @@ export async function listCategories(storeId: string, options: { includeArchived
 export async function createCategory(actor: ActorContext, storeId: string, raw: unknown) {
   assertCatalogWrite(actor);
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const input = categoryInputSchema.parse(raw);
   const base = slugify(input.slug || input.name, { maxLength: 60 }) || "category";
 
@@ -466,6 +694,7 @@ export async function updateCategory(
 ) {
   assertCatalogWrite(actor);
   await assertStoreAccess(actor, storeId);
+  await requireWritableTenant(actor.tenantId);
   const input = categoryInputSchema.parse(raw);
   const updated = await prisma.category.updateMany({
     where: { id: categoryId, storeId },
@@ -555,7 +784,7 @@ export async function importProductsCsv(
   const dryRun = options.dryRun !== false;
 
   if (!dryRun) {
-    const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+    const snapshot = await requireWritableTenant(actor.tenantId);
     // Bulk import is a plan limit (PRD §5.1), so the dry-run stays free and only
     // the write is gated.
     if (!snapshot.limits.bulkTools) {

@@ -1,9 +1,10 @@
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { assertCsrf } from "@/lib/auth/session";
-import { ok, parseBody, rateLimit, route } from "@/lib/api";
+import { ok, parseBody, rateLimitForTenant, route } from "@/lib/api";
+import { assertApiAccess, loadEntitlementSnapshot } from "@/lib/entitlements";
 import { assertPermission } from "@/lib/rbac";
-import { assertStoreAccess, authenticateRequest, resolveApiActor } from "@/lib/tenant";
+import { assertStoreAccess, authorizeApiRequest } from "@/lib/tenant";
 import { getStoreThemeState, listThemeOptions, selectTheme } from "@/lib/services/theme-service";
 
 /**
@@ -27,11 +28,12 @@ const selectSchema = z.object({
 export const GET = route(async (request: NextRequest, context: StoreRouteContext) => {
   const { storeId } = await context.params;
 
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
+  const { actor } = await authorizeApiRequest(request);
   assertPermission(actor, "design:read");
   await assertStoreAccess(actor, storeId);
-  rateLimit(`themes:read:${actor.tenantId}`, 120);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "themes:read");
 
   const [options, state] = await Promise.all([
     listThemeOptions(storeId, actor.tenantId),
@@ -51,9 +53,10 @@ export const POST = route(async (request: NextRequest, context: StoreRouteContex
   const { storeId } = await context.params;
 
   assertCsrf(request);
-  const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
-  rateLimit(`themes:select:${actor.tenantId}`, 30);
+  const { actor } = await authorizeApiRequest(request);
+  const snapshot = await loadEntitlementSnapshot(actor.tenantId);
+  assertApiAccess(snapshot);
+  await rateLimitForTenant(actor.tenantId, "themes:select");
 
   const { themeCode } = await parseBody(request, selectSchema);
   const result = await selectTheme(actor, storeId, themeCode);

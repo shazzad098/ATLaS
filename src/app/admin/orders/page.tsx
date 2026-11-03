@@ -1,13 +1,28 @@
 import Link from "next/link";
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { formatDateTime } from "@/lib/dates";
 import { formatBdt } from "@/lib/money";
 import { ORDER_STATUS_LABELS, countsByStatus, listOrders } from "@/lib/services/order-service";
 import { Badge, Card, EmptyState, Table, Td, Th } from "@/components/ui/shell";
 
-/** Order list with status filter, search and cursor pagination (FR-05). */
+/** Order list with status filter, search, sortable columns and cursor pagination (FR-05). */
 
 export const metadata = { title: "অর্ডার" };
+
+/** URL sort keys → service whitelisted fields. */
+const SORT_FIELDS = {
+  orders: "placedAt",
+  customer: "customerName",
+  status: "status",
+  payment: "paymentProvider",
+  items: "items",
+  total: "grandTotal",
+} as const;
+
+const SORT_KEYS = Object.keys(SORT_FIELDS) as Array<keyof typeof SORT_FIELDS>;
+
+/** Columns that read more naturally ascending the first time you click them. */
+const SORT_DEFAULT_ASC: Array<(typeof SORT_KEYS)[number]> = ["customer", "status", "payment"];
 
 const STATUS_TONE: Record<string, "neutral" | "info" | "success" | "warning" | "danger"> = {
   PENDING_PAYMENT: "warning",
@@ -24,13 +39,22 @@ const STATUS_TONE: Record<string, "neutral" | "info" | "success" | "warning" | "
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string; cursor?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; cursor?: string; sort?: string; dir?: string }>;
 }) {
-  const { store } = await requireActiveStore();
+  const { store } = await requireActiveStorePermissionPage("orders:read");
   const query = await searchParams;
+  const sort = SORT_KEYS.find((key) => key === query.sort) ?? "orders";
+  const dir: "asc" | "desc" = query.dir === "asc" ? "asc" : "desc";
 
   const [result, counts] = await Promise.all([
-    listOrders(store.id, { status: query.status, q: query.q, cursor: query.cursor, limit: 20 }),
+    listOrders(store.id, {
+      status: query.status,
+      q: query.q,
+      cursor: query.cursor,
+      limit: 20,
+      sort: SORT_FIELDS[sort],
+      dir,
+    }),
     countsByStatus(store.id),
   ]);
 
@@ -38,13 +62,26 @@ export default async function OrdersPage({
 
   const buildHref = (overrides: Record<string, string | undefined>) => {
     const search = new URLSearchParams();
-    const merged = { status: query.status, q: query.q, cursor: query.cursor, ...overrides };
+    const merged = {
+      status: query.status,
+      q: query.q,
+      cursor: query.cursor,
+      sort: sort === "orders" ? undefined : sort,
+      dir: dir === "desc" ? undefined : dir,
+      ...overrides,
+    };
     for (const [key, value] of Object.entries(merged)) {
       if (!value) continue;
       search.set(key, value);
     }
     const qs = search.toString();
     return `/admin/orders${qs ? `?${qs}` : ""}`;
+  };
+
+  /** Clicking a new column uses its natural first order; clicking again flips. */
+  const sortHref = (key: (typeof SORT_KEYS)[number]) => {
+    const nextDir = sort === key ? (dir === "desc" ? "asc" : "desc") : SORT_DEFAULT_ASC.includes(key) ? "asc" : "desc";
+    return buildHref({ sort: key === "orders" ? undefined : key, dir: nextDir === "desc" ? undefined : nextDir, cursor: undefined });
   };
 
   return (
@@ -107,12 +144,31 @@ export default async function OrdersPage({
           <Table>
             <thead>
               <tr>
-                <Th>অর্ডার</Th>
-                <Th>ক্রেতা</Th>
-                <Th>স্ট্যাটাস</Th>
-                <Th>পেমেন্ট</Th>
-                <Th className="text-right">আইটেম</Th>
-                <Th className="text-right">মোট</Th>
+              {(
+                [
+                  { key: "orders", label: "অর্ডার", right: false },
+                  { key: "customer", label: "ক্রেতা", right: false },
+                  { key: "status", label: "স্ট্যাটাস", right: false },
+                  { key: "payment", label: "পেমেন্ট", right: false },
+                  { key: "items", label: "আইটেম", right: true },
+                  { key: "total", label: "মোট", right: true },
+                ] as const
+              ).map((column) => (
+                  <Th key={column.key} className={column.right ? "text-right" : undefined}>
+                    <Link
+                      href={sortHref(column.key)}
+                      className={`inline-flex items-center gap-1 hover:text-ink-900 ${
+                        sort === column.key ? "font-semibold text-ink-900" : ""
+                      }`}
+                      title="ক্লিক করে সাজান"
+                    >
+                      {column.label}
+                      <span aria-hidden className="text-[10px] text-ink-400">
+                        {sort === column.key ? (dir === "asc" ? "▲" : "▼") : "▲▼"}
+                      </span>
+                    </Link>
+                  </Th>
+                ))}
               </tr>
             </thead>
             <tbody>

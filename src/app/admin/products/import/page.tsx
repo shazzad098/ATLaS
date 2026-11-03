@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { requireActiveStorePage } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { CSV_HEADERS } from "@/lib/services/catalog-service";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
 import { Alert, Card, CardBody, CardHeader, PageHeader } from "@/components/ui/shell";
@@ -11,7 +11,7 @@ import { ImportForm } from "@/app/admin/_components/import-form";
 export const metadata: Metadata = { title: "CSV import" };
 
 export default async function ImportProductsPage() {
-  const { workspace, store } = await requireActiveStorePage();
+  const { workspace, store } = await requireActiveStorePermissionPage("catalog:write");
   const snapshot = await loadEntitlementSnapshot(workspace.activeTenant.tenantId);
   const canCommit = snapshot.limits.bulkTools;
 

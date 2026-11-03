@@ -26,6 +26,18 @@ import {
 
 const SANDBOX_CALLBACK_KEY = "bkashTxnId";
 
+type BkashVerification = {
+  statusCode?: string;
+  statusMessage?: string;
+  paymentID?: string;
+  trxID?: string;
+  transactionStatus?: string;
+  amount?: string;
+  currency?: string;
+  merchantInvoiceNumber?: string;
+  [key: string]: unknown;
+};
+
 async function grantToken(): Promise<string> {
   const { baseUrl, appKey, appSecret, username, password } = env.gateways.bkash;
   const response = await fetch(`${baseUrl}/tokenized/checkout/token/grant`, {
@@ -47,6 +59,70 @@ async function grantToken(): Promise<string> {
     throw new PaymentAdapterError("bKash token response অবৈধ।", "BKASH", data);
   }
   return data.id_token;
+}
+
+async function callCheckout(
+  endpoint: string,
+  body: Record<string, unknown>,
+): Promise<{ ok: boolean; status: number; data: BkashVerification }> {
+  const token = await grantToken();
+  const { baseUrl, appKey } = env.gateways.bkash;
+  const response = await fetch(`${baseUrl}/tokenized/checkout/${endpoint}`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: token,
+      "x-app-key": appKey,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = (await response.json().catch(() => ({}))) as BkashVerification;
+  return { ok: response.ok, status: response.status, data };
+}
+
+function isCompleted(data: BkashVerification): boolean {
+  const status = (data.transactionStatus ?? "").toLowerCase();
+  return status === "completed" || (status === "" && data.statusCode === "0000" && Boolean(data.trxID));
+}
+
+/**
+ * Executes a bKash payment and, if execution cannot be completed (for example
+ * because the callback was replayed), asks bKash for the authoritative status.
+ * A success callback is never trusted without one of these server-side checks.
+ */
+async function verifyLivePayment(
+  paymentId: string,
+): Promise<{ authoritative: boolean; data?: BkashVerification; error?: string }> {
+  let executeError: string | undefined;
+  try {
+    const execute = await callCheckout("execute", { paymentID: paymentId });
+    if (
+      execute.ok &&
+      (execute.data.transactionStatus !== undefined || execute.data.statusCode !== undefined)
+    ) {
+      return { authoritative: true, data: execute.data };
+    }
+    executeError =
+      execute.data.statusMessage ?? `bKash execute HTTP ${execute.status}`;
+  } catch (error) {
+    executeError = error instanceof Error ? error.message : "bKash execute failed";
+  }
+
+  try {
+    const query = await callCheckout("payment/status", { paymentID: paymentId });
+    if (query.ok && query.data.statusCode !== undefined) {
+      return { authoritative: true, data: query.data };
+    }
+    return {
+      authoritative: false,
+      error: query.data.statusMessage ?? executeError ?? "bKash status check failed",
+    };
+  } catch (error) {
+    return {
+      authoritative: false,
+      error: error instanceof Error ? error.message : (executeError ?? "bKash status check failed"),
+    };
+  }
 }
 
 export const bkashAdapter: PaymentAdapter = {
@@ -117,17 +193,61 @@ export const bkashAdapter: PaymentAdapter = {
     const paymentId = params.get("paymentID") ?? request.headers.get("x-bkash-payment-id");
     const status = params.get("status");
 
-    // bKash reports the outcome on the callback URL. The authoritative check is
-    // the execute call, performed by `payment-service` before crediting.
+    // bKash callbacks are not signed. The only authoritative proof is the
+    // server-side execute call (or a status query if execute is replayed), so a
+    // request that only claims `status=success` is never trusted.
     if (paymentId) {
+      if (!this.isConfigured()) {
+        return {
+          eventKey: `bkash:${paymentId}:${status ?? "unverified"}`,
+          providerTxnId: paymentId,
+          orderNo: params.get("merchantInvoiceNumber"),
+          amount: params.get("amount"),
+          status: "PENDING",
+          signatureValid: false,
+          failureReason: "bKash credentials are not configured; callback cannot be verified.",
+          raw: Object.fromEntries(params.entries()),
+        };
+      }
+
+      const verification = await verifyLivePayment(paymentId);
+      if (!verification.authoritative || !verification.data) {
+        return {
+          eventKey: `bkash:${paymentId}:${status ?? "unverified"}`,
+          providerTxnId: paymentId,
+          orderNo: params.get("merchantInvoiceNumber"),
+          amount: params.get("amount"),
+          status: "PENDING",
+          signatureValid: false,
+          failureReason: verification.error ?? "bKash verification failed.",
+          raw: {
+            callback: Object.fromEntries(params.entries()),
+            verificationError: verification.error ?? "unknown",
+          },
+        };
+      }
+
+      const data = verification.data;
+      const succeeded = isCompleted(data);
       return {
-        eventKey: `bkash:${paymentId}:${status ?? "unknown"}`,
-        providerTxnId: paymentId,
-        orderNo: params.get("merchantInvoiceNumber"),
-        amount: params.get("amount"),
-        status: status === "success" ? "SUCCEEDED" : status ? "FAILED" : "PENDING",
+        // trxID is stable across callback retries once bKash completes the
+        // payment; the callback `status` alone is not an idempotency key.
+        eventKey: `bkash:${paymentId}:${data.trxID ?? status ?? "unknown"}:${succeeded ? "success" : "failed"}`,
+        providerTxnId: data.paymentID ?? paymentId,
+        orderNo: data.merchantInvoiceNumber ?? null,
+        // Only the execute/status response is authoritative; the callback
+        // query string can be edited by the browser.
+        amount: data.amount ?? null,
+        currency: data.currency ?? null,
+        status: succeeded ? "SUCCEEDED" : "FAILED",
         signatureValid: true,
-        raw: Object.fromEntries(params.entries()),
+        failureReason: succeeded
+          ? undefined
+          : (data.statusMessage ?? data.transactionStatus ?? "bKash declined the payment."),
+        raw: {
+          callback: Object.fromEntries(params.entries()),
+          verification: data,
+        },
       };
     }
 
@@ -160,7 +280,9 @@ function parseSandboxBody(rawBody: string, request: Request): CallbackResult {
     eventKey: String(payload.eventKey ?? `bkash:${payload.providerTxnId ?? "unknown"}`),
     providerTxnId: payload.providerTxnId ? String(payload.providerTxnId) : null,
     orderNo: payload.orderNo ? String(payload.orderNo) : null,
+    orderId: payload.orderId ? String(payload.orderId) : null,
     amount: payload.amount ? String(payload.amount) : null,
+    currency: payload.currency ? String(payload.currency) : "BDT",
     status: payload.status === "FAILED" ? "FAILED" : payload.status === "SUCCEEDED" ? "SUCCEEDED" : "PENDING",
     signatureValid: verifySandboxSignature(rawBody, request.headers.get(SANDBOX_SIGNATURE_HEADER)),
     failureReason: payload.failureReason ? String(payload.failureReason) : undefined,

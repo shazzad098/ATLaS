@@ -23,6 +23,8 @@ export type AccessClaims = {
   sub: string;
   /** session id, so a session can be revoked mid-lifetime */
   sid: string;
+  /** Super Admin flag — lets the proxy choose the platform RLS context. */
+  sa?: boolean;
 };
 
 function secretKey(): Uint8Array {
@@ -30,7 +32,7 @@ function secretKey(): Uint8Array {
 }
 
 export async function signAccessToken(claims: AccessClaims): Promise<string> {
-  return new SignJWT({ sid: claims.sid })
+  return new SignJWT({ sid: claims.sid, sa: claims.sa === true })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setSubject(claims.sub)
     .setIssuedAt()
@@ -47,7 +49,7 @@ export async function verifyAccessToken(token: string): Promise<AccessClaims | n
       audience: "atlas-app",
     });
     if (typeof payload.sub !== "string" || typeof payload.sid !== "string") return null;
-    return { sub: payload.sub, sid: payload.sid };
+    return { sub: payload.sub, sid: payload.sid, sa: payload.sa === true };
   } catch {
     return null;
   }

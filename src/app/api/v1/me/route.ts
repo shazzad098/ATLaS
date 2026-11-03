@@ -1,4 +1,5 @@
-import { ok, rateLimit, clientIp, route } from "@/lib/api";
+import { ok, rateLimitForTenant, route } from "@/lib/api";
+import { ForbiddenError } from "@/lib/errors";
 import { authenticateRequest, resolveApiActor } from "@/lib/tenant";
 import { loadEntitlementSnapshot } from "@/lib/entitlements";
 import { listStores } from "@/lib/services/store-service";
@@ -17,10 +18,33 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export const GET = route(async (request: Request) => {
-  rateLimit(`me:${clientIp(request)}`, 120);
-
   const user = await authenticateRequest(request);
-  const actor = await resolveApiActor(request, user);
+
+  let actor;
+  try {
+    actor = await resolveApiActor(request, user);
+  } catch (error) {
+    // A platform super admin has no merchant membership. The API still returns
+    // a useful identity payload; tenant-scoped endpoints remain forbidden.
+    if (user.isSuperAdmin && error instanceof ForbiddenError) {
+      return ok({
+        user: {
+          id: user.id,
+          phone: user.phone,
+          email: user.email,
+          name: user.name,
+          isSuperAdmin: true,
+        },
+        superAdmin: true,
+        tenant: null,
+        plan: null,
+        stores: [],
+      });
+    }
+    throw error;
+  }
+
+  await rateLimitForTenant(actor.tenantId, "me:read");
 
   const [stores, entitlements] = await Promise.all([
     listStores(actor.tenantId),
@@ -35,6 +59,7 @@ export const GET = route(async (request: Request) => {
       name: user.name,
       isSuperAdmin: user.isSuperAdmin,
     },
+    superAdmin: false,
     tenant: {
       id: actor.tenantId,
       role: actor.roleCode,

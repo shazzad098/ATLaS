@@ -245,7 +245,17 @@ export type StoreWhereInput = {
   inventoryMovements?: Prisma.InventoryMovementListRelationFilter
   paymentMethods?: Prisma.PaymentMethodListRelationFilter
   deliveryZones?: Prisma.DeliveryZoneListRelationFilter
+  deliveryMethods?: Prisma.DeliveryMethodListRelationFilter
+  shipments?: Prisma.ShipmentListRelationFilter
   feeLedger?: Prisma.FeeLedgerListRelationFilter
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventListRelationFilter
+  notificationDeliveries?: Prisma.NotificationDeliveryListRelationFilter
+  analyticsEvents?: Prisma.AnalyticsEventListRelationFilter
+  dailyMetrics?: Prisma.DailyStoreMetricListRelationFilter
+  exportJobs?: Prisma.ExportJobListRelationFilter
+  exportSchedules?: Prisma.ExportScheduleListRelationFilter
+  reviews?: Prisma.ProductReviewListRelationFilter
+  wishlist?: Prisma.WishlistItemListRelationFilter
 }
 
 export type StoreOrderByWithRelationInput = {
@@ -275,7 +285,17 @@ export type StoreOrderByWithRelationInput = {
   inventoryMovements?: Prisma.InventoryMovementOrderByRelationAggregateInput
   paymentMethods?: Prisma.PaymentMethodOrderByRelationAggregateInput
   deliveryZones?: Prisma.DeliveryZoneOrderByRelationAggregateInput
+  deliveryMethods?: Prisma.DeliveryMethodOrderByRelationAggregateInput
+  shipments?: Prisma.ShipmentOrderByRelationAggregateInput
   feeLedger?: Prisma.FeeLedgerOrderByRelationAggregateInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventOrderByRelationAggregateInput
+  notificationDeliveries?: Prisma.NotificationDeliveryOrderByRelationAggregateInput
+  analyticsEvents?: Prisma.AnalyticsEventOrderByRelationAggregateInput
+  dailyMetrics?: Prisma.DailyStoreMetricOrderByRelationAggregateInput
+  exportJobs?: Prisma.ExportJobOrderByRelationAggregateInput
+  exportSchedules?: Prisma.ExportScheduleOrderByRelationAggregateInput
+  reviews?: Prisma.ProductReviewOrderByRelationAggregateInput
+  wishlist?: Prisma.WishlistItemOrderByRelationAggregateInput
 }
 
 export type StoreWhereUniqueInput = Prisma.AtLeast<{
@@ -308,7 +328,17 @@ export type StoreWhereUniqueInput = Prisma.AtLeast<{
   inventoryMovements?: Prisma.InventoryMovementListRelationFilter
   paymentMethods?: Prisma.PaymentMethodListRelationFilter
   deliveryZones?: Prisma.DeliveryZoneListRelationFilter
+  deliveryMethods?: Prisma.DeliveryMethodListRelationFilter
+  shipments?: Prisma.ShipmentListRelationFilter
   feeLedger?: Prisma.FeeLedgerListRelationFilter
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventListRelationFilter
+  notificationDeliveries?: Prisma.NotificationDeliveryListRelationFilter
+  analyticsEvents?: Prisma.AnalyticsEventListRelationFilter
+  dailyMetrics?: Prisma.DailyStoreMetricListRelationFilter
+  exportJobs?: Prisma.ExportJobListRelationFilter
+  exportSchedules?: Prisma.ExportScheduleListRelationFilter
+  reviews?: Prisma.ProductReviewListRelationFilter
+  wishlist?: Prisma.WishlistItemListRelationFilter
 }, "id" | "slug">
 
 export type StoreOrderByWithAggregationInput = {
@@ -371,7 +401,17 @@ export type StoreCreateInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateInput = {
@@ -400,7 +440,17 @@ export type StoreUncheckedCreateInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUpdateInput = {
@@ -429,7 +479,17 @@ export type StoreUpdateInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateInput = {
@@ -458,7 +518,17 @@ export type StoreUncheckedUpdateInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateManyInput = {
@@ -738,6 +808,34 @@ export type StoreUpdateOneRequiredWithoutCustomersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutCustomersInput, Prisma.StoreUpdateWithoutCustomersInput>, Prisma.StoreUncheckedUpdateWithoutCustomersInput>
 }
 
+export type StoreCreateNestedOneWithoutReviewsInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutReviewsInput, Prisma.StoreUncheckedCreateWithoutReviewsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutReviewsInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneRequiredWithoutReviewsNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutReviewsInput, Prisma.StoreUncheckedCreateWithoutReviewsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutReviewsInput
+  upsert?: Prisma.StoreUpsertWithoutReviewsInput
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutReviewsInput, Prisma.StoreUpdateWithoutReviewsInput>, Prisma.StoreUncheckedUpdateWithoutReviewsInput>
+}
+
+export type StoreCreateNestedOneWithoutWishlistInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutWishlistInput, Prisma.StoreUncheckedCreateWithoutWishlistInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutWishlistInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneRequiredWithoutWishlistNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutWishlistInput, Prisma.StoreUncheckedCreateWithoutWishlistInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutWishlistInput
+  upsert?: Prisma.StoreUpsertWithoutWishlistInput
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutWishlistInput, Prisma.StoreUpdateWithoutWishlistInput>, Prisma.StoreUncheckedUpdateWithoutWishlistInput>
+}
+
 export type StoreCreateNestedOneWithoutCartsInput = {
   create?: Prisma.XOR<Prisma.StoreCreateWithoutCartsInput, Prisma.StoreUncheckedCreateWithoutCartsInput>
   connectOrCreate?: Prisma.StoreCreateOrConnectWithoutCartsInput
@@ -778,6 +876,22 @@ export type StoreUpdateOneRequiredWithoutPaymentMethodsNestedInput = {
   upsert?: Prisma.StoreUpsertWithoutPaymentMethodsInput
   connect?: Prisma.StoreWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutPaymentMethodsInput, Prisma.StoreUpdateWithoutPaymentMethodsInput>, Prisma.StoreUncheckedUpdateWithoutPaymentMethodsInput>
+}
+
+export type StoreCreateNestedOneWithoutPaymentWebhookEventsInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutPaymentWebhookEventsInput, Prisma.StoreUncheckedCreateWithoutPaymentWebhookEventsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutPaymentWebhookEventsInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneWithoutPaymentWebhookEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutPaymentWebhookEventsInput, Prisma.StoreUncheckedCreateWithoutPaymentWebhookEventsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutPaymentWebhookEventsInput
+  upsert?: Prisma.StoreUpsertWithoutPaymentWebhookEventsInput
+  disconnect?: Prisma.StoreWhereInput | boolean
+  delete?: Prisma.StoreWhereInput | boolean
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutPaymentWebhookEventsInput, Prisma.StoreUpdateWithoutPaymentWebhookEventsInput>, Prisma.StoreUncheckedUpdateWithoutPaymentWebhookEventsInput>
 }
 
 export type StoreCreateNestedOneWithoutFeeLedgerInput = {
@@ -822,6 +936,108 @@ export type StoreUpdateOneRequiredWithoutDeliveryZonesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutDeliveryZonesInput, Prisma.StoreUpdateWithoutDeliveryZonesInput>, Prisma.StoreUncheckedUpdateWithoutDeliveryZonesInput>
 }
 
+export type StoreCreateNestedOneWithoutDeliveryMethodsInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutDeliveryMethodsInput, Prisma.StoreUncheckedCreateWithoutDeliveryMethodsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutDeliveryMethodsInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneRequiredWithoutDeliveryMethodsNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutDeliveryMethodsInput, Prisma.StoreUncheckedCreateWithoutDeliveryMethodsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutDeliveryMethodsInput
+  upsert?: Prisma.StoreUpsertWithoutDeliveryMethodsInput
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutDeliveryMethodsInput, Prisma.StoreUpdateWithoutDeliveryMethodsInput>, Prisma.StoreUncheckedUpdateWithoutDeliveryMethodsInput>
+}
+
+export type StoreCreateNestedOneWithoutShipmentsInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutShipmentsInput, Prisma.StoreUncheckedCreateWithoutShipmentsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutShipmentsInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneRequiredWithoutShipmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutShipmentsInput, Prisma.StoreUncheckedCreateWithoutShipmentsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutShipmentsInput
+  upsert?: Prisma.StoreUpsertWithoutShipmentsInput
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutShipmentsInput, Prisma.StoreUpdateWithoutShipmentsInput>, Prisma.StoreUncheckedUpdateWithoutShipmentsInput>
+}
+
+export type StoreCreateNestedOneWithoutNotificationDeliveriesInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutNotificationDeliveriesInput, Prisma.StoreUncheckedCreateWithoutNotificationDeliveriesInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutNotificationDeliveriesInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneWithoutNotificationDeliveriesNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutNotificationDeliveriesInput, Prisma.StoreUncheckedCreateWithoutNotificationDeliveriesInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutNotificationDeliveriesInput
+  upsert?: Prisma.StoreUpsertWithoutNotificationDeliveriesInput
+  disconnect?: Prisma.StoreWhereInput | boolean
+  delete?: Prisma.StoreWhereInput | boolean
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutNotificationDeliveriesInput, Prisma.StoreUpdateWithoutNotificationDeliveriesInput>, Prisma.StoreUncheckedUpdateWithoutNotificationDeliveriesInput>
+}
+
+export type StoreCreateNestedOneWithoutDailyMetricsInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutDailyMetricsInput, Prisma.StoreUncheckedCreateWithoutDailyMetricsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutDailyMetricsInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneRequiredWithoutDailyMetricsNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutDailyMetricsInput, Prisma.StoreUncheckedCreateWithoutDailyMetricsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutDailyMetricsInput
+  upsert?: Prisma.StoreUpsertWithoutDailyMetricsInput
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutDailyMetricsInput, Prisma.StoreUpdateWithoutDailyMetricsInput>, Prisma.StoreUncheckedUpdateWithoutDailyMetricsInput>
+}
+
+export type StoreCreateNestedOneWithoutExportJobsInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutExportJobsInput, Prisma.StoreUncheckedCreateWithoutExportJobsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutExportJobsInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneRequiredWithoutExportJobsNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutExportJobsInput, Prisma.StoreUncheckedCreateWithoutExportJobsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutExportJobsInput
+  upsert?: Prisma.StoreUpsertWithoutExportJobsInput
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutExportJobsInput, Prisma.StoreUpdateWithoutExportJobsInput>, Prisma.StoreUncheckedUpdateWithoutExportJobsInput>
+}
+
+export type StoreCreateNestedOneWithoutExportSchedulesInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutExportSchedulesInput, Prisma.StoreUncheckedCreateWithoutExportSchedulesInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutExportSchedulesInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneRequiredWithoutExportSchedulesNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutExportSchedulesInput, Prisma.StoreUncheckedCreateWithoutExportSchedulesInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutExportSchedulesInput
+  upsert?: Prisma.StoreUpsertWithoutExportSchedulesInput
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutExportSchedulesInput, Prisma.StoreUpdateWithoutExportSchedulesInput>, Prisma.StoreUncheckedUpdateWithoutExportSchedulesInput>
+}
+
+export type StoreCreateNestedOneWithoutAnalyticsEventsInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutAnalyticsEventsInput, Prisma.StoreUncheckedCreateWithoutAnalyticsEventsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutAnalyticsEventsInput
+  connect?: Prisma.StoreWhereUniqueInput
+}
+
+export type StoreUpdateOneWithoutAnalyticsEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.StoreCreateWithoutAnalyticsEventsInput, Prisma.StoreUncheckedCreateWithoutAnalyticsEventsInput>
+  connectOrCreate?: Prisma.StoreCreateOrConnectWithoutAnalyticsEventsInput
+  upsert?: Prisma.StoreUpsertWithoutAnalyticsEventsInput
+  disconnect?: Prisma.StoreWhereInput | boolean
+  delete?: Prisma.StoreWhereInput | boolean
+  connect?: Prisma.StoreWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.StoreUpdateToOneWithWhereWithoutAnalyticsEventsInput, Prisma.StoreUpdateWithoutAnalyticsEventsInput>, Prisma.StoreUncheckedUpdateWithoutAnalyticsEventsInput>
+}
+
 export type StoreCreateWithoutTenantInput = {
   id?: string
   name: string
@@ -847,7 +1063,17 @@ export type StoreCreateWithoutTenantInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutTenantInput = {
@@ -875,7 +1101,17 @@ export type StoreUncheckedCreateWithoutTenantInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutTenantInput = {
@@ -946,7 +1182,17 @@ export type StoreCreateWithoutSettingsInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutSettingsInput = {
@@ -974,7 +1220,17 @@ export type StoreUncheckedCreateWithoutSettingsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutSettingsInput = {
@@ -1018,7 +1274,17 @@ export type StoreUpdateWithoutSettingsInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutSettingsInput = {
@@ -1046,7 +1312,17 @@ export type StoreUncheckedUpdateWithoutSettingsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutThemesInput = {
@@ -1074,7 +1350,17 @@ export type StoreCreateWithoutThemesInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutThemesInput = {
@@ -1102,7 +1388,17 @@ export type StoreUncheckedCreateWithoutThemesInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutThemesInput = {
@@ -1146,7 +1442,17 @@ export type StoreUpdateWithoutThemesInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutThemesInput = {
@@ -1174,7 +1480,17 @@ export type StoreUncheckedUpdateWithoutThemesInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutPagesInput = {
@@ -1202,7 +1518,17 @@ export type StoreCreateWithoutPagesInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutPagesInput = {
@@ -1230,7 +1556,17 @@ export type StoreUncheckedCreateWithoutPagesInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutPagesInput = {
@@ -1274,7 +1610,17 @@ export type StoreUpdateWithoutPagesInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutPagesInput = {
@@ -1302,7 +1648,17 @@ export type StoreUncheckedUpdateWithoutPagesInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutDomainsInput = {
@@ -1330,7 +1686,17 @@ export type StoreCreateWithoutDomainsInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutDomainsInput = {
@@ -1358,7 +1724,17 @@ export type StoreUncheckedCreateWithoutDomainsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutDomainsInput = {
@@ -1402,7 +1778,17 @@ export type StoreUpdateWithoutDomainsInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutDomainsInput = {
@@ -1430,7 +1816,17 @@ export type StoreUncheckedUpdateWithoutDomainsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutCategoriesInput = {
@@ -1458,7 +1854,17 @@ export type StoreCreateWithoutCategoriesInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutCategoriesInput = {
@@ -1486,7 +1892,17 @@ export type StoreUncheckedCreateWithoutCategoriesInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutCategoriesInput = {
@@ -1530,7 +1946,17 @@ export type StoreUpdateWithoutCategoriesInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutCategoriesInput = {
@@ -1558,7 +1984,17 @@ export type StoreUncheckedUpdateWithoutCategoriesInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutProductsInput = {
@@ -1586,7 +2022,17 @@ export type StoreCreateWithoutProductsInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutProductsInput = {
@@ -1614,7 +2060,17 @@ export type StoreUncheckedCreateWithoutProductsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutProductsInput = {
@@ -1658,7 +2114,17 @@ export type StoreUpdateWithoutProductsInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutProductsInput = {
@@ -1686,7 +2152,17 @@ export type StoreUncheckedUpdateWithoutProductsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutInventoryMovementsInput = {
@@ -1714,7 +2190,17 @@ export type StoreCreateWithoutInventoryMovementsInput = {
   assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutInventoryMovementsInput = {
@@ -1742,7 +2228,17 @@ export type StoreUncheckedCreateWithoutInventoryMovementsInput = {
   assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutInventoryMovementsInput = {
@@ -1786,7 +2282,17 @@ export type StoreUpdateWithoutInventoryMovementsInput = {
   assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutInventoryMovementsInput = {
@@ -1814,7 +2320,17 @@ export type StoreUncheckedUpdateWithoutInventoryMovementsInput = {
   assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutAssetsInput = {
@@ -1842,7 +2358,17 @@ export type StoreCreateWithoutAssetsInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutAssetsInput = {
@@ -1870,7 +2396,17 @@ export type StoreUncheckedCreateWithoutAssetsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutAssetsInput = {
@@ -1914,7 +2450,17 @@ export type StoreUpdateWithoutAssetsInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutAssetsInput = {
@@ -1942,7 +2488,17 @@ export type StoreUncheckedUpdateWithoutAssetsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutCustomersInput = {
@@ -1970,7 +2526,17 @@ export type StoreCreateWithoutCustomersInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutCustomersInput = {
@@ -1998,7 +2564,17 @@ export type StoreUncheckedCreateWithoutCustomersInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutCustomersInput = {
@@ -2042,7 +2618,17 @@ export type StoreUpdateWithoutCustomersInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutCustomersInput = {
@@ -2070,7 +2656,353 @@ export type StoreUncheckedUpdateWithoutCustomersInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutReviewsInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutReviewsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutReviewsInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutReviewsInput, Prisma.StoreUncheckedCreateWithoutReviewsInput>
+}
+
+export type StoreUpsertWithoutReviewsInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutReviewsInput, Prisma.StoreUncheckedUpdateWithoutReviewsInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutReviewsInput, Prisma.StoreUncheckedCreateWithoutReviewsInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutReviewsInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutReviewsInput, Prisma.StoreUncheckedUpdateWithoutReviewsInput>
+}
+
+export type StoreUpdateWithoutReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutReviewsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutWishlistInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutWishlistInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutWishlistInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutWishlistInput, Prisma.StoreUncheckedCreateWithoutWishlistInput>
+}
+
+export type StoreUpsertWithoutWishlistInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutWishlistInput, Prisma.StoreUncheckedUpdateWithoutWishlistInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutWishlistInput, Prisma.StoreUncheckedCreateWithoutWishlistInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutWishlistInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutWishlistInput, Prisma.StoreUncheckedUpdateWithoutWishlistInput>
+}
+
+export type StoreUpdateWithoutWishlistInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutWishlistInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutCartsInput = {
@@ -2098,7 +3030,17 @@ export type StoreCreateWithoutCartsInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutCartsInput = {
@@ -2126,7 +3068,17 @@ export type StoreUncheckedCreateWithoutCartsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutCartsInput = {
@@ -2170,7 +3122,17 @@ export type StoreUpdateWithoutCartsInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutCartsInput = {
@@ -2198,7 +3160,17 @@ export type StoreUncheckedUpdateWithoutCartsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutOrdersInput = {
@@ -2226,7 +3198,17 @@ export type StoreCreateWithoutOrdersInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutOrdersInput = {
@@ -2254,7 +3236,17 @@ export type StoreUncheckedCreateWithoutOrdersInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutOrdersInput = {
@@ -2298,7 +3290,17 @@ export type StoreUpdateWithoutOrdersInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutOrdersInput = {
@@ -2326,7 +3328,17 @@ export type StoreUncheckedUpdateWithoutOrdersInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutPaymentMethodsInput = {
@@ -2354,7 +3366,17 @@ export type StoreCreateWithoutPaymentMethodsInput = {
   assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutPaymentMethodsInput = {
@@ -2382,7 +3404,17 @@ export type StoreUncheckedCreateWithoutPaymentMethodsInput = {
   assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutPaymentMethodsInput = {
@@ -2426,7 +3458,17 @@ export type StoreUpdateWithoutPaymentMethodsInput = {
   assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutPaymentMethodsInput = {
@@ -2454,7 +3496,185 @@ export type StoreUncheckedUpdateWithoutPaymentMethodsInput = {
   assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutPaymentWebhookEventsInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutPaymentWebhookEventsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutPaymentWebhookEventsInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutPaymentWebhookEventsInput, Prisma.StoreUncheckedCreateWithoutPaymentWebhookEventsInput>
+}
+
+export type StoreUpsertWithoutPaymentWebhookEventsInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutPaymentWebhookEventsInput, Prisma.StoreUncheckedUpdateWithoutPaymentWebhookEventsInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutPaymentWebhookEventsInput, Prisma.StoreUncheckedCreateWithoutPaymentWebhookEventsInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutPaymentWebhookEventsInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutPaymentWebhookEventsInput, Prisma.StoreUncheckedUpdateWithoutPaymentWebhookEventsInput>
+}
+
+export type StoreUpdateWithoutPaymentWebhookEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutPaymentWebhookEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutFeeLedgerInput = {
@@ -2483,6 +3703,16 @@ export type StoreCreateWithoutFeeLedgerInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutFeeLedgerInput = {
@@ -2511,6 +3741,16 @@ export type StoreUncheckedCreateWithoutFeeLedgerInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutFeeLedgerInput = {
@@ -2555,6 +3795,16 @@ export type StoreUpdateWithoutFeeLedgerInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutFeeLedgerInput = {
@@ -2583,6 +3833,16 @@ export type StoreUncheckedUpdateWithoutFeeLedgerInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutCouponsInput = {
@@ -2610,7 +3870,17 @@ export type StoreCreateWithoutCouponsInput = {
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutCouponsInput = {
@@ -2638,7 +3908,17 @@ export type StoreUncheckedCreateWithoutCouponsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutCouponsInput = {
@@ -2682,7 +3962,17 @@ export type StoreUpdateWithoutCouponsInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutCouponsInput = {
@@ -2710,7 +4000,17 @@ export type StoreUncheckedUpdateWithoutCouponsInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateWithoutDeliveryZonesInput = {
@@ -2738,7 +4038,17 @@ export type StoreCreateWithoutDeliveryZonesInput = {
   assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
   inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
 }
 
 export type StoreUncheckedCreateWithoutDeliveryZonesInput = {
@@ -2766,7 +4076,17 @@ export type StoreUncheckedCreateWithoutDeliveryZonesInput = {
   assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
   inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
   paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
   feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
 }
 
 export type StoreCreateOrConnectWithoutDeliveryZonesInput = {
@@ -2810,7 +4130,17 @@ export type StoreUpdateWithoutDeliveryZonesInput = {
   assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutDeliveryZonesInput = {
@@ -2838,7 +4168,1193 @@ export type StoreUncheckedUpdateWithoutDeliveryZonesInput = {
   assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutDeliveryMethodsInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutDeliveryMethodsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutDeliveryMethodsInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutDeliveryMethodsInput, Prisma.StoreUncheckedCreateWithoutDeliveryMethodsInput>
+}
+
+export type StoreUpsertWithoutDeliveryMethodsInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutDeliveryMethodsInput, Prisma.StoreUncheckedUpdateWithoutDeliveryMethodsInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutDeliveryMethodsInput, Prisma.StoreUncheckedCreateWithoutDeliveryMethodsInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutDeliveryMethodsInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutDeliveryMethodsInput, Prisma.StoreUncheckedUpdateWithoutDeliveryMethodsInput>
+}
+
+export type StoreUpdateWithoutDeliveryMethodsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutDeliveryMethodsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutShipmentsInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutShipmentsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutShipmentsInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutShipmentsInput, Prisma.StoreUncheckedCreateWithoutShipmentsInput>
+}
+
+export type StoreUpsertWithoutShipmentsInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutShipmentsInput, Prisma.StoreUncheckedUpdateWithoutShipmentsInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutShipmentsInput, Prisma.StoreUncheckedCreateWithoutShipmentsInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutShipmentsInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutShipmentsInput, Prisma.StoreUncheckedUpdateWithoutShipmentsInput>
+}
+
+export type StoreUpdateWithoutShipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutShipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutNotificationDeliveriesInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutNotificationDeliveriesInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutNotificationDeliveriesInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutNotificationDeliveriesInput, Prisma.StoreUncheckedCreateWithoutNotificationDeliveriesInput>
+}
+
+export type StoreUpsertWithoutNotificationDeliveriesInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutNotificationDeliveriesInput, Prisma.StoreUncheckedUpdateWithoutNotificationDeliveriesInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutNotificationDeliveriesInput, Prisma.StoreUncheckedCreateWithoutNotificationDeliveriesInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutNotificationDeliveriesInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutNotificationDeliveriesInput, Prisma.StoreUncheckedUpdateWithoutNotificationDeliveriesInput>
+}
+
+export type StoreUpdateWithoutNotificationDeliveriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutNotificationDeliveriesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutDailyMetricsInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutDailyMetricsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutDailyMetricsInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutDailyMetricsInput, Prisma.StoreUncheckedCreateWithoutDailyMetricsInput>
+}
+
+export type StoreUpsertWithoutDailyMetricsInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutDailyMetricsInput, Prisma.StoreUncheckedUpdateWithoutDailyMetricsInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutDailyMetricsInput, Prisma.StoreUncheckedCreateWithoutDailyMetricsInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutDailyMetricsInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutDailyMetricsInput, Prisma.StoreUncheckedUpdateWithoutDailyMetricsInput>
+}
+
+export type StoreUpdateWithoutDailyMetricsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutDailyMetricsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutExportJobsInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutExportJobsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutExportJobsInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutExportJobsInput, Prisma.StoreUncheckedCreateWithoutExportJobsInput>
+}
+
+export type StoreUpsertWithoutExportJobsInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutExportJobsInput, Prisma.StoreUncheckedUpdateWithoutExportJobsInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutExportJobsInput, Prisma.StoreUncheckedCreateWithoutExportJobsInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutExportJobsInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutExportJobsInput, Prisma.StoreUncheckedUpdateWithoutExportJobsInput>
+}
+
+export type StoreUpdateWithoutExportJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutExportJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutExportSchedulesInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutExportSchedulesInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutExportSchedulesInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutExportSchedulesInput, Prisma.StoreUncheckedCreateWithoutExportSchedulesInput>
+}
+
+export type StoreUpsertWithoutExportSchedulesInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutExportSchedulesInput, Prisma.StoreUncheckedUpdateWithoutExportSchedulesInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutExportSchedulesInput, Prisma.StoreUncheckedCreateWithoutExportSchedulesInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutExportSchedulesInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutExportSchedulesInput, Prisma.StoreUncheckedUpdateWithoutExportSchedulesInput>
+}
+
+export type StoreUpdateWithoutExportSchedulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutExportSchedulesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreCreateWithoutAnalyticsEventsInput = {
+  id?: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  tenant: Prisma.TenantCreateNestedOneWithoutStoresInput
+  settings?: Prisma.StoreSettingsCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemCreateNestedManyWithoutStoreInput
+}
+
+export type StoreUncheckedCreateWithoutAnalyticsEventsInput = {
+  id?: string
+  tenantId: string
+  name: string
+  slug: string
+  description?: string | null
+  logoAssetId?: string | null
+  status?: $Enums.StoreStatus
+  publishedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedCreateNestedOneWithoutStoreInput
+  themes?: Prisma.StoreThemeUncheckedCreateNestedManyWithoutStoreInput
+  pages?: Prisma.ContentPageUncheckedCreateNestedManyWithoutStoreInput
+  domains?: Prisma.DomainUncheckedCreateNestedManyWithoutStoreInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutStoreInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutStoreInput
+  customers?: Prisma.CustomerUncheckedCreateNestedManyWithoutStoreInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutStoreInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutStoreInput
+  coupons?: Prisma.CouponUncheckedCreateNestedManyWithoutStoreInput
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutStoreInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedCreateNestedManyWithoutStoreInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedCreateNestedManyWithoutStoreInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedCreateNestedManyWithoutStoreInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedCreateNestedManyWithoutStoreInput
+  shipments?: Prisma.ShipmentUncheckedCreateNestedManyWithoutStoreInput
+  feeLedger?: Prisma.FeeLedgerUncheckedCreateNestedManyWithoutStoreInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedCreateNestedManyWithoutStoreInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedCreateNestedManyWithoutStoreInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedCreateNestedManyWithoutStoreInput
+  exportJobs?: Prisma.ExportJobUncheckedCreateNestedManyWithoutStoreInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedCreateNestedManyWithoutStoreInput
+  reviews?: Prisma.ProductReviewUncheckedCreateNestedManyWithoutStoreInput
+  wishlist?: Prisma.WishlistItemUncheckedCreateNestedManyWithoutStoreInput
+}
+
+export type StoreCreateOrConnectWithoutAnalyticsEventsInput = {
+  where: Prisma.StoreWhereUniqueInput
+  create: Prisma.XOR<Prisma.StoreCreateWithoutAnalyticsEventsInput, Prisma.StoreUncheckedCreateWithoutAnalyticsEventsInput>
+}
+
+export type StoreUpsertWithoutAnalyticsEventsInput = {
+  update: Prisma.XOR<Prisma.StoreUpdateWithoutAnalyticsEventsInput, Prisma.StoreUncheckedUpdateWithoutAnalyticsEventsInput>
+  create: Prisma.XOR<Prisma.StoreCreateWithoutAnalyticsEventsInput, Prisma.StoreUncheckedCreateWithoutAnalyticsEventsInput>
+  where?: Prisma.StoreWhereInput
+}
+
+export type StoreUpdateToOneWithWhereWithoutAnalyticsEventsInput = {
+  where?: Prisma.StoreWhereInput
+  data: Prisma.XOR<Prisma.StoreUpdateWithoutAnalyticsEventsInput, Prisma.StoreUncheckedUpdateWithoutAnalyticsEventsInput>
+}
+
+export type StoreUpdateWithoutAnalyticsEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutStoresNestedInput
+  settings?: Prisma.StoreSettingsUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
+}
+
+export type StoreUncheckedUpdateWithoutAnalyticsEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  tenantId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoAssetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumStoreStatusFieldUpdateOperationsInput | $Enums.StoreStatus
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  settings?: Prisma.StoreSettingsUncheckedUpdateOneWithoutStoreNestedInput
+  themes?: Prisma.StoreThemeUncheckedUpdateManyWithoutStoreNestedInput
+  pages?: Prisma.ContentPageUncheckedUpdateManyWithoutStoreNestedInput
+  domains?: Prisma.DomainUncheckedUpdateManyWithoutStoreNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutStoreNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutStoreNestedInput
+  customers?: Prisma.CustomerUncheckedUpdateManyWithoutStoreNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutStoreNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutStoreNestedInput
+  coupons?: Prisma.CouponUncheckedUpdateManyWithoutStoreNestedInput
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutStoreNestedInput
+  inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
+  paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
+  feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreCreateManyTenantInput = {
@@ -2879,7 +5395,17 @@ export type StoreUpdateWithoutTenantInput = {
   inventoryMovements?: Prisma.InventoryMovementUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateWithoutTenantInput = {
@@ -2907,7 +5433,17 @@ export type StoreUncheckedUpdateWithoutTenantInput = {
   inventoryMovements?: Prisma.InventoryMovementUncheckedUpdateManyWithoutStoreNestedInput
   paymentMethods?: Prisma.PaymentMethodUncheckedUpdateManyWithoutStoreNestedInput
   deliveryZones?: Prisma.DeliveryZoneUncheckedUpdateManyWithoutStoreNestedInput
+  deliveryMethods?: Prisma.DeliveryMethodUncheckedUpdateManyWithoutStoreNestedInput
+  shipments?: Prisma.ShipmentUncheckedUpdateManyWithoutStoreNestedInput
   feeLedger?: Prisma.FeeLedgerUncheckedUpdateManyWithoutStoreNestedInput
+  paymentWebhookEvents?: Prisma.PaymentWebhookEventUncheckedUpdateManyWithoutStoreNestedInput
+  notificationDeliveries?: Prisma.NotificationDeliveryUncheckedUpdateManyWithoutStoreNestedInput
+  analyticsEvents?: Prisma.AnalyticsEventUncheckedUpdateManyWithoutStoreNestedInput
+  dailyMetrics?: Prisma.DailyStoreMetricUncheckedUpdateManyWithoutStoreNestedInput
+  exportJobs?: Prisma.ExportJobUncheckedUpdateManyWithoutStoreNestedInput
+  exportSchedules?: Prisma.ExportScheduleUncheckedUpdateManyWithoutStoreNestedInput
+  reviews?: Prisma.ProductReviewUncheckedUpdateManyWithoutStoreNestedInput
+  wishlist?: Prisma.WishlistItemUncheckedUpdateManyWithoutStoreNestedInput
 }
 
 export type StoreUncheckedUpdateManyWithoutTenantInput = {
@@ -2942,7 +5478,17 @@ export type StoreCountOutputType = {
   inventoryMovements: number
   paymentMethods: number
   deliveryZones: number
+  deliveryMethods: number
+  shipments: number
   feeLedger: number
+  paymentWebhookEvents: number
+  notificationDeliveries: number
+  analyticsEvents: number
+  dailyMetrics: number
+  exportJobs: number
+  exportSchedules: number
+  reviews: number
+  wishlist: number
 }
 
 export type StoreCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2959,7 +5505,17 @@ export type StoreCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   inventoryMovements?: boolean | StoreCountOutputTypeCountInventoryMovementsArgs
   paymentMethods?: boolean | StoreCountOutputTypeCountPaymentMethodsArgs
   deliveryZones?: boolean | StoreCountOutputTypeCountDeliveryZonesArgs
+  deliveryMethods?: boolean | StoreCountOutputTypeCountDeliveryMethodsArgs
+  shipments?: boolean | StoreCountOutputTypeCountShipmentsArgs
   feeLedger?: boolean | StoreCountOutputTypeCountFeeLedgerArgs
+  paymentWebhookEvents?: boolean | StoreCountOutputTypeCountPaymentWebhookEventsArgs
+  notificationDeliveries?: boolean | StoreCountOutputTypeCountNotificationDeliveriesArgs
+  analyticsEvents?: boolean | StoreCountOutputTypeCountAnalyticsEventsArgs
+  dailyMetrics?: boolean | StoreCountOutputTypeCountDailyMetricsArgs
+  exportJobs?: boolean | StoreCountOutputTypeCountExportJobsArgs
+  exportSchedules?: boolean | StoreCountOutputTypeCountExportSchedulesArgs
+  reviews?: boolean | StoreCountOutputTypeCountReviewsArgs
+  wishlist?: boolean | StoreCountOutputTypeCountWishlistArgs
 }
 
 /**
@@ -3066,8 +5622,78 @@ export type StoreCountOutputTypeCountDeliveryZonesArgs<ExtArgs extends runtime.T
 /**
  * StoreCountOutputType without action
  */
+export type StoreCountOutputTypeCountDeliveryMethodsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DeliveryMethodWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountShipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ShipmentWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
 export type StoreCountOutputTypeCountFeeLedgerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.FeeLedgerWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountPaymentWebhookEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PaymentWebhookEventWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountNotificationDeliveriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationDeliveryWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountAnalyticsEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AnalyticsEventWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountDailyMetricsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.DailyStoreMetricWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountExportJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExportJobWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountExportSchedulesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExportScheduleWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountReviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProductReviewWhereInput
+}
+
+/**
+ * StoreCountOutputType without action
+ */
+export type StoreCountOutputTypeCountWishlistArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WishlistItemWhereInput
 }
 
 
@@ -3098,7 +5724,17 @@ export type StoreSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   inventoryMovements?: boolean | Prisma.Store$inventoryMovementsArgs<ExtArgs>
   paymentMethods?: boolean | Prisma.Store$paymentMethodsArgs<ExtArgs>
   deliveryZones?: boolean | Prisma.Store$deliveryZonesArgs<ExtArgs>
+  deliveryMethods?: boolean | Prisma.Store$deliveryMethodsArgs<ExtArgs>
+  shipments?: boolean | Prisma.Store$shipmentsArgs<ExtArgs>
   feeLedger?: boolean | Prisma.Store$feeLedgerArgs<ExtArgs>
+  paymentWebhookEvents?: boolean | Prisma.Store$paymentWebhookEventsArgs<ExtArgs>
+  notificationDeliveries?: boolean | Prisma.Store$notificationDeliveriesArgs<ExtArgs>
+  analyticsEvents?: boolean | Prisma.Store$analyticsEventsArgs<ExtArgs>
+  dailyMetrics?: boolean | Prisma.Store$dailyMetricsArgs<ExtArgs>
+  exportJobs?: boolean | Prisma.Store$exportJobsArgs<ExtArgs>
+  exportSchedules?: boolean | Prisma.Store$exportSchedulesArgs<ExtArgs>
+  reviews?: boolean | Prisma.Store$reviewsArgs<ExtArgs>
+  wishlist?: boolean | Prisma.Store$wishlistArgs<ExtArgs>
   _count?: boolean | Prisma.StoreCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["store"]>
 
@@ -3163,7 +5799,17 @@ export type StoreInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   inventoryMovements?: boolean | Prisma.Store$inventoryMovementsArgs<ExtArgs>
   paymentMethods?: boolean | Prisma.Store$paymentMethodsArgs<ExtArgs>
   deliveryZones?: boolean | Prisma.Store$deliveryZonesArgs<ExtArgs>
+  deliveryMethods?: boolean | Prisma.Store$deliveryMethodsArgs<ExtArgs>
+  shipments?: boolean | Prisma.Store$shipmentsArgs<ExtArgs>
   feeLedger?: boolean | Prisma.Store$feeLedgerArgs<ExtArgs>
+  paymentWebhookEvents?: boolean | Prisma.Store$paymentWebhookEventsArgs<ExtArgs>
+  notificationDeliveries?: boolean | Prisma.Store$notificationDeliveriesArgs<ExtArgs>
+  analyticsEvents?: boolean | Prisma.Store$analyticsEventsArgs<ExtArgs>
+  dailyMetrics?: boolean | Prisma.Store$dailyMetricsArgs<ExtArgs>
+  exportJobs?: boolean | Prisma.Store$exportJobsArgs<ExtArgs>
+  exportSchedules?: boolean | Prisma.Store$exportSchedulesArgs<ExtArgs>
+  reviews?: boolean | Prisma.Store$reviewsArgs<ExtArgs>
+  wishlist?: boolean | Prisma.Store$wishlistArgs<ExtArgs>
   _count?: boolean | Prisma.StoreCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type StoreIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3191,7 +5837,17 @@ export type $StorePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     inventoryMovements: Prisma.$InventoryMovementPayload<ExtArgs>[]
     paymentMethods: Prisma.$PaymentMethodPayload<ExtArgs>[]
     deliveryZones: Prisma.$DeliveryZonePayload<ExtArgs>[]
+    deliveryMethods: Prisma.$DeliveryMethodPayload<ExtArgs>[]
+    shipments: Prisma.$ShipmentPayload<ExtArgs>[]
     feeLedger: Prisma.$FeeLedgerPayload<ExtArgs>[]
+    paymentWebhookEvents: Prisma.$PaymentWebhookEventPayload<ExtArgs>[]
+    notificationDeliveries: Prisma.$NotificationDeliveryPayload<ExtArgs>[]
+    analyticsEvents: Prisma.$AnalyticsEventPayload<ExtArgs>[]
+    dailyMetrics: Prisma.$DailyStoreMetricPayload<ExtArgs>[]
+    exportJobs: Prisma.$ExportJobPayload<ExtArgs>[]
+    exportSchedules: Prisma.$ExportSchedulePayload<ExtArgs>[]
+    reviews: Prisma.$ProductReviewPayload<ExtArgs>[]
+    wishlist: Prisma.$WishlistItemPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3614,7 +6270,17 @@ export interface Prisma__StoreClient<T, Null = never, ExtArgs extends runtime.Ty
   inventoryMovements<T extends Prisma.Store$inventoryMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$inventoryMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   paymentMethods<T extends Prisma.Store$paymentMethodsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$paymentMethodsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentMethodPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   deliveryZones<T extends Prisma.Store$deliveryZonesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$deliveryZonesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryZonePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  deliveryMethods<T extends Prisma.Store$deliveryMethodsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$deliveryMethodsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DeliveryMethodPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  shipments<T extends Prisma.Store$shipmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$shipmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ShipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   feeLedger<T extends Prisma.Store$feeLedgerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$feeLedgerArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FeeLedgerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  paymentWebhookEvents<T extends Prisma.Store$paymentWebhookEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$paymentWebhookEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentWebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notificationDeliveries<T extends Prisma.Store$notificationDeliveriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$notificationDeliveriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationDeliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  analyticsEvents<T extends Prisma.Store$analyticsEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$analyticsEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AnalyticsEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  dailyMetrics<T extends Prisma.Store$dailyMetricsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$dailyMetricsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DailyStoreMetricPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  exportJobs<T extends Prisma.Store$exportJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$exportJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExportJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  exportSchedules<T extends Prisma.Store$exportSchedulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$exportSchedulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExportSchedulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reviews<T extends Prisma.Store$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  wishlist<T extends Prisma.Store$wishlistArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Store$wishlistArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WishlistItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4387,6 +7053,54 @@ export type Store$deliveryZonesArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 /**
+ * Store.deliveryMethods
+ */
+export type Store$deliveryMethodsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DeliveryMethod
+   */
+  select?: Prisma.DeliveryMethodSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DeliveryMethod
+   */
+  omit?: Prisma.DeliveryMethodOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DeliveryMethodInclude<ExtArgs> | null
+  where?: Prisma.DeliveryMethodWhereInput
+  orderBy?: Prisma.DeliveryMethodOrderByWithRelationInput | Prisma.DeliveryMethodOrderByWithRelationInput[]
+  cursor?: Prisma.DeliveryMethodWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DeliveryMethodScalarFieldEnum | Prisma.DeliveryMethodScalarFieldEnum[]
+}
+
+/**
+ * Store.shipments
+ */
+export type Store$shipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Shipment
+   */
+  select?: Prisma.ShipmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Shipment
+   */
+  omit?: Prisma.ShipmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ShipmentInclude<ExtArgs> | null
+  where?: Prisma.ShipmentWhereInput
+  orderBy?: Prisma.ShipmentOrderByWithRelationInput | Prisma.ShipmentOrderByWithRelationInput[]
+  cursor?: Prisma.ShipmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ShipmentScalarFieldEnum | Prisma.ShipmentScalarFieldEnum[]
+}
+
+/**
  * Store.feeLedger
  */
 export type Store$feeLedgerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -4408,6 +7122,198 @@ export type Store$feeLedgerArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   distinct?: Prisma.FeeLedgerScalarFieldEnum | Prisma.FeeLedgerScalarFieldEnum[]
+}
+
+/**
+ * Store.paymentWebhookEvents
+ */
+export type Store$paymentWebhookEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PaymentWebhookEvent
+   */
+  select?: Prisma.PaymentWebhookEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PaymentWebhookEvent
+   */
+  omit?: Prisma.PaymentWebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PaymentWebhookEventInclude<ExtArgs> | null
+  where?: Prisma.PaymentWebhookEventWhereInput
+  orderBy?: Prisma.PaymentWebhookEventOrderByWithRelationInput | Prisma.PaymentWebhookEventOrderByWithRelationInput[]
+  cursor?: Prisma.PaymentWebhookEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PaymentWebhookEventScalarFieldEnum | Prisma.PaymentWebhookEventScalarFieldEnum[]
+}
+
+/**
+ * Store.notificationDeliveries
+ */
+export type Store$notificationDeliveriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the NotificationDelivery
+   */
+  select?: Prisma.NotificationDeliverySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the NotificationDelivery
+   */
+  omit?: Prisma.NotificationDeliveryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationDeliveryInclude<ExtArgs> | null
+  where?: Prisma.NotificationDeliveryWhereInput
+  orderBy?: Prisma.NotificationDeliveryOrderByWithRelationInput | Prisma.NotificationDeliveryOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationDeliveryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationDeliveryScalarFieldEnum | Prisma.NotificationDeliveryScalarFieldEnum[]
+}
+
+/**
+ * Store.analyticsEvents
+ */
+export type Store$analyticsEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AnalyticsEvent
+   */
+  select?: Prisma.AnalyticsEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AnalyticsEvent
+   */
+  omit?: Prisma.AnalyticsEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AnalyticsEventInclude<ExtArgs> | null
+  where?: Prisma.AnalyticsEventWhereInput
+  orderBy?: Prisma.AnalyticsEventOrderByWithRelationInput | Prisma.AnalyticsEventOrderByWithRelationInput[]
+  cursor?: Prisma.AnalyticsEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AnalyticsEventScalarFieldEnum | Prisma.AnalyticsEventScalarFieldEnum[]
+}
+
+/**
+ * Store.dailyMetrics
+ */
+export type Store$dailyMetricsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DailyStoreMetric
+   */
+  select?: Prisma.DailyStoreMetricSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DailyStoreMetric
+   */
+  omit?: Prisma.DailyStoreMetricOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DailyStoreMetricInclude<ExtArgs> | null
+  where?: Prisma.DailyStoreMetricWhereInput
+  orderBy?: Prisma.DailyStoreMetricOrderByWithRelationInput | Prisma.DailyStoreMetricOrderByWithRelationInput[]
+  cursor?: Prisma.DailyStoreMetricWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.DailyStoreMetricScalarFieldEnum | Prisma.DailyStoreMetricScalarFieldEnum[]
+}
+
+/**
+ * Store.exportJobs
+ */
+export type Store$exportJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ExportJob
+   */
+  select?: Prisma.ExportJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ExportJob
+   */
+  omit?: Prisma.ExportJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExportJobInclude<ExtArgs> | null
+  where?: Prisma.ExportJobWhereInput
+  orderBy?: Prisma.ExportJobOrderByWithRelationInput | Prisma.ExportJobOrderByWithRelationInput[]
+  cursor?: Prisma.ExportJobWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExportJobScalarFieldEnum | Prisma.ExportJobScalarFieldEnum[]
+}
+
+/**
+ * Store.exportSchedules
+ */
+export type Store$exportSchedulesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ExportSchedule
+   */
+  select?: Prisma.ExportScheduleSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ExportSchedule
+   */
+  omit?: Prisma.ExportScheduleOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExportScheduleInclude<ExtArgs> | null
+  where?: Prisma.ExportScheduleWhereInput
+  orderBy?: Prisma.ExportScheduleOrderByWithRelationInput | Prisma.ExportScheduleOrderByWithRelationInput[]
+  cursor?: Prisma.ExportScheduleWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExportScheduleScalarFieldEnum | Prisma.ExportScheduleScalarFieldEnum[]
+}
+
+/**
+ * Store.reviews
+ */
+export type Store$reviewsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProductReview
+   */
+  select?: Prisma.ProductReviewSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProductReview
+   */
+  omit?: Prisma.ProductReviewOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductReviewInclude<ExtArgs> | null
+  where?: Prisma.ProductReviewWhereInput
+  orderBy?: Prisma.ProductReviewOrderByWithRelationInput | Prisma.ProductReviewOrderByWithRelationInput[]
+  cursor?: Prisma.ProductReviewWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProductReviewScalarFieldEnum | Prisma.ProductReviewScalarFieldEnum[]
+}
+
+/**
+ * Store.wishlist
+ */
+export type Store$wishlistArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WishlistItem
+   */
+  select?: Prisma.WishlistItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WishlistItem
+   */
+  omit?: Prisma.WishlistItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WishlistItemInclude<ExtArgs> | null
+  where?: Prisma.WishlistItemWhereInput
+  orderBy?: Prisma.WishlistItemOrderByWithRelationInput | Prisma.WishlistItemOrderByWithRelationInput[]
+  cursor?: Prisma.WishlistItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WishlistItemScalarFieldEnum | Prisma.WishlistItemScalarFieldEnum[]
 }
 
 /**

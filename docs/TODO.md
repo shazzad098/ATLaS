@@ -130,8 +130,12 @@ Evidence is a route or module in this repository, verified with `npm run typeche
 - [x] Cursor pagination, `requestId`, `Idempotency-Key`, consistent error envelope, per-plan
       request-rate limits, webhook signature verification
 - [ ] Self-service API keys and outbound merchant webhook endpoints (schema + UI)
-- [ ] Courier consignment integrations (Pathao/Steadfast/RedX/Paperfly) — only the plan flag and
-      the 0.5% courier fee type exist
+- [x] Courier consignment integrations (Pathao/RedX/Steadfast): sandbox-first adapters with
+      live HTTP clients, merchant Store ID per courier, consignment creation from the order page,
+      manual tracking sync, signed courier webhook with idempotency, order status bridge
+      (SHIPPED/DELIVERED/RETURN_REQUESTED) and the 0.5% courier fee on shipment presence —
+      `src/lib/couriers`, `src/lib/services/courier-service.ts`,
+      `/api/v1/webhooks/couriers/[provider]`, Admin → ডেলিভারি / অর্ডার
 
 ## 10. Platform policies & quality
 

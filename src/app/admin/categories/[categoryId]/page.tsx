@@ -2,13 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/db";
-import { requireActiveStore } from "@/lib/tenant";
+import { requireActiveStorePermissionPage } from "@/lib/tenant";
 import { CategoryForm } from "@/app/admin/_components/category-form";
 
 /** Edit a category (FR-03). */
 
 export default async function EditCategoryPage({ params }: { params: Promise<{ categoryId: string }> }) {
-  const { store } = await requireActiveStore();
+  const { store } = await requireActiveStorePermissionPage("catalog:write");
   const { categoryId } = await params;
 
   const category = await prisma.category.findFirst({ where: { id: categoryId, storeId: store.id } });

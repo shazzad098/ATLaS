@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getStorefrontContext, storefrontAvailability, themeContextFrom } from "@/lib/storefront";
+import {
+  getStorefrontContext,
+  storefrontAvailability,
+  storefrontOrigin,
+  storefrontUrl,
+  storePath,
+  themeContextFrom,
+} from "@/lib/storefront";
+import { readBuyerSession } from "@/lib/auth/customer-session";
 import { getTheme } from "@/themes";
 import { themeStyle } from "@/themes/css";
 
@@ -22,11 +30,42 @@ export async function generateMetadata({
   const context = await getStorefrontContext(slug);
   if (!context) return { title: "দোকান পাওয়া যায়নি" };
 
-  const seo = context.settings.seo as { title?: string; description?: string };
+  const seo = context.settings.seo as {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+    image?: string;
+  };
+  const title = seo.title ?? context.store.name;
+  const description = seo.description ?? context.store.description ?? undefined;
+  const canonical = storefrontUrl(context);
+  const image = seo.image ? new URL(seo.image, `${storefrontOrigin(context)}/`).toString() : storefrontUrl(context, "/opengraph-image");
+  const indexable = storefrontAvailability(context).visible;
+
   return {
-    title: seo.title ?? context.store.name,
-    description: seo.description ?? context.store.description ?? undefined,
-    robots: context.store.status === "PUBLISHED" ? undefined : { index: false, follow: false },
+    metadataBase: new URL(`${storefrontOrigin(context).replace(/\/$/, "")}/`),
+    title: { default: title, template: `%s · ${context.store.name}` },
+    description,
+    keywords: seo.keywords,
+    alternates: { canonical },
+    robots: indexable
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
+    openGraph: {
+      type: "website",
+      locale: "bn_BD",
+      siteName: context.store.name,
+      title,
+      description,
+      url: canonical,
+      images: [{ url: image, width: 1200, height: 630, alt: context.store.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
@@ -43,6 +82,7 @@ export default async function StorefrontLayout({
 
   const availability = storefrontAvailability(context);
   const theme = getTheme(context.theme.code);
+  const buyer = await readBuyerSession(context.store.id);
 
   if (!availability.visible) {
     const message =
@@ -76,12 +116,19 @@ export default async function StorefrontLayout({
     );
   }
 
-  const ctx = themeContextFrom(context);
+  const ctx = {
+    ...themeContextFrom(context),
+    account: {
+      href: storePath(context.store.slug, buyer ? "/account" : "/account/login"),
+      signedIn: Boolean(buyer),
+      name: buyer?.name ?? null,
+    },
+  };
 
   return (
     <div className="store-surface flex min-h-screen flex-col" style={themeStyle(ctx.config)}>
       <theme.Header ctx={ctx} />
-      <main className="flex-1">{children}</main>
+      <main className="min-w-0 flex-1">{children}</main>
       <theme.Footer ctx={ctx} />
     </div>
   );
