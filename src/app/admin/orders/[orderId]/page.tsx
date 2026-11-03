@@ -110,7 +110,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
+        <div className="min-w-0 space-y-5 lg:col-span-2">
           <Card>
             <CardHeader title="পণ্যসমূহ" description={`${order.items.length}টি আইটেম`} />
             <Table>
@@ -229,7 +229,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
           ) : null}
         </div>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <Card>
             <CardHeader title="স্ট্যাটাস পরিবর্তন" />
             <CardBody>

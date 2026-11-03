@@ -184,7 +184,7 @@ export function SuperAdminShell({
         <div className="flex h-16 items-center">
           <Link
             href="/super-admin"
-            className="flex h-full w-auto shrink-0 items-center gap-2.5 px-3 md:w-60 md:border-r md:border-white/10 md:px-4"
+            className="flex h-full w-auto shrink-0 items-center gap-2.5 px-3 md:w-52 md:border-r md:border-white/10 md:px-4 lg:w-60"
           >
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 shadow-lg shadow-indigo-950/50">
               <ShieldCheck className="h-5 w-5" strokeWidth={1.8} />
@@ -199,7 +199,7 @@ export function SuperAdminShell({
             </span>
           </Link>
 
-          <div className="hidden items-center gap-2 px-5 text-xs md:flex">
+          <div className="hidden items-center gap-2 px-5 text-xs lg:flex">
             {crumb.slice(0, -1).map((label, index) => (
               <span key={`${label}-${index}`} className="flex items-center gap-2 text-white/35">
                 {label}
@@ -253,7 +253,7 @@ export function SuperAdminShell({
       </header>
 
       <div className="mx-auto flex w-full max-w-[110rem] items-stretch">
-        <aside className="hidden w-60 shrink-0 bg-[#0b1220] md:sticky md:top-16 md:flex md:h-[calc(100vh-4rem)] md:flex-col">
+        <aside className="hidden w-52 shrink-0 bg-[#0b1220] md:sticky md:top-16 md:flex md:h-[calc(100vh-4rem)] md:flex-col lg:w-60">
           <div className="px-5 pt-6 pb-4">
             <p className="text-[10px] font-semibold tracking-[0.22em] text-white/35 uppercase">
               Platform control

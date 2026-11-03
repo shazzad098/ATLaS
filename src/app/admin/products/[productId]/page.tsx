@@ -66,32 +66,34 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[2fr_1fr]">
-        <ProductForm
-          storeId={store.id}
-          categories={categories.map((category) => ({ id: category.id, name: category.name }))}
-          value={{
-            id: product.id,
-            name: product.name,
-            slug: product.slug,
-            categoryId: product.categoryId ?? "",
-            description,
-            tags: product.tags.join(", "),
-            status: product.status as "ACTIVE" | "DRAFT" | "ARCHIVED",
-            lowStockThreshold: product.lowStockThreshold,
-            variants: product.variants.map((variant) => ({
-              id: variant.id,
-              sku: variant.sku,
-              optionValues: (variant.optionValuesJson ?? {}) as Record<string, string>,
-              price: String(variant.price),
-              comparePrice: variant.comparePrice === null ? null : String(variant.comparePrice),
-              stockQty: variant.stockQty,
-              status: variant.status as "ACTIVE" | "DRAFT" | "ARCHIVED",
-            })),
-            images: product.images.map((image) => ({ url: image.url ?? "", altText: image.altText ?? "" })),
-          }}
-        />
+        <div className="min-w-0">
+          <ProductForm
+            storeId={store.id}
+            categories={categories.map((category) => ({ id: category.id, name: category.name }))}
+            value={{
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              categoryId: product.categoryId ?? "",
+              description,
+              tags: product.tags.join(", "),
+              status: product.status as "ACTIVE" | "DRAFT" | "ARCHIVED",
+              lowStockThreshold: product.lowStockThreshold,
+              variants: product.variants.map((variant) => ({
+                id: variant.id,
+                sku: variant.sku,
+                optionValues: (variant.optionValuesJson ?? {}) as Record<string, string>,
+                price: String(variant.price),
+                comparePrice: variant.comparePrice === null ? null : String(variant.comparePrice),
+                stockQty: variant.stockQty,
+                status: variant.status as "ACTIVE" | "DRAFT" | "ARCHIVED",
+              })),
+              images: product.images.map((image) => ({ url: image.url ?? "", altText: image.altText ?? "" })),
+            }}
+          />
+        </div>
 
-        <div className="space-y-5">
+        <div className="min-w-0 space-y-5">
           <ProductDiscountForm
             storeId={store.id}
             productId={product.id}

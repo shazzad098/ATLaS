@@ -209,7 +209,7 @@ export default function DevelopersPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <h2 className="text-xl font-semibold tracking-tight text-ink-900">Rate limit</h2>
           <p className="text-sm text-ink-600">
             প্ল্যান অনুযায়ী প্রতি মিনিটে রিকোয়েস্ট সংখ্যা নির্ধারিত। সীমা ছাড়ালে `429 RATE_LIMITED`
@@ -239,7 +239,7 @@ export default function DevelopersPage() {
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <h2 className="text-xl font-semibold tracking-tight text-ink-900">Webhook signature</h2>
           <p className="text-sm text-ink-600">
             প্রতিটি ডেলিভারিতে `x-atlas-signature` (HMAC-SHA256) থাকে। raw body দিয়ে যাচাই করুন,
