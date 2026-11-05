@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
 
   // The dev server is previewed from 127.0.0.1 as well as localhost; without this
   // Next blocks its own HMR/dev resources as cross-origin.
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  allowedDevOrigins: ["127.0.0.1", "localhost",'neuter-operable-alarm.ngrok-free.dev'],
 
   /**
    * Baseline security headers (PRD §7 "Security", §13).

@@ -277,9 +277,6 @@ export default function AboutPage() {
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-14 pb-16 sm:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:pb-24">
           <div>
-            <div className="animate-fade-up">
-              <Eyebrow>আমাদের সম্পর্কে</Eyebrow>
-            </div>
 
             <h1 className="animate-fade-up mt-5 text-3xl leading-[1.25] font-bold tracking-tight text-ink-900 sm:text-[44px] sm:leading-[1.18]" style={{ animationDelay: "80ms" }}>
               ছোট ব্যবসার জন্য বড় প্লাটফর্ম —{" "}
@@ -339,83 +336,19 @@ export default function AboutPage() {
           </div>
 
           {/* Store preview collage */}
-          <div className="animate-fade-up relative mx-auto w-full max-w-md lg:max-w-none" style={{ animationDelay: "200ms" }}>
+          <div className="animate-fade-up relative mx-auto w-full max-w-md lg:max-w-2xl" style={{ animationDelay: "200ms" }}>
             <div aria-hidden="true" className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-brand-200/60 via-white to-accent-400/25 blur-2xl" />
 
-            <div className="relative rounded-3xl border border-white/80 bg-white/85 p-4 shadow-2xl shadow-brand-900/10 backdrop-blur">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-rose-300" />
-                  <span className="h-2 w-2 rounded-full bg-amber-300" />
-                  <span className="h-2 w-2 rounded-full bg-emerald-300" />
-                </div>
-                <p className="truncate text-[11px] font-medium text-ink-500">আপনার দোকান · অ্যাডমিন</p>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700">
-                  <span className="animate-pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-brand-500" />
-                  লাইভ
-                </span>
-              </div>
-
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                {THEME_CATALOG.map((theme) => (
-                  <div
-                    key={theme.code}
-                    className="group cursor-default overflow-hidden rounded-xl border border-ink-100 bg-white transition duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-md"
-                  >
-                    <div className={`h-16 bg-gradient-to-br ${theme.preview.gradient}`} />
-                    <div className="flex items-center justify-between px-2 py-1.5">
-                      <span className="text-[10px] font-medium text-ink-700">{theme.name}</span>
-                      <span className="h-1.5 w-1.5 rounded-full bg-brand-400 opacity-0 transition group-hover:opacity-100" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-xl border border-ink-100 bg-white p-2.5">
-                  <p className="text-[10px] text-ink-500">পেমেন্ট</p>
-                  <div className="mt-1.5 flex gap-1">
-                    <span className="h-1.5 flex-1 rounded-full bg-pink-400" />
-                    <span className="h-1.5 flex-1 rounded-full bg-orange-400" />
-                    <span className="h-1.5 flex-1 rounded-full bg-sky-400" />
-                    <span className="h-1.5 flex-1 rounded-full bg-emerald-400" />
-                  </div>
-                </div>
-                <div className="rounded-xl border border-ink-100 bg-white p-2.5">
-                  <p className="text-[10px] text-ink-500">ইন্টিগ্রেশন</p>
-                  <p className="mt-0.5 text-[11px] font-semibold text-ink-800">REST API v1</p>
-                </div>
-              </div>
+            <div className="relative overflow-hidden rounded-3xl border border-white/80 bg-white/85 p-2 shadow-2xl shadow-brand-900/10 backdrop-blur">
+              <img
+                src="/images/about/atlas_about_us.jpg"
+                alt="ATLaS — অ্যাডমিন, ডেলিভারি আর কাস্টমারের অর্ডার এক প্ল্যাটফর্মে"
+                className="w-full rounded-2xl object-cover"
+                loading="eager"
+              />
             </div>
 
-            <div className="animate-float absolute top-16 -left-3 hidden items-center gap-2 rounded-xl border border-ink-200/80 bg-white/95 px-3 py-2 shadow-lg shadow-ink-900/5 backdrop-blur sm:flex">
-              <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                <Icon name="layers" className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-[11px] font-semibold text-ink-800">{bn(THEME_CATALOG.length)}টি থিম</span>
-            </div>
-
-            <div
-              className="animate-float-slow absolute top-6 -right-3 hidden items-center gap-2 rounded-xl border border-ink-200/80 bg-white/95 px-3 py-2 shadow-lg shadow-ink-900/5 backdrop-blur sm:flex"
-              style={{ animationDelay: "1.2s" }}
-            >
-              <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                <Icon name="wallet" className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-[11px] font-semibold text-ink-800">
-                {bn(PAYMENT_PROVIDERS.length)}টি পেমেন্ট
-              </span>
-            </div>
-
-            <div
-              className="animate-float absolute -bottom-4 left-6 hidden items-center gap-2 rounded-xl border border-ink-200/80 bg-white/95 px-3 py-2 shadow-lg shadow-ink-900/5 backdrop-blur sm:flex"
-              style={{ animationDelay: "0.6s" }}
-            >
-              <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-600 text-white">
-                <Icon name="check" className="h-3.5 w-3.5" />
-              </span>
-              <span className="text-[11px] font-semibold text-ink-800">কার্ড ছাড়া ট্রায়াল</span>
-            </div>
+            
           </div>
         </div>
       </section>
@@ -683,40 +616,6 @@ export default function AboutPage() {
                 <p className="mt-1 text-[11px] leading-relaxed text-ink-500">{stat.hint}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
-        <div className="reveal animate-gradient-pan relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 via-brand-600 to-brand-500 px-6 py-12 text-center shadow-2xl shadow-brand-900/20 sm:px-12 sm:py-16">
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-            <div className="animate-drift absolute -top-24 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-            <div className="animate-float-slow absolute -bottom-28 -left-12 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(0,0,0,0.12)_100%)]" />
-          </div>
-
-          <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-medium text-brand-50 backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />
-              আমরা শুনতে চাই
-            </span>
-            <h2 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              কথা বলতে চান?
-            </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-brand-50">
-              প্ল্যান, অংশীদারিত্ব বা কাস্টম প্রয়োজনে আমাদের লিখুন — কর্মদিবসে একই দিনে উত্তর
-              পাবেন। অথবা আজই ফ্রি অ্যাকাউন্ট খুলে নিজের দোকান সাজানো শুরু করুন।
-            </p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <ButtonLink href="/contact" variant="inverse" size="lg">
-                যোগাযোগ করুন
-              </ButtonLink>
-              <ButtonLink href="/signup" variant="inverse-outline" size="lg">
-                ফ্রি অ্যাকাউন্ট খুলুন
-              </ButtonLink>
-            </div>
-            <p className="mt-4 text-[11px] text-brand-100">কার্ড লাগবে না · ৭ দিনের ট্রায়াল</p>
           </div>
         </div>
       </section>

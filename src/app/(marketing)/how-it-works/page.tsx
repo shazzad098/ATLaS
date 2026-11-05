@@ -75,7 +75,6 @@ export default async function HowItWorksPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-14 px-4 py-12">
       <div className="max-w-2xl space-y-3">
-        <Badge tone="brand">কীভাবে কাজ করে</Badge>
         <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
           সাইনআপ থেকে প্রথম অর্ডার — এক বসায়
         </h1>

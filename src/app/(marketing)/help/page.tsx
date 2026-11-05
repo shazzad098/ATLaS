@@ -129,7 +129,6 @@ export default function HelpPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-10 px-4 py-12">
       <div className="max-w-2xl space-y-3">
-        <Badge tone="brand">হেল্প সেন্টার</Badge>
         <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
           উত্তর খুঁজুন, নাহলে আমাদের লিখুন
         </h1>

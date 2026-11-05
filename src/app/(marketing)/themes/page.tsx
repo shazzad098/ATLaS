@@ -88,12 +88,6 @@ export default async function ThemesPage() {
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-14 pb-16 sm:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:pb-24">
           <div>
-            <div className="animate-fade-up">
-              <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/85 px-3 py-1 text-[11px] font-semibold tracking-wide text-brand-800 shadow-xs backdrop-blur">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-                ডিজাইন সিস্টেম
-              </span>
-            </div>
 
             <h1 className="animate-fade-up mt-5 text-3xl leading-[1.25] font-bold tracking-tight text-ink-900 sm:text-[44px] sm:leading-[1.18]" style={{ animationDelay: "80ms" }}>
               আপনার ব্র্যান্ডের জন্য{" "}

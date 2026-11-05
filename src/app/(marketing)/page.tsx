@@ -232,9 +232,6 @@ export default async function LandingPage() {
 
         <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 gap-12 px-4 pb-16 pt-14 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-14 lg:pb-24 lg:pt-20">
           <div className="space-y-6">
-            <p className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50 px-3 py-1 text-xs font-medium text-ink-600">
-              বাংলাদেশের উদ্যোক্তার জন্য তৈরি
-            </p>
             <h1 className="text-4xl font-bold leading-[1.15] tracking-tight text-ink-900 sm:text-[44px]">
               আপনার অনলাইন দোকান,
               <span className="relative inline-block text-brand-700">

@@ -605,10 +605,6 @@ export default async function PricingPage() {
         </div>
 
         <div className="relative mx-auto max-w-4xl px-4 pt-14 pb-12 text-center sm:pt-20">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1 text-xs font-medium text-brand-800 shadow-xs backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-            প্রাইসিং প্ল্যান
-          </span>
 
           <h1 className="mt-5 text-4xl leading-[1.2] font-bold tracking-tight text-ink-900 sm:text-5xl sm:leading-[1.15]">
             ফ্রি দিয়ে শুরু,{" "}
