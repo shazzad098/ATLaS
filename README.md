@@ -104,6 +104,36 @@ The `20261102101000_rls_runtime_role` migration creates the non-owner
 it to the migration user). After a deploy, existing browser sessions must sign
 in again so their access token carries the Super Admin claim.
 
+## Security
+
+- **Framework patches.** `next` is pinned to `16.4.5` (current npm `latest`, which already
+  includes the 16.3.6 RCE fix). Dependabot keeps it and the rest of the tree patched;
+  majors (Next, Prisma, ESLint, TypeScript) open as single PRs for manual review.
+- **Dependency audit.** `npm audit` is clean (`0 vulnerabilities`). The remaining dev-only
+  `minimatch` advisory under `typescript-eslint` is pinned to the fixed `11.0.1` through
+  `overrides` in `package.json`. CI runs `npm audit --omit=dev --audit-level=high` on every
+  push and PR, so a vulnerable production dependency fails the build.
+- **Security headers** (`next.config.ts`): CSP (pinned origins, no frames/objects, inline
+  scripts documented), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, COOP,
+  `X-DNS-Prefetch-Control: off`, and HSTS (`max-age=63072000; includeSubDomains; preload`)
+  in production. `poweredByHeader` is off. TLS is terminated at the edge/proxy.
+- **Rate limiting** (PRD §13). `src/proxy.ts` applies a per-IP edge gate before routing:
+  auth mutations (`/login`, `/login/2fa`, `/signup`, `/forgot-password`) allow 30 POSTs
+  per 10 minutes; `/api/*` allows 120 requests per minute. Blocked requests get `429` with
+  `Retry-After` and `X-RateLimit-Limit`. Inside the actions, login allows 20 attempts per
+  IP and 10 per identifier per minute, and OTP allows 6 sends per phone/hour and 20 per
+  IP/hour with 5 verification attempts per code. Swap `src/lib/rate-limit.ts` for Redis
+  when running more than one instance.
+- **Audit forwarding.** Every privileged or financial mutation is written to Postgres
+  (`AuditLog`). Set `AUDIT_LOG_WEBHOOK_URL` (and optionally `AUDIT_LOG_WEBHOOK_TOKEN`) to
+  mirror events as JSON to Loki/Datadog/Vector in real time and alert on
+  `auth.login_failed` or `super_admin.impersonation.*`.
+- **CI** (`.github/workflows/ci.yml`): production dependency audit, typecheck, lint, unit +
+  tenant-isolation tests with coverage, a production build, and a Docker image build.
+- **Reporting.** Email `security@atlas.example` with a description and reproduction steps;
+  do not open a public issue for a live vulnerability.
+
 ## Surfaces
 
 **Public** `/`, `/pricing`, `/themes`, `/how-it-works`, `/help`, `/contact`, `/about`,

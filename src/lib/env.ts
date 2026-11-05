@@ -225,6 +225,21 @@ export const env = {
   get cronSecret() {
     return optional("CRON_SECRET");
   },
+  audit: {
+    /**
+     * Optional HTTP sink for the audit trail (Loki/Datadog/Vector collector).
+     * Empty disables forwarding; the database row is always written first.
+     */
+    get webhookUrl() {
+      return optional("AUDIT_LOG_WEBHOOK_URL");
+    },
+    get webhookToken() {
+      return optional("AUDIT_LOG_WEBHOOK_TOKEN");
+    },
+    get service() {
+      return optional("AUDIT_LOG_SERVICE", "atlas");
+    },
+  },
 };
 
 /**

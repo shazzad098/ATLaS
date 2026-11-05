@@ -50,6 +50,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Security audit (production dependencies)
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Generate Prisma client
         run: npx prisma generate
 
@@ -62,8 +65,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Unit + tenant-isolation tests
-        run: npm test
+      - name: Unit + tenant-isolation tests (with coverage)
+        run: npm run test:coverage
 
       - name: Production build
         run: npm run build

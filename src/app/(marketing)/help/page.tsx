@@ -1,5 +1,5 @@
 import { ButtonLink } from "@/components/ui/button";
-import { Badge, Card, CardBody } from "@/components/ui/shell";
+import { Card, CardBody } from "@/components/ui/shell";
 
 /** Help center (PRD §4.1). Static content grouped by topic with anchors. */
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { checkRateLimit, type RateLimitResult } from "@/lib/rate-limit";
 
 /**
  * Host routing + trusted RLS context (PRD §6, FR-07).
@@ -64,6 +65,49 @@ const ACCESS_COOKIE = "atlas_at";
 const BUYER_COOKIE = "atlas_buyer";
 const CART_COOKIE = "atlas_cart"; // keep in sync with cart-service
 
+/**
+ * Global IP gates (PRD §13). Per-action limits still run inside the server
+ * actions; these stop a single source from hammering the edge at all.
+ *
+ *  - Auth mutations (login/signup/OTP/password reset): 30 POSTs / 10 minutes.
+ *    Server actions POST back to the page URL, so the path is stable.
+ *  - API routes: 120 requests / minute for GET and POST alike.
+ */
+const AUTH_PATHS = new Set(["/login", "/login/2fa", "/signup", "/forgot-password"]);
+const AUTH_LIMIT = 30;
+const AUTH_WINDOW_MS = 10 * 60_000;
+const API_LIMIT = 120;
+const API_WINDOW_MS = 60_000;
+
+function requestIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return request.headers.get("x-real-ip") ?? "unknown";
+}
+
+function rateLimited(result: RateLimitResult, isApi: boolean): NextResponse {
+  const headers = new Headers({
+    "retry-after": String(result.retryAfterSeconds),
+    "x-ratelimit-limit": String(result.limit),
+    "cache-control": "no-store",
+  });
+  if (isApi) {
+    headers.set("content-type", "application/json; charset=utf-8");
+    return new NextResponse(
+      JSON.stringify({
+        ok: false,
+        error: { code: "RATE_LIMITED", message: "খুব বেশি request পাঠানো হয়েছে। আবার চেষ্টা করুন।" },
+      }),
+      { status: 429, headers },
+    );
+  }
+  headers.set("content-type", "text/plain; charset=utf-8");
+  return new NextResponse("খুব বেশি চেষ্টা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।", {
+    status: 429,
+    headers,
+  });
+}
+
 type TokenClaims = { sub?: string; sa?: boolean; storeId?: string };
 
 function secretKey(): Uint8Array {
@@ -124,6 +168,18 @@ async function resolveRlsContext(request: NextRequest, isMerchantPath: boolean):
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Edge-level IP throttling before any routing work (PRD §13).
+  const ip = requestIp(request);
+  if (request.method === "POST" && AUTH_PATHS.has(pathname)) {
+    const authLimit = checkRateLimit(`auth:${ip}`, AUTH_LIMIT, AUTH_WINDOW_MS);
+    if (!authLimit.ok) return rateLimited(authLimit, false);
+  }
+  if (pathname.startsWith("/api/")) {
+    const apiLimit = checkRateLimit(`api:${ip}`, API_LIMIT, API_WINDOW_MS);
+    if (!apiLimit.ok) return rateLimited(apiLimit, true);
+  }
+
   const isPublicApi = pathname.startsWith("/api/v1/public/");
   const isMerchantPath =
     !isPublicApi && MERCHANT_PREFIXES.some((prefix) => pathname.startsWith(prefix));

@@ -1,10 +1,15 @@
 import { prisma } from "@/lib/db";
+import { env } from "@/lib/env";
 
 /**
  * Audit trail (PRD §10.6, §13).
  *
  * Every privileged or financially relevant mutation writes a row: staff
  * changes, Super Admin impersonation, plan changes, refunds, domain verification.
+ *
+ * When `AUDIT_LOG_WEBHOOK_URL` is set the same event is also forwarded as JSON
+ * to an external collector (Loki/Datadog/Vector), so security teams can alert on
+ * it in real time instead of polling the database.
  */
 
 export type AuditInput = {
@@ -17,19 +22,60 @@ export type AuditInput = {
   ip?: string | null;
 };
 
+type AuditEvent = Required<Pick<AuditInput, "action">> & {
+  tenantId: string | null;
+  actorId: string | null;
+  resourceType: string | null;
+  resourceId: string | null;
+  metadata: Record<string, unknown>;
+  ip: string | null;
+  occurredAt: string;
+};
+
+/** Best-effort forward; never awaited by the caller and never throws. */
+function forwardAudit(event: AuditEvent): void {
+  const url = env.audit.webhookUrl;
+  if (!url) return;
+
+  const headers: Record<string, string> = { "content-type": "application/json" };
+  if (env.audit.webhookToken) headers.authorization = `Bearer ${env.audit.webhookToken}`;
+
+  void fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ service: env.audit.service, environment: process.env.NODE_ENV, ...event }),
+    // A slow collector must never hold a server action open.
+    signal: AbortSignal.timeout(3_000),
+  }).catch((error) => {
+    console.error("[audit] forward failed", event.action, (error as Error)?.message);
+  });
+}
+
 export async function recordAudit(input: AuditInput): Promise<void> {
+  const event: AuditEvent = {
+    action: input.action,
+    tenantId: input.tenantId ?? null,
+    actorId: input.actorId ?? null,
+    resourceType: input.resourceType ?? null,
+    resourceId: input.resourceId ?? null,
+    metadata: input.metadata ?? {},
+    ip: input.ip ?? null,
+    occurredAt: new Date().toISOString(),
+  };
+
   try {
     await prisma.auditLog.create({
       data: {
-        action: input.action,
-        tenantId: input.tenantId ?? null,
-        actorId: input.actorId ?? null,
-        resourceType: input.resourceType,
-        resourceId: input.resourceId,
-        metadataJson: (input.metadata ?? {}) as never,
-        ip: input.ip ?? null,
+        action: event.action,
+        tenantId: event.tenantId,
+        actorId: event.actorId,
+        resourceType: event.resourceType ?? undefined,
+        resourceId: event.resourceId ?? undefined,
+        metadataJson: event.metadata as never,
+        ip: event.ip,
       },
     });
+    forwardAudit(event);
   } catch (error) {
     // Audit failures must never break the user's action, but they must be loud.
     console.error("[audit] failed to record", input.action, error);
