@@ -1,0 +1,445 @@
+/**
+ * Runtime UI language dictionaries (FR-10 "Bangla/English UI label toggle").
+ *
+ * Pure data only — imported by both server and client components, so never add
+ * `next/headers` or other server-only imports here. Long-form marketing prose
+ * lives with its page; this file owns the shared chrome, auth and admin labels.
+ */
+
+export const LOCALES = ["bn", "en"] as const;
+export type Locale = (typeof LOCALES)[number];
+
+export const DEFAULT_LOCALE: Locale = "bn";
+export const LOCALE_COOKIE = "atlas_locale";
+export const LOCALE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+export function isLocale(value: unknown): value is Locale {
+  return value === "bn" || value === "en";
+}
+
+export function normalizeLocale(value: string | null | undefined): Locale {
+  return isLocale(value) ? value : DEFAULT_LOCALE;
+}
+
+const en = {
+  common: {
+    login: "Log in",
+    startFree: "Start free",
+    logout: "Log out",
+    menu: "Menu",
+    close: "Close",
+    notifications: "Notifications",
+    viewStore: "View store",
+    brandTagline: "Store builder",
+    switchLanguage: "Switch language",
+  },
+  nav: {
+    home: "Home",
+    pricing: "Pricing",
+    themes: "Themes",
+    howItWorks: "How it works",
+    help: "Help",
+    contact: "Contact",
+    about: "About us",
+  },
+  header: {
+    brandHome: "ATLaS — home",
+    mainMenu: "Main menu",
+    mobileMenu: "Mobile menu",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+  },
+  footer: {
+    tagline:
+      "A complete e-commerce store for Bangladeshi merchants — bKash, Nagad, SSLCommerz and cash on delivery in one checkout.",
+    product: "Product",
+    company: "Company",
+    legal: "Legal",
+    startFree: "Start free",
+    pricing: "Plans & pricing",
+    themes: "Theme gallery",
+    howItWorks: "How it works",
+    help: "Help centre",
+    contact: "Contact",
+    developers: "Developer API",
+    merchantLogin: "Merchant login",
+    terms: "Terms of service",
+    privacy: "Privacy policy",
+    refund: "Refund policy",
+    about: "About ATLaS",
+    copyright: "© {year} ATLaS — all rights reserved",
+    apiLine: "BDT · Asia/Dhaka · REST API v1",
+  },
+  auth: {
+    asideTitle: "An e-commerce store built for Bangladesh — live in minutes.",
+    asideHighlights: [
+      "bKash, Nagad, SSLCommerz and cash on delivery — all in one place",
+      "Your own subdomain and ready-made themes",
+      "Products, orders and delivery in one simple dashboard",
+    ],
+    asideFooter: "bKash · Nagad · SSLCommerz · COD · BDT · Asia/Dhaka",
+    brandHome: "ATLaS — home",
+    imageAlt: "ATLaS merchant running their store, orders and inventory from one dashboard",
+    login: {
+      title: "Log in",
+      subtitle: "Sign in to manage your store.",
+      identifier: "Mobile number or email",
+      identifierOtp: "Mobile number",
+      otpCode: "OTP code",
+      otpHint: "The 6-digit code sent by SMS",
+      password: "Password",
+      forgot: "Forgot password?",
+      submit: "Log in",
+      pending: "Please wait…",
+      verify: "Verify code",
+      sendOtp: "Send OTP",
+      loginWithOtp: "Log in with OTP",
+      loginWithPassword: "Log in with password",
+      noAccount: "No account yet?",
+      createAccount: "Start free",
+    },
+    signup: {
+      title: "Create an account",
+      subtitle: "Verify your mobile number and start your store in minutes.",
+      name: "Your name",
+      namePlaceholder: "e.g. Rahim Uddin",
+      phone: "Mobile number",
+      phoneHint: "A Bangladeshi number, e.g. 017XXXXXXXX",
+      email: "Email (optional)",
+      password: "Password",
+      passwordHint: "At least 8 characters, including a letter and a number",
+      otp: "OTP code",
+      otpHint: "The 6-digit code sent by SMS — valid for 5 minutes",
+      passwordConfirmHint: "Re-enter the password to verify",
+      terms: "I accept the Terms of Service and Privacy Policy.",
+      submit: "Send OTP",
+      verify: "Verify and create account",
+      resend: "Send a new OTP",
+      pending: "Please wait…",
+      haveAccount: "Already have an account?",
+      login: "Log in",
+    },
+    forgot: {
+      title: "Reset password",
+      subtitle: "Enter your mobile number — we will send a code to set a new password.",
+      identifier: "Mobile number or email",
+      otp: "OTP code",
+      otpHint: "The 6-digit code",
+      newPassword: "New password",
+      passwordHint: "At least 8 characters, a number and an uppercase letter",
+      submit: "Send code",
+      setPassword: "Set password",
+      pending: "Please wait…",
+      remembered: "Remembered it?",
+      back: "Back to login",
+    },
+    twoFactor: {
+      title: "Two-step verification",
+      subtitle: "Enter the 6-digit code from your authenticator app, or use a recovery code.",
+      code: "Code",
+      hint: "Authenticator code or xxxx-xxxx recovery code",
+      submit: "Verify",
+      pending: "Verifying…",
+      lost: "Lost your code?",
+      again: "Log in again",
+      lostTail: ", then sign in with a recovery code.",
+    },
+  },
+  admin: {
+    menu: "Menu",
+    sections: "Admin sections",
+    products: "Products",
+    ordersThisMonth: "Orders this month",
+    plan: "plan",
+    nav: {
+      dashboard: "Dashboard",
+      orders: "Orders",
+      products: "Products",
+      inventory: "Inventory",
+      customers: "Customers",
+      design: "Design",
+      pages: "Pages",
+      delivery: "Delivery",
+      payments: "Payments",
+      discounts: "Discounts",
+      reports: "Reports",
+      developers: "Developers",
+      staff: "Staff & roles",
+      billing: "Billing",
+      support: "Support",
+      settings: "Settings",
+    },
+  },
+  contact: {
+    eyebrow: "Contact & support",
+    title: "How can I help?",
+    body:
+      "The form goes straight to the platform support inbox. The more specific you are — store name, order number or plan — the faster we can help. A real person reads every message and replies in Bangla.",
+    highlights: [
+      "Reply the same working day",
+      "10am – 8pm (Asia/Dhaka)",
+      "Support in Bangla",
+    ],
+    replyBadge: "Reply within 1 working day",
+    languageBadge: "Bangla support",
+    imageAlt: "ATLaS support team — a support agent with a headset answering a message on a laptop",
+    formTitle: "Send a message",
+    formSubtitle: "The more specific you are, the faster we can help — add your store name or order number.",
+    form: {
+      name: "Your name",
+      email: "Email",
+      emailHint: "We reply to this address",
+      subject: "Subject",
+      subjectPlaceholder: "e.g. I would like to know the Pro plan API limit",
+      body: "Details",
+      bodyHint: "Include your store name or any relevant details",
+      send: "Send message",
+      sending: "Sending…",
+    },
+    urgentTitle: "Urgent payment problem?",
+    urgentBody:
+      "Check the payment status on the order page. If you suspect a duplicate charge, open a ticket with the order number — we will reconcile it against the webhook log.",
+    answersTitle: "You may find the answer first",
+    answersBody: "Setup, payments, domains and billing — the most common questions are answered in the help centre.",
+    helpCentre: "Help centre",
+    gettingStarted: "How to get started",
+    refundPolicy: "Refund policy",
+  },
+} as const;
+
+/** `typeof en` with string leaves widened, so a Bangla copy can be added. */
+type Widen<T> = {
+  readonly [K in keyof T]: T[K] extends string ? string : Widen<T[K]>;
+};
+
+export type Messages = Widen<typeof en>;
+
+const bn: Messages = {
+  common: {
+    login: "লগইন",
+    startFree: "ফ্রি শুরু করুন",
+    logout: "লগআউট",
+    menu: "মেনু",
+    close: "বন্ধ করুন",
+    notifications: "নোটিফিকেশন",
+    viewStore: "দোকান দেখুন",
+    brandTagline: "স্টোর বিল্ডার",
+    switchLanguage: "ভাষা পরিবর্তন করুন",
+  },
+  nav: {
+    home: "হোম",
+    pricing: "প্রাইসিং",
+    themes: "থিম",
+    howItWorks: "কীভাবে কাজ করে",
+    help: "হেল্প",
+    contact: "যোগাযোগ",
+    about: "আমাদের সম্পর্কে",
+  },
+  header: {
+    brandHome: "ATLaS — হোম",
+    mainMenu: "প্রধান মেনু",
+    mobileMenu: "মোবাইল মেনু",
+    openMenu: "মেনু খুলুন",
+    closeMenu: "মেনু বন্ধ করুন",
+  },
+  footer: {
+    tagline:
+      "বাংলাদেশের উদ্যোক্তাদের জন্য সম্পূর্ণ ই-কমার্স স্টোর — বিকাশ, নগদ, SSLCommerz আর ক্যাশ অন ডেলিভারি একসাথে।",
+    product: "প্রোডাক্ট",
+    company: "কোম্পানি",
+    legal: "লিগ্যাল",
+    startFree: "ফ্রি শুরু করুন",
+    pricing: "প্ল্যান ও প্রাইসিং",
+    themes: "থিম গ্যালারি",
+    howItWorks: "কীভাবে কাজ করে",
+    help: "হেল্প সেন্টার",
+    contact: "যোগাযোগ",
+    developers: "ডেভেলপার API",
+    merchantLogin: "মার্চেন্ট লগইন",
+    terms: "শর্তাবলী",
+    privacy: "প্রাইভেসি নীতি",
+    refund: "রিফান্ড নীতি",
+    about: "আমাদের সম্পর্কে",
+    copyright: "© {year} ATLaS — সর্বস্বত্ব সংরক্ষিত",
+    apiLine: "BDT · Asia/Dhaka · REST API v1",
+  },
+  auth: {
+    asideTitle: "বাংলাদেশের জন্য তৈরি ই-কমার্স স্টোর — মিনিটেই চালু।",
+    asideHighlights: [
+      "বিকাশ, নগদ, SSLCommerz আর ক্যাশ অন ডেলিভারি — সব একসাথে",
+      "নিজের সাবডোমেইন আর তৈরি থিম",
+      "প্রোডাক্ট, অর্ডার আর ডেলিভারি ম্যানেজমেন্ট সহজ ড্যাশবোর্ডে",
+    ],
+    asideFooter: "bKash · Nagad · SSLCommerz · COD · BDT · Asia/Dhaka",
+    brandHome: "ATLaS — হোম",
+    imageAlt: "ATLaS মার্চেন্ট তার দোকান, অর্ডার আর ইনভেন্টরি এক ড্যাশবোর্ড থেকে চালাচ্ছেন",
+    login: {
+      title: "লগইন",
+      subtitle: "আপনার দোকান পরিচালনা করতে সাইন ইন করুন।",
+      identifier: "মোবাইল নম্বর বা ইমেইল",
+      identifierOtp: "মোবাইল নম্বর",
+      otpCode: "OTP কোড",
+      otpHint: "SMS-এ পাঠানো ৬ ডিজিটের কোড",
+      password: "পাসওয়ার্ড",
+      forgot: "পাসওয়ার্ড ভুলে গেছেন?",
+      submit: "লগইন করুন",
+      pending: "অপেক্ষা করুন…",
+      verify: "কোড যাচাই করুন",
+      sendOtp: "OTP পাঠান",
+      loginWithOtp: "OTP দিয়ে লগইন করুন",
+      loginWithPassword: "পাসওয়ার্ড দিয়ে লগইন করুন",
+      noAccount: "অ্যাকাউন্ট নেই?",
+      createAccount: "বিনামূল্যে শুরু করুন",
+    },
+    signup: {
+      title: "অ্যাকাউন্ট খুলুন",
+      subtitle: "মোবাইল নম্বর যাচাই করে মিনিটেই আপনার দোকান শুরু করুন।",
+      name: "আপনার নাম",
+      namePlaceholder: "যেমন: রহিম উদ্দিন",
+      phone: "মোবাইল নম্বর",
+      phoneHint: "বাংলাদেশি নম্বর, যেমন 017XXXXXXXX",
+      email: "ইমেইল (ঐচ্ছিক)",
+      password: "পাসওয়ার্ড",
+      passwordHint: "কমপক্ষে ৮ অক্ষর, একটি অক্ষর ও একটি সংখ্যা",
+      otp: "OTP কোড",
+      otpHint: "মোবাইলে পাঠানো ৬ ডিজিটের কোড — ৫ মিনিটের মধ্যে দিন",
+      passwordConfirmHint: "যাচাইয়ের জন্য পাসওয়ার্ডটি আবার দিন",
+      terms: "আমি শর্তাবলী ও প্রাইভেসি নীতি মেনে নিচ্ছি।",
+      submit: "OTP পাঠান",
+      verify: "যাচাই করে অ্যাকাউন্ট খুলুন",
+      resend: "নতুন OTP পাঠান",
+      pending: "অপেক্ষা করুন…",
+      haveAccount: "আগেই অ্যাকাউন্ট আছে?",
+      login: "লগইন করুন",
+    },
+    forgot: {
+      title: "পাসওয়ার্ড রিসেট",
+      subtitle: "মোবাইল নম্বর দিন — SMS-এ পাঠানো কোড দিয়ে নতুন পাসওয়ার্ড সেট করবেন।",
+      identifier: "মোবাইল নম্বর বা ইমেইল",
+      otp: "OTP কোড",
+      otpHint: "৬ ডিজিটের কোড",
+      newPassword: "নতুন পাসওয়ার্ড",
+      passwordHint: "অন্তত ৮ অক্ষর, একটি সংখ্যা ও একটি বড় হাতের অক্ষর",
+      submit: "কোড পাঠান",
+      setPassword: "পাসওয়ার্ড সেট করুন",
+      pending: "অপেক্ষা করুন…",
+      remembered: "মনে পড়েছে?",
+      back: "লগইনে ফিরে যান",
+    },
+    twoFactor: {
+      title: "দুই-ধাপ যাচাই",
+      subtitle: "আপনার authenticator অ্যাপের ৬ ডিজিটের কোড দিন, অথবা একটি recovery code ব্যবহার করুন।",
+      code: "কোড",
+      hint: "Authenticator কোড অথবা xxxx-xxxx recovery code",
+      submit: "যাচাই করুন",
+      pending: "যাচাই হচ্ছে…",
+      lost: "কোড হারিয়েছেন?",
+      again: "আবার লগইন",
+      lostTail: " করুন, তারপর recovery code দিয়ে ঢুকুন।",
+    },
+  },
+  admin: {
+    menu: "মেনু",
+    sections: "Admin sections",
+    products: "পণ্য",
+    ordersThisMonth: "এই মাসে অর্ডার",
+    plan: "প্ল্যান",
+    nav: {
+      dashboard: "ড্যাশবোর্ড",
+      orders: "অর্ডার",
+      products: "পণ্য",
+      inventory: "ইনভেন্টরি",
+      customers: "কাস্টমার",
+      design: "ডিজাইন",
+      pages: "পেজ",
+      delivery: "ডেলিভারি",
+      payments: "পেমেন্ট",
+      discounts: "ডিসকাউন্ট",
+      reports: "রিপোর্ট",
+      developers: "ডেভেলপার",
+      staff: "স্টাফ ও রোল",
+      billing: "বিলিং",
+      support: "সাপোর্ট",
+      settings: "সেটিংস",
+    },
+  },
+  contact: {
+    eyebrow: "যোগাযোগ ও সাপোর্ট",
+    title: "কীভাবে সাহায্য করতে পারি?",
+    body:
+      "ফর্মটি প্ল্যাটফর্ম সাপোর্ট ইনবক্সে যায়। যত নির্দিষ্ট লিখবেন — দোকানের নাম, অর্ডার নম্বর বা প্ল্যান — তত দ্রুত সমাধান পাবেন। প্রতিটি বার্তা মানুষ পড়ে, রিপ্লাই সবসময় বাংলায়।",
+    highlights: [
+      "কর্মদিবসে একই দিনে উত্তর",
+      "সকাল ১০টা – রাত ৮টা (Asia/Dhaka)",
+      "বাংলায় সাপোর্ট",
+    ],
+    replyBadge: "১ কর্মদিবসে উত্তর",
+    languageBadge: "বাংলায় সাপোর্ট",
+    imageAlt: "ATLaS সাপোর্ট টিম — হেডসেট পরা সহায়তা কর্মী ল্যাপটপে গ্রাহকের বার্তার উত্তর দিচ্ছেন",
+    formTitle: "বার্তা পাঠান",
+    formSubtitle: "যত নির্দিষ্ট লিখবেন তত দ্রুত সমাধান সম্ভব — দোকানের নাম বা অর্ডার নম্বর যোগ করুন।",
+    form: {
+      name: "আপনার নাম",
+      email: "ইমেইল",
+      emailHint: "উত্তর এই ঠিকেই পাঠানো হবে",
+      subject: "বিষয়",
+      subjectPlaceholder: "যেমন: Pro প্ল্যানের API limit জানতে চাই",
+      body: "বিবরণ",
+      bodyHint: "দোকানের নাম বা কোনো সমস্যা থাকলে সেটিও লিখুন",
+      send: "বার্তা পাঠান",
+      sending: "পাঠানো হচ্ছে…",
+    },
+    urgentTitle: "জরুরি পেমেন্ট সমস্যা?",
+    urgentBody:
+      "অর্ডার পেজে পেমেন্ট স্ট্যাটাস দেখুন। সন্দেহজনক ডুপ্লিকেট চার্জ হলে অর্ডার নম্বরসহ টিকেট খুলুন — webhook লগ থেকে আমরা মিলিয়ে দেখব।",
+    answersTitle: "উত্তর আগেই পেয়ে যেতে পারেন",
+    answersBody: "সেটআপ, পেমেন্ট, ডোমেইন আর বিলিং — সবচেয়ে সাধারণ প্রশ্নগুলোর উত্তর হেল্প সেন্টারে আছে।",
+    helpCentre: "হেল্প সেন্টার",
+    gettingStarted: "কীভাবে শুরু করবেন",
+    refundPolicy: "রিফান্ড নীতি",
+  },
+};
+
+export const messages: Record<Locale, Messages> = { bn, en };
+
+/** Support channels shown on the contact page (not part of the typed `Messages` tree). */
+export const contactChannels: Record<
+  Locale,
+  ReadonlyArray<{ title: string; body: string; action: { href: string; label: string } }>
+> = {
+  bn: [
+    {
+      title: "সাপোর্ট টিকেট",
+      body: "মার্চেন্ট অ্যাকাউন্ট থাকলে অ্যাডমিনের সাপোর্ট পেজ থেকে টিকেট খুলুন — অর্ডার ও দোকানের তথ্য স্বয়ংক্রিয়ভাবে যুক্ত হয়।",
+      action: { href: "/login", label: "লগইন করে টিকেট খুলুন" },
+    },
+    {
+      title: "প্ল্যান ও প্রাইসিং",
+      body: "Basic, Standard ও Pro-র মূল্য ব্যবসায়িক সম্মতির ভিত্তিতে ঠিক হয়। আপনার দোকানের সাইজ জানালে আমরা কোটেশন দেব।",
+      action: { href: "/pricing", label: "প্ল্যান ম্যাট্রিক্স দেখুন" },
+    },
+    {
+      title: "ডেভেলপার সহায়তা",
+      body: "REST API, OTP login, rate limit ও webhook signature — সব ডকুমেন্টেশন ডেভেলপার পেজে।",
+      action: { href: "/developers", label: "API ডকুমেন্টেশন" },
+    },
+  ],
+  en: [
+    {
+      title: "Support ticket",
+      body: "If you have a merchant account, open a ticket from the Support page in admin — order and store details are attached automatically.",
+      action: { href: "/login", label: "Log in to open a ticket" },
+    },
+    {
+      title: "Plans & pricing",
+      body: "Basic, Standard and Pro pricing follows a business agreement. Tell us your store size and we will send a quote.",
+      action: { href: "/pricing", label: "Compare plans" },
+    },
+    {
+      title: "Developer support",
+      body: "REST API, OTP login, rate limiting and webhook signatures — all documented on the developer page.",
+      action: { href: "/developers", label: "API documentation" },
+    },
+  ],
+};
+

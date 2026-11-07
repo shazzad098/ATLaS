@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { getMessages } from "@/lib/i18n/server";
+import { LocaleToggle } from "@/components/locale-toggle";
 
 /** Login-only shell: picture-only panel on the left, form on the right. */
 
-export default function AuthLoginLayout({ children }: { children: React.ReactNode }) {
+export default async function AuthLoginLayout({ children }: { children: React.ReactNode }) {
+  const { m } = await getMessages();
+
   return (
     <div className="grid h-screen lg:grid-cols-2">
       {/* Left: the picture fills the whole panel edge-to-edge; overflow is
@@ -10,7 +14,7 @@ export default function AuthLoginLayout({ children }: { children: React.ReactNod
       <div className="relative hidden overflow-hidden lg:block">
         <img
           src="/images/auth/atlas_auth.jpg"
-          alt="ATLaS — মার্চেন্ট তার দোকান, অর্ডার আর ইনভেন্টরি এক ড্যাশবোর্ড থেকে চালাচ্ছেন"
+          alt={m.auth.imageAlt}
           className="absolute inset-0 h-full w-full object-cover"
         />
       </div>
@@ -18,9 +22,12 @@ export default function AuthLoginLayout({ children }: { children: React.ReactNod
       {/* Right: the auth form. */}
       <div className="flex h-screen items-center justify-center overflow-hidden px-4 py-6 sm:px-8">
         <div className="max-h-full w-full max-w-md overflow-y-auto">
-          <Link href="/" className="mb-8 inline-block text-lg font-semibold lg:hidden">
-            ATLaS
-          </Link>
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <Link href="/" className="inline-block text-lg font-semibold lg:hidden">
+              ATLaS
+            </Link>
+            <LocaleToggle className="ml-auto" />
+          </div>
           {children}
         </div>
       </div>

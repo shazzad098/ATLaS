@@ -1,39 +1,42 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/marketing/site-header";
+import { getMessages } from "@/lib/i18n/server";
 
 /** Marketing chrome for the public site. */
 
-const FOOTER_GROUPS = [
-  {
-    title: "শুরু করুন",
-    links: [
-      { href: "/signup", label: "ফ্রি অ্যাকাউন্ট" },
-      { href: "/pricing", label: "প্ল্যান ও প্রাইসিং" },
-      { href: "/themes", label: "থিম গ্যালারি" },
-      { href: "/how-it-works", label: "শুরুর ছয় ধাপ" },
-    ],
-  },
-  {
-    title: "সাপোর্ট",
-    links: [
-      { href: "/help", label: "হেল্প সেন্টার" },
-      { href: "/contact", label: "যোগাযোগ" },
-      { href: "/developers", label: "ডেভেলপার API" },
-      { href: "/login", label: "মার্চেন্ট লগইন" },
-    ],
-  },
-  {
-    title: "আইনি",
-    links: [
-      { href: "/terms", label: "শর্তাবলী" },
-      { href: "/privacy", label: "প্রাইভেসি পলিসি" },
-      { href: "/refund-policy", label: "রিফান্ড নীতি" },
-      { href: "/about", label: "আমাদের সম্পর্কে" },
-    ],
-  },
-];
+export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
+  const { m } = await getMessages();
 
-export default function MarketingLayout({ children }: { children: React.ReactNode }) {
+  const footerGroups = [
+    {
+      title: m.footer.product,
+      links: [
+        { href: "/signup", label: m.footer.startFree },
+        { href: "/pricing", label: m.footer.pricing },
+        { href: "/themes", label: m.footer.themes },
+        { href: "/how-it-works", label: m.footer.howItWorks },
+      ],
+    },
+    {
+      title: m.footer.company,
+      links: [
+        { href: "/help", label: m.footer.help },
+        { href: "/contact", label: m.footer.contact },
+        { href: "/developers", label: m.footer.developers },
+        { href: "/login", label: m.footer.merchantLogin },
+      ],
+    },
+    {
+      title: m.footer.legal,
+      links: [
+        { href: "/terms", label: m.footer.terms },
+        { href: "/privacy", label: m.footer.privacy },
+        { href: "/refund-policy", label: m.footer.refund },
+        { href: "/about", label: m.footer.about },
+      ],
+    },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <SiteHeader />
@@ -49,14 +52,11 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
               </span>
               <span className="text-ink-900">ATLaS</span>
             </div>
-            <p className="max-w-xs text-sm text-ink-500">
-              বাংলাদেশের উদ্যোক্তাদের জন্য সম্পূর্ণ ই-কমার্স দোকান — বিকাশ, নগদ, SSLCommerz আর ক্যাশ অন
-              ডেলিভারি সহ।
-            </p>
-            <p className="text-xs text-ink-400">BDT · Asia/Dhaka · বাংলা ও ইংরেজি</p>
+            <p className="max-w-xs text-sm text-ink-500">{m.footer.tagline}</p>
+            <p className="text-xs text-ink-400">{m.footer.apiLine}</p>
           </div>
 
-          {FOOTER_GROUPS.map((group) => (
+          {footerGroups.map((group) => (
             <div key={group.title} className="space-y-2 text-sm">
               <p className="font-semibold text-ink-900">{group.title}</p>
               {group.links.map((link) => (
@@ -70,7 +70,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
 
         <div className="border-t border-ink-200 py-4">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 text-xs text-ink-500">
-            <p>© {new Date().getFullYear()} ATLaS। বাংলাদেশে তৈরি।</p>
+            <p>{m.footer.copyright.replace("{year}", String(new Date().getFullYear()))}</p>
             <Link href="/developers" className="hover:text-ink-900">
               API v1 · OpenAPI 3.1
             </Link>

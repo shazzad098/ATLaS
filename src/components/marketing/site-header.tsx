@@ -4,19 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
+import { LocaleToggle } from "@/components/locale-toggle";
+import { useMessages } from "@/components/locale-provider";
 import { cn } from "@/lib/cn";
 
 /** Sticky marketing navigation with active-route state and a mobile menu. */
 
 const NAV = [
-  { href: "/", label: "হোম" },
-  { href: "/pricing", label: "প্রাইসিং" },
-  { href: "/themes", label: "থিম" },
-  { href: "/how-it-works", label: "কীভাবে কাজ করে" },
-  { href: "/help", label: "হেল্প" },
-  { href: "/contact", label: "যোগাযোগ" },
-  { href: "/about", label: "আমাদের সম্পর্কে" },
-];
+  { href: "/", key: "home" },
+  { href: "/pricing", key: "pricing" },
+  { href: "/themes", key: "themes" },
+  { href: "/how-it-works", key: "howItWorks" },
+  { href: "/help", key: "help" },
+  { href: "/contact", key: "contact" },
+  { href: "/about", key: "about" },
+] as const;
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -25,8 +27,11 @@ function isActivePath(pathname: string, href: string) {
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const m = useMessages();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const nav = NAV.map((item) => ({ href: item.href, label: m.nav[item.key] }));
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -60,7 +65,7 @@ export function SiteHeader() {
         )}
       >
         {/* Brand */}
-        <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label="ATLaS — হোম">
+        <Link href="/" className="group flex shrink-0 items-center gap-2.5" aria-label={m.header.brandHome}>
           <span className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 text-sm font-bold text-white shadow-sm shadow-brand-900/25 ring-1 ring-white/40 transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105">
             <span
               aria-hidden="true"
@@ -71,14 +76,14 @@ export function SiteHeader() {
           <span className="flex flex-col leading-none">
             <span className="text-[15px] font-bold tracking-tight text-ink-900">ATLaS</span>
             <span className="mt-1 hidden text-[8px] font-semibold tracking-[0.18em] text-ink-400 uppercase sm:block">
-              স্টোর বিল্ডার
+              {m.common.brandTagline}
             </span>
           </span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="ml-2 hidden items-center gap-0.5 lg:flex" aria-label="প্রধান মেনু">
-          {NAV.map((item) => {
+        <nav className="ml-2 hidden items-center gap-0.5 lg:flex" aria-label={m.header.mainMenu}>
+          {nav.map((item) => {
             const active = isActivePath(pathname, item.href);
             return (
               <Link
@@ -105,6 +110,7 @@ export function SiteHeader() {
 
         {/* Actions */}
         <div className="ml-auto flex items-center gap-2">
+          <LocaleToggle />
           <span aria-hidden="true" className="hidden h-5 w-px bg-ink-200 sm:block" />
           <ButtonLink
             href="/login"
@@ -112,14 +118,14 @@ export function SiteHeader() {
             size="sm"
             className="hidden text-ink-600 hover:text-ink-900 sm:inline-flex"
           >
-            লগইন
+            {m.common.login}
           </ButtonLink>
           <ButtonLink
             href="/signup"
             size="sm"
             className="group relative overflow-hidden shadow-sm shadow-brand-900/15 transition-shadow duration-300 hover:shadow-md hover:shadow-brand-900/20"
           >
-            <span className="relative z-10">ফ্রি শুরু করুন</span>
+            <span className="relative z-10">{m.common.startFree}</span>
             <svg
               viewBox="0 0 24 24"
               aria-hidden="true"
@@ -139,7 +145,7 @@ export function SiteHeader() {
             onClick={() => setOpen((value) => !value)}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            aria-label={open ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
+            aria-label={open ? m.header.closeMenu : m.header.openMenu}
             className="grid h-9 w-9 place-items-center rounded-lg border border-ink-200 bg-white text-ink-700 transition duration-200 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800 lg:hidden"
           >
             <span aria-hidden="true" className="relative block h-4 w-5">
@@ -172,8 +178,8 @@ export function SiteHeader() {
           id="mobile-nav"
           className="animate-fade-up border-t border-ink-100 bg-white/95 [animation-duration:0.3s] backdrop-blur-xl lg:hidden"
         >
-          <nav className="mx-auto grid max-w-6xl gap-0.5 px-4 py-3" aria-label="মোবাইল মেনু">
-            {NAV.map((item) => {
+          <nav className="mx-auto grid max-w-6xl gap-0.5 px-4 py-3" aria-label={m.header.mobileMenu}>
+            {nav.map((item) => {
               const active = isActivePath(pathname, item.href);
               return (
                 <Link
@@ -202,10 +208,10 @@ export function SiteHeader() {
 
             <div className="mt-2 grid grid-cols-2 gap-2 border-t border-ink-100 pt-3">
               <ButtonLink href="/login" variant="outline" size="sm" onClick={() => setOpen(false)}>
-                লগইন
+                {m.common.login}
               </ButtonLink>
               <ButtonLink href="/signup" size="sm" onClick={() => setOpen(false)}>
-                ফ্রি শুরু করুন
+                {m.common.startFree}
               </ButtonLink>
             </div>
           </nav>

@@ -7,6 +7,7 @@ import { Alert } from "@/components/ui/shell";
 import { Checkbox, Field, Input } from "@/components/ui/form";
 import { signupAction } from "@/app/(auth)/actions";
 import { EMPTY_AUTH_STATE, type AuthState } from "@/app/(auth)/state";
+import { useMessages } from "@/components/locale-provider";
 
 /** Signup: details → OTP → account (FR-01). */
 
@@ -20,6 +21,7 @@ type SignupDraft = {
 const EMPTY_DRAFT: SignupDraft = { name: "", phone: "", email: "", password: "" };
 
 export function SignupForm() {
+  const m = useMessages();
   const [draft, setDraft] = useState<SignupDraft>(EMPTY_DRAFT);
   const draftRef = useRef<SignupDraft>(EMPTY_DRAFT);
 
@@ -46,8 +48,8 @@ export function SignupForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">অ্যাকাউন্ট খুলুন</h1>
-        <p className="text-sm text-ink-500">মোবাইল নম্বর যাচাই করে মিনিটেই আপনার দোকান শুরু করুন।</p>
+        <h1 className="text-2xl font-semibold">{m.auth.signup.title}</h1>
+        <p className="text-sm text-ink-500">{m.auth.signup.subtitle}</p>
       </div>
 
       {state.message ? <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert> : null}
@@ -66,49 +68,45 @@ export function SignupForm() {
             <input type="hidden" name="acceptTerms" value="on" />
             {password ? <input type="hidden" name="password" value={password} /> : null}
 
-            <Field label="আপনার নাম">
+            <Field label={m.auth.signup.name}>
               <Input value={name} readOnly autoComplete="name" />
             </Field>
-            <Field label="মোবাইল নম্বর">
+            <Field label={m.auth.signup.phone}>
               <Input value={phone} readOnly autoComplete="username" />
             </Field>
-            <Field label="OTP কোড" required hint="মোবাইলে পাঠানো ৬ ডিজিটের কোড — ৫ মিনিটের মধ্যে দিন">
+            <Field label={m.auth.signup.otp} required hint={m.auth.signup.otpHint}>
               <Input name="code" required inputMode="numeric" maxLength={6} placeholder="123456" autoFocus autoComplete="one-time-code" />
             </Field>
             {!password ? (
-              <Field label="পাসওয়ার্ড" required hint="যাচাইয়ের জন্য পাসওয়ার্ডটি আবার দিন">
+              <Field label={m.auth.signup.password} required hint={m.auth.signup.passwordConfirmHint}>
                 <Input name="password" type="password" required autoComplete="new-password" placeholder="••••••••" />
               </Field>
             ) : null}
           </>
         ) : (
           <>
-            <Field label="আপনার নাম" required>
-              <Input name="name" required placeholder="যেমন: রহিম উদ্দিন" defaultValue={name} autoComplete="name" />
+            <Field label={m.auth.signup.name} required>
+              <Input name="name" required placeholder={m.auth.signup.namePlaceholder} defaultValue={name} autoComplete="name" />
             </Field>
-            <Field label="মোবাইল নম্বর" required hint="বাংলাদেশি নম্বর, যেমন 017XXXXXXXX">
+            <Field label={m.auth.signup.phone} required hint={m.auth.signup.phoneHint}>
               <Input name="phone" required inputMode="tel" placeholder="01XXXXXXXXX" defaultValue={draft.phone} autoComplete="username" />
             </Field>
-            <Field label="ইমেইল (ঐচ্ছিক)">
+            <Field label={m.auth.signup.email}>
               <Input name="email" type="email" placeholder="you@example.com" defaultValue={email} autoComplete="email" />
             </Field>
-            <Field label="পাসওয়ার্ড" required hint="কমপক্ষে ৮ অক্ষর, একটি অক্ষর ও একটি সংখ্যা">
+            <Field label={m.auth.signup.password} required hint={m.auth.signup.passwordHint}>
               <Input name="password" type="password" required autoComplete="new-password" placeholder="••••••••" />
             </Field>
-            <Checkbox
-              name="acceptTerms"
-              label={
-                <>
-                  আমি <span className="font-medium">শর্তাবলী</span> ও{" "}
-                  <span className="font-medium">প্রাইভেসি নীতি</span> মেনে নিচ্ছি।
-                </>
-              }
-            />
+            <Checkbox name="acceptTerms" label={m.auth.signup.terms} />
           </>
         )}
 
         <Button type="submit" name="intent" value={inOtpStep ? "verify" : "request"} disabled={pending} className="w-full">
-          {pending ? "অপেক্ষা করুন…" : inOtpStep ? "যাচাই করে অ্যাকাউন্ট খুলুন" : "OTP পাঠান"}
+          {pending
+            ? m.auth.signup.pending
+            : inOtpStep
+              ? m.auth.signup.verify
+              : m.auth.signup.submit}
         </Button>
         {inOtpStep ? (
           <button
@@ -118,15 +116,15 @@ export function SignupForm() {
             disabled={pending}
             className="w-full text-center text-xs font-medium text-brand-700 hover:underline"
           >
-            নতুন OTP পাঠান
+            {m.auth.signup.resend}
           </button>
         ) : null}
       </form>
 
       <p className="text-center text-sm text-ink-600">
-        আগেই অ্যাকাউন্ট আছে?{" "}
+        {m.auth.signup.haveAccount}{" "}
         <Link href="/login" className="font-semibold text-brand-700 hover:underline">
-          লগইন করুন
+          {m.auth.signup.login}
         </Link>
       </p>
     </div>

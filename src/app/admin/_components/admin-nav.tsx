@@ -24,6 +24,8 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
+import { useMessages } from "@/components/locale-provider";
+import type { Messages } from "@/lib/i18n/messages";
 
 /**
  * Merchant admin section navigation.
@@ -36,28 +38,28 @@ import {
 
 type NavItem = {
   href: string;
-  label: string;
+  key: keyof Messages["admin"]["nav"];
   icon: LucideIcon;
   permission: string;
 };
 
 const NAV: NavItem[] = [
-  { href: "/admin", label: "ড্যাশবোর্ড", icon: LayoutDashboard, permission: "store:read" },
-  { href: "/admin/orders", label: "অর্ডার", icon: ShoppingCart, permission: "orders:read" },
-  { href: "/admin/products", label: "পণ্য", icon: Boxes, permission: "catalog:read" },
-  { href: "/admin/inventory", label: "ইনভেন্টরি", icon: Warehouse, permission: "catalog:read" },
-  { href: "/admin/customers", label: "কাস্টমার", icon: Users, permission: "customers:read" },
-  { href: "/admin/design", label: "ডিজাইন", icon: Palette, permission: "design:read" },
-  { href: "/admin/pages", label: "পেজ", icon: FileText, permission: "design:read" },
-  { href: "/admin/delivery", label: "ডেলিভারি", icon: Truck, permission: "delivery:read" },
-  { href: "/admin/payments", label: "পেমেন্ট", icon: Wallet, permission: "payments:read" },
-  { href: "/admin/discounts", label: "ডিসকাউন্ট", icon: Percent, permission: "discounts:read" },
-  { href: "/admin/reports", label: "রিপোর্ট", icon: BarChart3, permission: "reports:read" },
-  { href: "/admin/developers", label: "ডেভেলপার", icon: Code2, permission: "settings:read" },
-  { href: "/admin/staff", label: "স্টাফ ও রোল", icon: UserSquare2, permission: "staff:read" },
-  { href: "/admin/billing", label: "বিলিং", icon: Receipt, permission: "billing:read" },
-  { href: "/admin/support", label: "সাপোর্ট", icon: LifeBuoy, permission: "store:read" },
-  { href: "/admin/settings", label: "সেটিংস", icon: Settings, permission: "settings:read" },
+  { href: "/admin", key: "dashboard", icon: LayoutDashboard, permission: "store:read" },
+  { href: "/admin/orders", key: "orders", icon: ShoppingCart, permission: "orders:read" },
+  { href: "/admin/products", key: "products", icon: Boxes, permission: "catalog:read" },
+  { href: "/admin/inventory", key: "inventory", icon: Warehouse, permission: "catalog:read" },
+  { href: "/admin/customers", key: "customers", icon: Users, permission: "customers:read" },
+  { href: "/admin/design", key: "design", icon: Palette, permission: "design:read" },
+  { href: "/admin/pages", key: "pages", icon: FileText, permission: "design:read" },
+  { href: "/admin/delivery", key: "delivery", icon: Truck, permission: "delivery:read" },
+  { href: "/admin/payments", key: "payments", icon: Wallet, permission: "payments:read" },
+  { href: "/admin/discounts", key: "discounts", icon: Percent, permission: "discounts:read" },
+  { href: "/admin/reports", key: "reports", icon: BarChart3, permission: "reports:read" },
+  { href: "/admin/developers", key: "developers", icon: Code2, permission: "settings:read" },
+  { href: "/admin/staff", key: "staff", icon: UserSquare2, permission: "staff:read" },
+  { href: "/admin/billing", key: "billing", icon: Receipt, permission: "billing:read" },
+  { href: "/admin/support", key: "support", icon: LifeBuoy, permission: "store:read" },
+  { href: "/admin/settings", key: "settings", icon: Settings, permission: "settings:read" },
 ];
 
 /** A section is active on its own route and on sub-pages beneath it. */
@@ -68,6 +70,7 @@ function isActive(href: string, pathname: string): boolean {
 
 export function AdminNav({ permissions }: { permissions: string[] }) {
   const pathname = usePathname();
+  const m = useMessages();
   const [open, setOpen] = useState(false);
   const [lastPathname, setLastPathname] = useState(pathname);
 
@@ -77,8 +80,11 @@ export function AdminNav({ permissions }: { permissions: string[] }) {
     setOpen(false);
   }
 
-  const visible = NAV.filter((item) => permissions.includes(item.permission));
-  const active = visible.find((item) => isActive(item.href, pathname));
+  const items = NAV.filter((item) => permissions.includes(item.permission)).map((item) => ({
+    ...item,
+    label: m.admin.nav[item.key],
+  }));
+  const active = items.find((item) => isActive(item.href, pathname));
 
   const itemClass = (activated: boolean) =>
     activated
@@ -89,8 +95,8 @@ export function AdminNav({ permissions }: { permissions: string[] }) {
     <>
       {/* ── Desktop: sticky left sidebar ─────────────────────────────────────── */}
       <aside className="hidden w-60 shrink-0 border-r border-ink-200 bg-white px-3 md:sticky md:top-14 md:flex md:h-[calc(100vh-3.5rem)] md:flex-col">
-        <nav aria-label="Admin sections" className="flex flex-col gap-0.5 overflow-y-auto pb-6 pt-6">
-          {visible.map((item) => (
+        <nav aria-label={m.admin.sections} className="flex flex-col gap-0.5 overflow-y-auto pb-6 pt-6">
+          {items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -116,7 +122,7 @@ export function AdminNav({ permissions }: { permissions: string[] }) {
           <span className="flex h-5 w-5 items-center justify-center rounded-md bg-ink-50 shadow-sm">
             {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </span>
-          মেনু
+          {m.admin.menu}
           {active ? (
             <span className="ml-auto flex items-center gap-1.5 text-xs font-normal text-ink-500">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-500" aria-hidden />
@@ -133,18 +139,18 @@ export function AdminNav({ permissions }: { permissions: string[] }) {
               className="absolute inset-y-0 left-0 w-64 max-w-[80vw] overflow-y-auto bg-white p-3 shadow-2xl"
             >
               <div className="mb-2 flex items-center justify-between px-1">
-                <span className="text-sm font-semibold text-ink-900">মেনু</span>
+                <span className="text-sm font-semibold text-ink-900">{m.admin.menu}</span>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="মেনু বন্ধ করুন"
+                  aria-label={m.common.close}
                   className="rounded-lg p-1.5 text-ink-500 hover:bg-ink-100"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <nav aria-label="Admin sections" className="flex flex-col gap-0.5">
-                {visible.map((item) => (
+              <nav aria-label={m.admin.sections} className="flex flex-col gap-0.5">
+                {items.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}

@@ -21,6 +21,7 @@ import {
   resetPassword,
 } from "@/lib/services/account-service";
 import { recordAudit } from "@/lib/audit";
+import { trackEvent } from "@/lib/services/analytics-service";
 import type { AuthState } from "@/app/(auth)/state";
 
 /**
@@ -268,6 +269,11 @@ export async function signupAction(_prev: AuthState, formData: FormData): Promis
 
   try {
     const account = await provisionAccount({ phone, name, email: email || null, password });
+    await trackEvent({
+      tenantId: account.tenantId,
+      name: "signup_completed",
+      metadata: { source: "self_serve" },
+    });
     const tokens = await establishSession(account.userId, await requestMeta());
     await setAuthCookies(tokens);
   } catch (error) {

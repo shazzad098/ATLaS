@@ -10,6 +10,7 @@ import {
   verifyLoginOtpAction,
 } from "@/app/(auth)/actions";
 import { EMPTY_AUTH_STATE, type AuthState } from "@/app/(auth)/state";
+import { useMessages } from "@/components/locale-provider";
 
 /**
  * Login form — password or OTP, toggled by the shopper (FR-01).
@@ -19,6 +20,7 @@ import { EMPTY_AUTH_STATE, type AuthState } from "@/app/(auth)/state";
  */
 
 export function LoginForm({ devHint }: { devHint?: string }) {
+  const m = useMessages();
   const [mode, setMode] = useState<"password" | "otp">("password");
   const [passwordState, passwordSubmit, passwordPending] = useActionState(loginAction, EMPTY_AUTH_STATE);
   const [otpState, otpSubmit, otpPending] = useActionState(verifyLoginOtpAction, EMPTY_AUTH_STATE);
@@ -34,8 +36,8 @@ export function LoginForm({ devHint }: { devHint?: string }) {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">লগইন</h1>
-        <p className="text-sm text-ink-500">আপনার দোকান পরিচালনা করতে সাইন ইন করুন।</p>
+        <h1 className="text-2xl font-semibold">{m.auth.login.title}</h1>
+        <p className="text-sm text-ink-500">{m.auth.login.subtitle}</p>
       </div>
 
       {state.message ? <Alert tone={state.ok ? "success" : "danger"}>{state.message}</Alert> : null}
@@ -47,12 +49,12 @@ export function LoginForm({ devHint }: { devHint?: string }) {
           <>
             {/* The number is re-verified server-side; a remount must not lose it. */}
             <input type="hidden" name="identifier" value={state.identifier ?? ""} />
-            <Field label="মোবাইল নম্বর">
+            <Field label={m.auth.login.identifierOtp}>
               <Input value={state.identifier ?? ""} readOnly autoComplete="username" />
             </Field>
           </>
         ) : (
-          <Field label="মোবাইল নম্বর বা ইমেইল" required>
+          <Field label={m.auth.login.identifier} required>
             <Input
               name="identifier"
               required
@@ -64,24 +66,30 @@ export function LoginForm({ devHint }: { devHint?: string }) {
         )}
 
         {inOtpStep ? (
-          <Field label="OTP কোড" required hint="SMS-এ পাঠানো ৬ ডিজিটের কোড">
+          <Field label={m.auth.login.otpCode} required hint={m.auth.login.otpHint}>
             <Input name="code" required inputMode="numeric" maxLength={6} placeholder="123456" autoFocus />
           </Field>
         ) : (
           <>
-            <Field label="পাসওয়ার্ড" required>
+            <Field label={m.auth.login.password} required>
               <Input name="password" type="password" autoComplete="current-password" placeholder="••••••••" />
             </Field>
             <div className="text-right">
               <Link href="/forgot-password" className="text-xs font-medium text-brand-700 hover:underline">
-                পাসওয়ার্ড ভুলে গেছেন?
+                {m.auth.login.forgot}
               </Link>
             </div>
           </>
         )}
 
         <Button type="submit" disabled={pending} className="w-full">
-          {pending ? "অপেক্ষা করুন…" : inOtpStep ? "কোড যাচাই করুন" : mode === "otp" ? "OTP পাঠান" : "লগইন করুন"}
+          {pending
+            ? m.auth.login.pending
+            : inOtpStep
+              ? m.auth.login.verify
+              : mode === "otp"
+                ? m.auth.login.sendOtp
+                : m.auth.login.submit}
         </Button>
       </form>
 
@@ -91,14 +99,14 @@ export function LoginForm({ devHint }: { devHint?: string }) {
           onClick={() => setMode((value) => (value === "otp" ? "password" : "otp"))}
           className="w-full text-center text-xs font-medium text-brand-700 hover:underline"
         >
-          {mode === "otp" ? "পাসওয়ার্ড দিয়ে লগইন করুন" : "OTP দিয়ে লগইন করুন"}
+          {mode === "otp" ? m.auth.login.loginWithPassword : m.auth.login.loginWithOtp}
         </button>
       ) : null}
 
       <p className="text-center text-sm text-ink-600">
-        অ্যাকাউন্ট নেই?{" "}
+        {m.auth.login.noAccount}{" "}
         <Link href="/signup" className="font-semibold text-brand-700 hover:underline">
-          বিনামূল্যে শুরু করুন
+          {m.auth.login.createAccount}
         </Link>
       </p>
 

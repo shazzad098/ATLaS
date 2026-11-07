@@ -12,6 +12,8 @@ import { formatDateTime } from "@/lib/dates";
 import { stopImpersonationAction } from "@/app/super-admin/actions";
 import { StoreSwitcher } from "@/app/admin/_components/store-switcher";
 import { AdminNav } from "@/app/admin/_components/admin-nav";
+import { getMessages } from "@/lib/i18n/server";
+import { LocaleToggle } from "@/components/locale-toggle";
 
 /** Merchant admin shell: permission-filtered navigation, store switcher, plan banner. */
 
@@ -27,6 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!store) redirect("/onboarding");
 
   const snapshot = await loadEntitlementSnapshot(workspace.activeTenant.tenantId);
+  const { m } = await getMessages();
   const jar = await cookies();
   const storeCookie = jar.get(STORE_COOKIE)?.value;
   const darkTheme = resolveAdminTheme(jar.get(THEME_COOKIE)?.value) === "dark";
@@ -61,7 +64,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 className="hidden items-center gap-1.5 rounded-lg border border-ink-200 px-3 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-50 sm:inline-flex"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                দোকান দেখুন
+                {m.common.viewStore}
               </Link>
             ) : (
               <Badge tone="warning">Draft</Badge>
@@ -72,7 +75,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               className="relative inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-ink-600 hover:bg-ink-100"
             >
               <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">নোটিফিকেশন</span>
+              <span className="hidden sm:inline">{m.common.notifications}</span>
             </Link>
 
             <Link
@@ -87,9 +90,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 type="submit"
                 className="rounded-lg px-3 py-1.5 text-xs font-medium text-ink-600 hover:bg-ink-100"
               >
-                লগআউট
+                {m.common.logout}
               </button>
             </form>
+
+            <LocaleToggle />
           </div>
         </div>
       </header>
@@ -129,15 +134,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         ) : null}
 
         <div className="mb-5 flex flex-wrap items-center gap-2 text-xs text-ink-500">
-          <Badge tone="brand">{snapshot.planName} প্ল্যান</Badge>
+          <Badge tone="brand">
+            {snapshot.planName} {m.admin.plan}
+          </Badge>
           {readOnlyRole ? <Badge tone="neutral">Read-only role</Badge> : null}
           <span>
-            পণ্য {snapshot.usage.products}
+            {m.admin.products} {snapshot.usage.products}
             {snapshot.limits.products === null ? "" : ` / ${snapshot.limits.products}`}
           </span>
           <span aria-hidden>·</span>
           <span>
-            এই মাসে অর্ডার {snapshot.usage.ordersThisPeriod}
+            {m.admin.ordersThisMonth} {snapshot.usage.ordersThisPeriod}
             {snapshot.limits.monthlyOrders === null ? "" : ` / ${snapshot.limits.monthlyOrders}`}
           </span>
         </div>

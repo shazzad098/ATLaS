@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+import { getLocale } from "@/lib/i18n/server";
+import { LocaleProvider } from "@/components/locale-provider";
 import "./globals.css";
 
 /**
@@ -25,10 +27,14 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="bn" className="h-full">
-      <body className="min-h-full">{children}</body>
+    <html lang={locale} className="h-full">
+      <body className="min-h-full">
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }
