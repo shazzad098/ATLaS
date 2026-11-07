@@ -218,25 +218,82 @@ cannot drift.
 ```bash
 npm run typecheck     # tsc --noEmit
 npm run lint          # eslint (Next app)
-npm test              # node --test on src/**/*.test.ts (52 tests)
+npm test              # unit suite — no database required
+npm run test:db       # service + RLS integration suite (needs DATABASE_URL)
+npm run test:coverage # full suite with coverage thresholds (CI gate)
+npm run test:e2e      # HTTP smoke suite against a running server
 npm run build         # prisma generate && next build
 ```
 
-Unit tests cover money rounding/rates, slug rules (including Bangla transliteration), the plan
-matrix, Dhaka-time date helpers, and the order state machine.
+**Two test layers.** `npm test` covers the pure domain modules (money, plans,
+dates, order state machine, RBAC, slugs, phone/OTP, rate limiting, i18n). It
+never touches the database, so it stays fast and can run anywhere.
+
+`npm run test:db` adds the integration suite, which is where the money lives:
+
+| Suite | What it pins down |
+| --- | --- |
+| `src/lib/services/checkout-service.test.ts` | totals and snapshots, stock reservation, coupons, idempotent replay (including two simultaneous requests), disabled gateways, unpublished stores |
+| `src/lib/services/payment-service.test.ts` | a signed callback settles once, replays are duplicates, a forged signature changes nothing, an amount mismatch never credits |
+| `src/lib/services/billing-service.test.ts` | Free never gets invoiced or suspended, unpaid renewal → grace → read-only, settlement restores the storefront, one trial per workspace |
+| `src/lib/services/order-service.test.ts` | cancel/return restock correctly, illegal transitions are refused, timeline events are written |
+| `src/lib/rls.test.ts` | the Postgres policies actually isolate tenants and buyers, and the bypass is the only cross-tenant path |
+| `src/lib/tenant.test.ts` | `assertStoreAccess` refuses another tenant's store and hides archived ones |
+| `src/lib/services/payment-collection.test.ts` | COD collection marks the order paid; refunds settle, void the fee and refuse over-refunds |
+| `src/lib/rls-coverage.test.ts` | every tenant/store/customer-scoped table has forced RLS; every policy is bound to a context helper |
+| `src/lib/openapi.test.ts` | every implemented route is documented and every documented path exists |
+
+The coverage test is a drift detector rather than a scenario test: it found
+`ImpersonationSession` sitting outside RLS, which
+`prisma/migrations/20261106120000_rls_impersonation_session` fixes.
+
+The integration suite needs a migrated database and creates/removes its own
+tenants, so point `DATABASE_URL` at a disposable one:
+
+```bash
+docker compose up -d
+npm run db:migrate
+npm run test:db
+```
+
+Tests import the app's `@/…` modules directly through
+`scripts/register-ts-paths.mjs` (a Node resolver hook), so the same files run
+under `node --test` without a bundler. CI applies migrations with
+`prisma migrate deploy` — never `db push` — and then runs both layers.
+
+**End to end.** `src/e2e/smoke.test.ts` drives a running instance over HTTP and
+covers what the other layers cannot: the proxy's host routing, the security
+headers, the API envelope on the wire, and the seeded storefront rendering. It
+skips unless `E2E_BASE_URL` is set; the CI `e2e` job builds the app, seeds a
+database, starts `next start`, waits for `/api/v1/health`, then runs it.
+
+**Coverage.** `npm run test:coverage` fails the build below 70% lines, 55%
+branches and 45% functions (current: 80.7 / 69.2 / 50.9), so a change that
+shrinks the tested surface cannot land silently.
+
 
 ## Repository layout
 
 ```
 prisma/            schema, migrations, seed
 src/app/           routes: (marketing), (auth), onboarding, admin, super-admin, store, api/v1
+src/app/admin/_actions/  merchant action bodies (actions.ts is the `"use server"` barrel)
 src/lib/           domain logic: money, plans, entitlements, rbac, tenant, audit, auth, openapi
 src/lib/services/  business services shared by pages, server actions and the REST API
 src/components/ui/ shared presentational primitives
 docs/              plan.md, TODO.md, notes-*.md, operations docs and audit reports
 ```
 
-## Not built yet
+## Recently shipped
 
-2FA/TOTP, self-service API keys + outbound merchant webhook management, the analytics event table,
-and the full Bangla/English UI toggle. See `docs/TODO.md` for the per-item detail.
+- **TOTP 2FA** — authenticator-app setup with one-time recovery codes and an attempt-limited,
+  single-use login challenge (`/account`, `src/lib/auth/two-factor.ts`).
+- **Self-service integrations** — scoped API keys and HMAC-signed outbound merchant webhooks,
+  manageable from `/admin/developers`.
+- **Analytics events** — append-only `AnalyticsEvent` table with a `trackEvent` emitter for the
+  storefront funnel and platform milestones (signup, store created, trial, plan changes).
+- **Bangla/English UI toggle** — cookie-backed locale with a shared dictionary for marketing
+  chrome, auth, admin navigation and the contact page (`src/lib/i18n`). Long-form marketing and
+  legal prose remain Bangla and are translated incrementally.
+
+See `docs/TODO.md` for the full requirement status board.

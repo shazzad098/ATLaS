@@ -50,10 +50,14 @@ const ERROR_SAMPLE = `{
 
 const WEBHOOK_SAMPLE = `import { createHmac, timingSafeEqual } from "node:crypto";
 
-// raw body অবিকল রাখুন — JSON.parse করার আগেই যাচাই করুন
-const expected = createHmac("sha256", process.env.ATLAS_WEBHOOK_SECRET!)
-  .update(rawBody)
-  .digest("hex");
+// endpoint তৈরির সময় যে secret একবার দেখানো হয়, সেটাই এখানে বসান
+const secret = process.env.ATLAS_ENDPOINT_SECRET!;
+const timestamp = req.headers["x-atlas-timestamp"];
+const rawBody = await readRawBody(req); // JSON.parse করার আগেই যাচাই করুন
+
+const expected = \`sha256=\${createHmac("sha256", secret)
+  .update(\`\${timestamp}.\${rawBody}\`)
+  .digest("hex")}\`;
 
 const received = req.headers["x-atlas-signature"];
 const ok =
@@ -61,6 +65,7 @@ const ok =
   received.length === expected.length &&
   timingSafeEqual(Buffer.from(received), Buffer.from(expected));
 
+// পুরনো delivery replay ঠেকাতে timestamp-ও যাচাই করুন (±৫ মিনিট)
 if (!ok) return res.status(401).end();`;
 
 export default function DevelopersPage() {

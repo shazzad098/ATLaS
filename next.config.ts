@@ -1,6 +1,39 @@
 import type { NextConfig } from "next";
 
+/**
+ * Product images come from object storage or a merchant's own CDN. Set
+ * `IMAGE_REMOTE_HOSTS` (comma separated) or `STORAGE_PUBLIC_BASE_URL` in
+ * production to pin the optimizer to known hosts; without either, any HTTPS
+ * host is accepted, which keeps local development and demo stores working.
+ */
+function imageRemotePatterns(): { protocol: "https"; hostname: string }[] {
+  const configured = (process.env.IMAGE_REMOTE_HOSTS ?? "")
+    .split(",")
+    .map((host) => host.trim())
+    .filter(Boolean);
+
+  if (process.env.STORAGE_PUBLIC_BASE_URL) {
+    try {
+      configured.push(new URL(process.env.STORAGE_PUBLIC_BASE_URL).hostname);
+    } catch {
+      // A malformed URL must not stop the build; fall through to the default.
+    }
+  }
+
+  const hosts = [...new Set(configured)];
+  if (hosts.length === 0) return [{ protocol: "https", hostname: "**" }];
+  return hosts.map((hostname) => ({ protocol: "https" as const, hostname }));
+}
+
 const nextConfig: NextConfig = {
+  // Container builds copy only the traced server bundle, which keeps the
+  // runtime image small and free of dev dependencies (see Dockerfile).
+  output: "standalone",
+
+  // Overridable so a build can run into a clean directory (CI caching, or a
+  // sandbox that cannot write to an existing `.next`); defaults to Next's own.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+
   // Cache Components are intentionally OFF. Every page in ATLaS reads
   // tenant-scoped data from PostgreSQL on the request path, so the PPR /
   // `use cache` model would force Suspense boundaries everywhere for no gain.
@@ -19,8 +52,10 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pg", "@prisma/client"],
 
   images: {
-    // Merchant product images come from object storage on arbitrary hosts.
-    remotePatterns: [{ protocol: "https", hostname: "**" }],
+    remotePatterns: imageRemotePatterns(),
+    // Merchant uploads are behind MIME checks at upload time; never let the
+    // optimizer serve an uploaded SVG as an active document.
+    dangerouslyAllowSVG: false,
   },
 
   // The platform is served from an apex domain and rewrites merchant subdomains
@@ -30,7 +65,7 @@ const nextConfig: NextConfig = {
 
   // The dev server is previewed from 127.0.0.1 as well as localhost; without this
   // Next blocks its own HMR/dev resources as cross-origin.
-  allowedDevOrigins: ["127.0.0.1", "localhost",'neuter-operable-alarm.ngrok-free.dev'],
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
 
   /**
    * Baseline security headers (PRD §7 "Security", §13).

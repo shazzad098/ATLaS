@@ -5,14 +5,17 @@ NFRs and the audit fix list.
 
 ## 1. Deploy pipeline
 
-- GitHub Actions (`.github/workflows/ci.yml`) runs typecheck, lint, tests and a
-  production build against an ephemeral PostgreSQL instance on every PR; a
-  separate job builds the production Docker image without real secrets.
+- GitHub Actions (`.github/workflows/ci.yml`) applies the migration chain to an
+  ephemeral PostgreSQL instance (`prisma migrate deploy`, never `db push`), then
+  runs typecheck, lint, the unit suite, the service + RLS integration suite, a
+  production build, and a Docker image build.
 - Deployment is `prisma generate && next build`, then `prisma migrate deploy` as
   a release step. Never run `migrate reset` against production.
-- `Dockerfile` is a two-stage npm build. It uses a dummy build-only
-  `DATABASE_URL`/`AUTH_SECRET` so `prisma generate` and `next build` never need
-  production secrets; pass the real values at container runtime.
+- `Dockerfile` builds Next's `standalone` output in three stages and runs it as
+  the unprivileged `nextjs` user with a `/api/v1/health` HEALTHCHECK. Build-time
+  secrets are placeholders; the runtime receives the real values. Because the
+  runtime image does not include the Prisma CLI, migrations run from the release
+  step (or `kubectl exec`/`docker exec` against an image that does).
 - `prisma db seed` refuses to run with `NODE_ENV=production` unless
   `SEED_PASSWORD` is explicitly set. Demo credentials from the README are for
   local/CI only.
@@ -22,8 +25,24 @@ NFRs and the audit fix list.
   - `GET /api/cron/reports` — daily rollup + due scheduled exports, daily 02:15.
   - `GET /api/cron/webhooks` — outbound webhook retries, every 5 minutes.
 
+## 1a. Rate limiting
+
+- The per-IP edge gate in `src/proxy.ts` is awaited and goes through
+  `src/lib/rate-limit.ts`, which is pluggable: `RATE_LIMIT_DRIVER=memory`
+  (default, one instance) or `redis` with `UPSTASH_REDIS_REST_URL` /
+  `UPSTASH_REDIS_REST_TOKEN` for a fleet-wide window.
+- A failing or slow remote store degrades to the local window and logs
+  `rate limit store unavailable`; it never fails the request it protects.
+- Per-action limits inside handlers (`rateLimit()` in `src/lib/api.ts`) stay
+  in-process on purpose: an extra network round trip per handler costs more than
+  the burst protection it adds. The edge gate is the global ceiling.
+
 ## 2. Observability
 
+- `src/instrumentation.ts` validates the mandatory secrets at boot and forwards
+  errors raised while rendering Server Components / route handlers /
+  server actions to `reportError()` — the paths the per-route `route()` wrapper
+  never sees.
 - All API failures are logged as newline-delimited JSON by `src/lib/logger.ts`
   with a request id. Set `SENTRY_DSN` to forward exceptions to Sentry through its
   store endpoint (no SDK dependency).
@@ -35,6 +54,8 @@ NFRs and the audit fix list.
   - Webhook `DEAD` deliveries > 10 in an hour.
   - Billing sweep missing its daily run.
   - Disk/storage usage > 85%.
+  - `rate limit store unavailable` appearing in logs (Redis down → per-instance
+    limits only).
 
 ## 3. Backup and restore
 
@@ -66,9 +87,13 @@ NFRs and the audit fix list.
 
 ## 5. Tenant isolation checks
 
-- `src/lib/tenant-isolation.test.ts` seeds two tenants and asserts that orders,
-  webhook endpoints and export jobs never cross tenant/store boundaries. CI runs
-  it against ephemeral PostgreSQL with `RUN_DB_TESTS=1`.
+- `src/lib/rls.test.ts` connects as the runtime role (`SET LOCAL ROLE atlas_app`)
+  and asserts that a merchant sees only its own stores, products and orders, that
+  a buyer sees only its own history, that an unauthenticated role sees nothing,
+  and that `app.bypass=on` is the only cross-tenant path. CI runs it against the
+  migrated database on every push.
+- `src/lib/tenant-isolation.test.ts` additionally checks the application-level
+  scoping for webhook endpoints and export jobs.
 - Every mutation must go through `assertStoreAccess()` / `assertPermission()` or
   a service that does. API keys inherit explicit scopes only.
 
@@ -172,6 +197,27 @@ Quick verification after a request is served:
 SELECT current_user;                 -- atlas_app
 SELECT current_setting('app.user_id', true);
 ```
+
+### Cost of the RLS wrap
+
+Authenticated queries run inside a short transaction that switches the role and
+sets the context, so every query pays four extra round trips (BEGIN, context,
+COMMIT). Measured locally against PostgreSQL 16:
+
+| Path | ms/query |
+| --- | --- |
+| plain `SELECT 1` | 1.7 |
+| BEGIN + `SET ROLE` + context + query + COMMIT (old) | 7.4 |
+| BEGIN + one context statement + query + COMMIT (current) | 5.2 |
+
+Folding `SET LOCAL ROLE` into the `set_config` statement removed one round trip;
+`src/lib/rls.test.ts` asserts that the merged statement still switches the
+effective role to `atlas_app`. The remaining ~3.5 ms is the transaction itself.
+
+If a page gets slow, the next step is one transaction per request (a unit of
+work) rather than per query — that needs an `after()` cleanup and a larger pool,
+and should be driven by a load test (`loadtest/k6-storefront.js`), not by
+speculation.
 
 Checkout runs with the platform client because it writes customer/order/payment/
 fee/webhook rows across table boundaries; it is fully server-validated. Merchant

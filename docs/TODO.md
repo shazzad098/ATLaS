@@ -29,7 +29,9 @@ Evidence is a route or module in this repository, verified with `npm run typeche
       OTP login — `src/app/(auth)/*`, `src/lib/auth/otp.ts`
 - [x] Session management: JWT access, rotating refresh token (single use), session list,
       "logout other sessions", logout-all — `/account`, `src/lib/auth/session.ts`
-- [ ] Optional TOTP 2FA for Super Admin and Pro merchants
+- [x] TOTP 2FA (authenticator app + one-time recovery codes) with a five-minute, single-use,
+      attempt-limited login challenge — `/account`, `src/lib/auth/two-factor.ts`,
+      `src/lib/auth/totp.ts`
 - [x] Account deletion request with retention window + cancel — `/account`,
       `requestAccountDeletion`
 - [x] bcrypt password hashing, HMAC OTP storage, 5-attempt lock, per-phone/hour and per-IP rate
@@ -78,7 +80,10 @@ Evidence is a route or module in this repository, verified with `npm run typeche
       provider is configured (sandbox logs instead)
 - [~] SEO: title/description per store and product, but no per-store sitemap.xml/robots and no
       Open Graph image generation
-- [ ] Bangla/English UI label toggle (all copy is Bangla; no dictionary switcher)
+- [x] Bangla/English UI label toggle — cookie-backed locale (`atlas_locale`) with a shared
+      dictionary; covers marketing chrome, auth, admin navigation and the contact page.
+      Long-form marketing/legal prose stays Bangla and is translated incrementally
+      (`src/lib/i18n`, `src/components/locale-toggle.tsx`, `src/app/locale-actions.ts`)
 
 ## 6. Merchant admin (4.4)
 
@@ -99,7 +104,7 @@ Evidence is a route or module in this repository, verified with `npm run typeche
 - [x] Reports: sales, products, order status, payment method, CSV export (`/admin/reports`)
 - [x] Staff & roles with plan seat limits and invitations (`/admin/staff`)
 - [x] Settings: profile, domains (TXT/CNAME verification, TLS status), tax, policies,
-      notifications, API keys placeholder (`/admin/settings`)
+      notifications (`/admin/settings`); scoped API keys and outbound webhooks (`/admin/developers`)
 - [x] Notification centre and support tickets (`/admin/notifications`, `/admin/support`)
 
 ## 7. Payments (FR-05, US-05)
@@ -129,7 +134,10 @@ Evidence is a route or module in this repository, verified with `npm run typeche
 - [x] OpenAPI 3.1 document at `/api/v1/openapi.json`, rendered at `/developers`
 - [x] Cursor pagination, `requestId`, `Idempotency-Key`, consistent error envelope, per-plan
       request-rate limits, webhook signature verification
-- [ ] Self-service API keys and outbound merchant webhook endpoints (schema + UI)
+- [x] Self-service API keys and outbound merchant webhook endpoints: hashed one-time keys with
+      permission scopes, HMAC-signed deliveries with retry log, plus the developer analytics view
+      — `/admin/developers`, `/api/v1/stores/[storeId]/api-keys`,
+      `src/lib/services/api-key-service.ts`, `src/lib/services/webhook-service.ts`
 - [x] Courier consignment integrations (Pathao/RedX/Steadfast): sandbox-first adapters with
       live HTTP clients, merchant Store ID per courier, consignment creation from the order page,
       manual tracking sync, signed courier webhook with idempotency, order status bridge
@@ -139,23 +147,58 @@ Evidence is a route or module in this repository, verified with `npm run typeche
 
 ## 10. Platform policies & quality
 
-- [~] Bangla UI throughout, BDT, Asia/Dhaka; English labels exist in code comments/docs but
-      there is no runtime language switch
-- [ ] Analytics event taxonomy (signup_completed … plan_upgraded) — no events table/emitter
+- [x] Bangla default UI with a runtime Bangla/English switch (BDT, Asia/Dhaka); the switch is
+      persisted per browser and applies to shared chrome, auth and admin labels
+- [x] Analytics event taxonomy (`signup_completed`, `store_created`, `trial_started`,
+      `plan_change_requested`, `plan_upgraded`, `plan_downgraded`) backed by the append-only
+      `AnalyticsEvent` table and `trackEvent` emitter, with store and platform summaries —
+      `src/lib/services/analytics-service.ts`, `/admin/developers`
 - [x] Appendix B defaults: 7-day trial without card, 7-day grace, retries 1/3/5, 5 MB image cap
       with MIME check, 60 req/min base rate limit, soft-deleted products, immutable financial rows
 - [x] Upload MIME/size validation; audit log for every admin/platform mutation
 - [x] Seed: Super Admin, demo merchant, two complete demo stores with products, coupons, orders
-- [x] Validation pass: typecheck, lint, 52 unit tests, production build, HTTP walkthrough of the
+- [x] Validation pass: typecheck, lint, unit tests, production build, HTTP walkthrough of the
       marketing pages, REST API, contact form → Super Admin ticket flow
 
 ## Verification (last run)
 
 ```
 npm run typecheck   ✔ 0 errors
-npm run lint        ✔ 0 errors (legacy Vite starter trees excluded)
-npm test            ✔ 52 pass / 0 fail
-npm run build       ✔ all routes compiled
+npm run lint        ✔ 0 problems
+npm test            ✔ 102 unit tests (37 database + 9 end-to-end tests skip by design)
+npm run test:coverage ✔ 139 tests, 80.7% lines / 69.2% branches / 50.9% functions
+npm run test:e2e    ✔ 9 HTTP smoke tests against `next start` (CI `e2e` job)
+npm run build       ✔ in CI (migrations applied with `prisma migrate deploy`)
 HTTP walkthrough    ✔ 10 public pages 200, 18 OpenAPI paths, 32 API assertions,
                        contact form → /super-admin/tickets visible, plans/webhooks/audit render
 ```
+
+## Engineering quality gates
+
+| Gate | Where | What it prevents |
+| --- | --- | --- |
+| Migration chain applied in CI | `.github/workflows/ci.yml` | a migration that only works with `db push` |
+| RLS policy tests | `src/lib/rls.test.ts` | a policy that silently stops isolating tenants |
+| RLS coverage guard | `src/lib/rls-coverage.test.ts` | a new scoped table shipped without a policy |
+| API contract test | `src/lib/openapi.test.ts` | a route and its documentation drifting apart |
+| Repo invariants | `src/lib/env-doc.test.ts` | an undocumented env var, a malformed migration, a committed default secret |
+| Action barrel guard | `tsc` + named imports | a server action that disappears from `src/app/admin/actions.ts` (58 exports, all consumed by name in components) |
+| Tenant guard tests | `src/lib/tenant.test.ts` | a regression in `assertStoreAccess` exposing every merchant |
+| Money movement tests | `src/lib/services/payment-collection.test.ts` | COD collection and refunds booking the wrong state |
+| Service integration tests | `src/lib/services/*.test.ts` | stock, money, billing and webhook regressions |
+| Concurrent checkout test | `checkout-service.test.ts` | duplicate orders from a double-clicked submit |
+| Boot-time secret validation | `src/instrumentation.ts` | a production deploy missing `AUTH_SECRET` |
+| Distributed rate-limit driver | `src/lib/rate-limit.ts` | per-instance limits behind a load balancer |
+| Coverage thresholds | `npm run test:coverage` | a shrinking tested surface |
+| End-to-end smoke | `src/e2e/smoke.test.ts` | proxy routing, headers and envelope regressions |
+
+## Known debt
+
+Deliberate, tracked, and each one needs a working build or a load test to
+change safely:
+
+| Item | Why it is still open |
+| --- | --- |
+| ~108 `as never` casts on Prisma `Json`/enum inputs | every `Decimal` cast is gone — Prisma 7 accepts a decimal string, proven by the compiler (168 → 108). What remains is the JSON boundary (`Record<string, unknown>` is not `InputJsonValue`) and Prisma enum narrowing; removing those needs a typed adapter, not a regex |
+| One transaction per query under RLS | measured at ~3.5 ms/query overhead; moving to one transaction per request needs an `after()` cleanup, a bigger pool and a k6 run to prove it helps |
+| CSP still allows `'unsafe-inline'` scripts | needs a nonce pipeline through the proxy; a mistake there breaks hydration silently |
