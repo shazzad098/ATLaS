@@ -6,10 +6,23 @@ import { getMessages } from "@/lib/i18n/server";
 
 /** Contact + support entry point (PRD §4.1). */
 
-export const metadata = {
-  title: "যোগাযোগ",
-  description: "ATLaS টিমের সাথে যোগাযোগ করুন — প্ল্যান, টেকনিক্যাল সহায়তা বা অংশীদারিত্বের জন্য।",
-};
+export const dynamic = "force-dynamic";
+
+const META = {
+  bn: {
+    title: "যোগাযোগ",
+    description: "ATLaS টিমের সাথে যোগাযোগ করুন — প্ল্যান, টেকনিক্যাল সহায়তা বা অংশীদারিত্বের জন্য।",
+  },
+  en: {
+    title: "Contact",
+    description: "Talk to the ATLaS team about plans, technical help or partnerships.",
+  },
+} as const;
+
+export async function generateMetadata() {
+  const { locale } = await getMessages();
+  return META[locale];
+}
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (

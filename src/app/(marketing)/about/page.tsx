@@ -2,73 +2,301 @@ import { ButtonLink } from "@/components/ui/button";
 import { PAYMENT_PROVIDERS } from "@/lib/payments";
 import { PLAN_CODES } from "@/lib/plans";
 import { THEME_CATALOG } from "@/lib/theme-catalog";
+import { getLocale } from "@/lib/i18n/server";
 
 /** About ATLaS (PRD §4.1, §2 differentiation). */
 
-export const metadata = {
-  title: "আমাদের সম্পর্কে",
-  description:
-    "ATLaS কেন তৈরি — বাংলাদেশের ছোট ব্যবসার জন্য একটি সম্পূর্ণ, সাশ্রয়ী ই-কমার্স স্টোর বিল্ডার।",
-};
+const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 
-const PRINCIPLES = [
-  {
-    title: "বাংলাদেশ আগে, তারপর বাকি সব",
-    body: "বিকাশ, নগদ, SSLCommerz আর ক্যাশ অন ডেলিভারি — চেকআউটের প্রথম সারিতে। দাম BDT-তে, সময় Asia/Dhaka, ইন্টারফেস বাংলা ও ইংরেজি দুটোতেই।",
-  },
-  {
-    title: "একই ডেটা, অনেক রকম দোকান",
-    body: "থিম বদলালে প্রোডাক্ট, অর্ডার বা কাস্টমার বদলায় না। প্রতিটি থিম একই সেকশন কনট্র্যাক্ট ব্যবহার করে, তাই নতুন থিম মানে নতুন করে সব বানানো নয়।",
-  },
-  {
-    title: "লুকানো খরচ নেই",
-    body: "প্রতিটি প্ল্যানে নির্দিষ্ট সংখ্যক অর্ডার ফি-মুক্ত; তার পরে যে কমিশন, সেটি ইনভয়েসে অর্ডার রেফারেন্সসহ দেখানো হয়। বাতিল বা পুরো রিফান্ড হওয়া অর্ডারের ফি স্বয়ংক্রিয়ভাবে বাতিল হয়।",
-  },
-  {
-    title: "ডাউনগ্রেডে ডেটা হারায় না",
-    body: "প্ল্যান ছোট করলে শুধু নতুন তৈরি বন্ধ হয় — পুরোনো প্রোডাক্ট পড়া ও এডিট করা যায়, এক্সপোর্ট সবসময় খোলা। সাসপেনশনেও ডেটা সংরক্ষিত থাকে।",
-  },
-  {
-    title: "নিরাপত্তা আলাদা ফিচার নয়",
-    body: "প্রতিটি রিকোয়েস্টে tenant boundary সার্ভারে যাচাই হয়, পেমেন্ট webhook HMAC দিয়ে সাইন করা, পাসওয়ার্ড bcrypt-এ, গেটওয়ে ক্রেডেনশিয়াল এনক্রিপ্টেড।",
-  },
-  {
-    title: "ছোট ও বড় দোকান, একই লাইনে",
-    body: "২৫টি প্রোডাক্টের হোম বেকারি আর ১০,০০০ প্রোডাক্টের ব্র্যান্ড — একই প্ল্যাটফর্মে, প্ল্যান অনুযায়ী আলাদা কোটা, রিপোর্ট আর API অ্যাক্সেস নিয়ে।",
-  },
-];
+/** Latin digits → Bengali digits, so counts stay consistent with the copy. */
+function bn(value: number | string) {
+  return String(value).replace(/\d/g, (digit) => BN_DIGITS[Number(digit)]);
+}
 
-const BEFORE = [
-  "অর্ডার আসে ইনবক্সে, ঠিকানা ওঠে খাতায়",
-  "স্টক মেলাতে হয় Excel-এ, হাতে",
-  "কোন অর্ডার কোথায় — জানতে ফোন করতে হয়",
-  "মাস শেষে পেমেন্ট আর ডেলিভারির হিসাব আলাদা",
-];
+const COPY = {
+  bn: {
+    meta: {
+      title: "আমাদের সম্পর্কে",
+      description:
+        "ATLaS কেন তৈরি — বাংলাদেশের ছোট ব্যবসার জন্য একটি সম্পূর্ণ, সাশ্রয়ী ই-কমার্স স্টোর বিল্ডার।",
+    },
+    hero: {
+      titleLead: "ছোট ব্যবসার জন্য বড় প্লাটফর্ম —",
+      titleAccent: "কোনো কোড ছাড়াই",
+      body: "বাংলাদেশে হাজারো উদ্যোক্তা প্রতিদিন Facebook পেজে অর্ডার নেন, মেসেজে কাস্টমারের ঠিকানা লিখে রাখেন, আর Excel-এ স্টক মেলান। ATLaS সেই কাজটুকু এক জায়গায় আনে — দোকান, প্রোডাক্ট, অর্ডার, পেমেন্ট আর ডেলিভারি, সব একটি অ্যাডমিনে।",
+      bodySecondary:
+        "লক্ষ্য পরিষ্কার — একজন উদ্যোক্তা রাত ১০টায় মোবাইল থেকে নিজের প্রথম প্রোডাক্ট যোগ করবেন, আর সকালে দোকানটা লাইভ থাকবে।",
+      primary: "ফ্রি অ্যাকাউন্ট খুলুন",
+      secondary: "ছয় ধাপে শুরু করুন",
+      imageAlt: "ATLaS — অ্যাডমিন, ডেলিভারি আর কাস্টমারের অর্ডার এক প্ল্যাটফর্মে",
+      stats: [
+        { value: `${bn(THEME_CATALOG.length)}`, label: "তৈরি থিম" },
+        { value: `${bn(PAYMENT_PROVIDERS.length)}`, label: "পেমেন্ট" },
+        { value: `${bn(PLAN_CODES.length)}`, label: "প্ল্যান" },
+      ],
+    },
+    marquee: {
+      label: "প্ল্যাটফর্মের মূল সক্ষমতা",
+      items: [
+        ...THEME_CATALOG.map((theme) => `${theme.name} থিম`),
+        "বিকাশ",
+        "নগদ",
+        "SSLCommerz",
+        "ক্যাশ অন ডেলিভারি",
+        "REST API v1",
+        "বাংলা + English",
+        "BDT · Asia/Dhaka",
+      ],
+    },
+    why: {
+      eyebrow: "কেন ATLaS",
+      titleLead: "একটা দোকান চালাতে",
+      titleAccent: "দশটা টুল",
+      titleTail: "লাগা উচিত নয়",
+      body: "অর্ডার আসে ইনবক্সে, স্টক থাকে খাতায়, ডেলিভারি চার্জ মনে রাখতে হয়, আর মাস শেষে হিসাব মেলাতে রাত জাগতে হয়। এই কাজগুলো একজন মানুষের একার সীমা — তাই ATLaS-এ সবকিছু এক জায়গায় আনা হয়েছে। নিজে করতে হয় শুধু একটি ফর্ম পূরণ।",
+      bodySecondary:
+        "দোকান সাজানো, প্রোডাক্ট তোলা, অর্ডার সামলানো আর রিপোর্ট দেখা — সব একই অ্যাডমিনে, একই লগইনে, একই ভাষায়।",
+      chips: ["এক ড্যাশবোর্ড", "এক লগইন", "এক ভাষা"],
+      compare: {
+        title: "আগে vs ATLaS-এ",
+        badge: "একই দোকান",
+        beforeLabel: "আগে",
+        afterLabel: "ATLaS-এ",
+        before: [
+          "অর্ডার আসে ইনবক্সে, ঠিকানা ওঠে খাতায়",
+          "স্টক মেলাতে হয় Excel-এ, হাতে",
+          "কোন অর্ডার কোথায় — জানতে ফোন করতে হয়",
+          "মাস শেষে পেমেন্ট আর ডেলিভারির হিসাব আলাদা",
+        ],
+        after: [
+          "সব অর্ডার এক ড্যাশবোর্ডে, স্ট্যাটাসসহ",
+          "স্টক নিজে কমে, ইনভেন্টরি লেজার থাকে",
+          "কাস্টমার নিজেই অর্ডার ট্র্যাক করে",
+          "বিকাশ/নগদ/SSLCommerz + COD এক checkout-এ",
+        ],
+      },
+    },
+    principles: {
+      eyebrow: "আমাদের নীতি",
+      title: "যে ছয়টি সিদ্ধান্তে প্ল্যাটফর্মটা দাঁড়িয়ে",
+      description: "প্রতিটি ফিচার লেখার আগে এই প্রশ্নগুলোর উত্তর একই থাকে — তাই আচরণও একই থাকে।",
+      items: [
+        {
+          title: "বাংলাদেশ আগে, তারপর বাকি সব",
+          body: "বিকাশ, নগদ, SSLCommerz আর ক্যাশ অন ডেলিভারি — চেকআউটের প্রথম সারিতে। দাম BDT-তে, সময় Asia/Dhaka, ইন্টারফেস বাংলা ও ইংরেজি দুটোতেই।",
+        },
+        {
+          title: "একই ডেটা, অনেক রকম দোকান",
+          body: "থিম বদলালে প্রোডাক্ট, অর্ডার বা কাস্টমার বদলায় না। প্রতিটি থিম একই সেকশন কনট্র্যাক্ট ব্যবহার করে, তাই নতুন থিম মানে নতুন করে সব বানানো নয়।",
+        },
+        {
+          title: "লুকানো খরচ নেই",
+          body: "প্রতিটি প্ল্যানে নির্দিষ্ট সংখ্যক অর্ডার ফি-মুক্ত; তার পরে যে কমিশন, সেটি ইনভয়েসে অর্ডার রেফারেন্সসহ দেখানো হয়। বাতিল বা পুরো রিফান্ড হওয়া অর্ডারের ফি স্বয়ংক্রিয়ভাবে বাতিল হয়।",
+        },
+        {
+          title: "ডাউনগ্রেডে ডেটা হারায় না",
+          body: "প্ল্যান ছোট করলে শুধু নতুন তৈরি বন্ধ হয় — পুরোনো প্রোডাক্ট পড়া ও এডিট করা যায়, এক্সপোর্ট সবসময় খোলা। সাসপেনশনেও ডেটা সংরক্ষিত থাকে।",
+        },
+        {
+          title: "নিরাপত্তা আলাদা ফিচার নয়",
+          body: "প্রতিটি রিকোয়েস্টে tenant boundary সার্ভারে যাচাই হয়, পেমেন্ট webhook HMAC দিয়ে সাইন করা, পাসওয়ার্ড bcrypt-এ, গেটওয়ে ক্রেডেনশিয়াল এনক্রিপ্টেড।",
+        },
+        {
+          title: "ছোট ও বড় দোকান, একই লাইনে",
+          body: "২৫টি প্রোডাক্টের হোম বেকারি আর ১০,০০০ প্রোডাক্টের ব্র্যান্ড — একই প্ল্যাটফর্মে, প্ল্যান অনুযায়ী আলাদা কোটা, রিপোর্ট আর API অ্যাক্সেস নিয়ে।",
+        },
+      ],
+    },
+    audience: {
+      title: "কাদের জন্য",
+      body: "বুটিক, হোম বেকারি, মুদি দোকান, গ্যাজেট ও কসমেটিক্স — যাদের নিজের ডিজাইন নেই, কিন্তু নিজের ব্র্যান্ড আছে। প্রোডাক্ট ফটোগ্রাফি ও বর্ণনা নিজের, চেহারাটা প্ল্যাটফর্মের।",
+    },
+    difference: {
+      title: "যেভাবে আলাদা",
+      body: "রেফারেন্স প্ল্যাটফর্মগুলো হয় খুব সাধারণ, নয়তো বিদেশি গেটওয়ে-কেন্দ্রিক। ATLaS-এ দেশীয় পেমেন্ট ও COD একই স্রোতে, প্ল্যান-ভিত্তিক entitlement সার্ভারে enforce হয়, আর থিমগুলো একটি শেয়ারড কনট্র্যাক্টে চলে — তাই দোকান সাজানো ও স্কেল করা দুটোই সহজ।",
+    },
+    promises: {
+      title: "আমাদের প্রতিশ্রুতি",
+      items: [
+        "কার্ড ছাড়া ৭ দিনের ট্রায়াল",
+        "ডাউনগ্রেডে ডেটা মুছে না",
+        "প্রতি মাসে অর্ডার-লেভেল ইনভয়েস",
+        "বাংলায় সাপোর্ট, কর্মদিবসে উত্তর",
+      ],
+    },
+    stats: {
+      eyebrow: "এক নজরে",
+      title: "আজই যা ব্যবহার করা যায়",
+      description: "কোনো অতিরিক্ত সেটআপ, অ্যাপ বা ইন্টিগ্রেশন ছাড়াই — সাইনআপ করলেই সবগুলো খোলা।",
+      items: [
+        {
+          label: "থিম",
+          value: `${bn(THEME_CATALOG.length)}টি`,
+          hint: THEME_CATALOG.map((theme) => theme.name).join(", "),
+        },
+        {
+          label: "পেমেন্ট",
+          value: `${bn(PAYMENT_PROVIDERS.length)}টি`,
+          hint: "bKash, Nagad, SSLCommerz, COD",
+        },
+        {
+          label: "প্ল্যান",
+          value: `${bn(PLAN_CODES.length)}টি`,
+          hint: "Free, Basic, Standard, Pro",
+        },
+        {
+          label: "API",
+          value: "REST v1",
+          hint: "OpenAPI 3.1 + webhook signature",
+        },
+      ],
+    },
+  },
+  en: {
+    meta: {
+      title: "About us",
+      description:
+        "Why ATLaS exists — a complete, affordable e-commerce store builder for small businesses in Bangladesh.",
+    },
+    hero: {
+      titleLead: "A serious platform for small business —",
+      titleAccent: "no code required",
+      body: "Thousands of entrepreneurs in Bangladesh take orders on a Facebook page every day, note customer addresses in chat and reconcile stock in Excel. ATLaS brings that work into one place — store, products, orders, payments and delivery in a single admin.",
+      bodySecondary:
+        "The goal is simple: add your first product from a phone at 10pm and have the shop live by morning.",
+      primary: "Create a free account",
+      secondary: "Get started in six steps",
+      imageAlt: "ATLaS — admin, delivery and customer orders on one platform",
+      stats: [
+        { value: `${THEME_CATALOG.length}`, label: "Ready themes" },
+        { value: `${PAYMENT_PROVIDERS.length}`, label: "Payment methods" },
+        { value: `${PLAN_CODES.length}`, label: "Plans" },
+      ],
+    },
+    marquee: {
+      label: "Core platform capabilities",
+      items: [
+        ...THEME_CATALOG.map((theme) => `${theme.name} theme`),
+        "bKash",
+        "Nagad",
+        "SSLCommerz",
+        "Cash on delivery",
+        "REST API v1",
+        "Bangla + English",
+        "BDT · Asia/Dhaka",
+      ],
+    },
+    why: {
+      eyebrow: "Why ATLaS",
+      titleLead: "One shop shouldn't need",
+      titleAccent: "ten tools",
+      titleTail: "to run",
+      body: "Orders land in the inbox, stock lives in a notebook, delivery charges live in your head, and the month-end reconciliation keeps you up at night. That is more than one person can carry — so ATLaS puts it all in one place. The only form left to fill in is your own.",
+      bodySecondary:
+        "Style the shop, add products, work the orders and read the reports — same admin, same login, same language.",
+      chips: ["One dashboard", "One login", "One language"],
+      compare: {
+        title: "Before vs on ATLaS",
+        badge: "Same shop",
+        beforeLabel: "Before",
+        afterLabel: "On ATLaS",
+        before: [
+          "Orders arrive in the inbox, addresses end up in a notebook",
+          "Stock is reconciled in Excel, by hand",
+          "Finding where an order is means phoning someone",
+          "Payments and delivery are reconciled separately at month end",
+        ],
+        after: [
+          "Every order on one dashboard, with its status",
+          "Stock decrements itself, with an inventory ledger",
+          "Customers track their own orders",
+          "bKash/Nagad/SSLCommerz + COD in one checkout",
+        ],
+      },
+    },
+    principles: {
+      eyebrow: "Our principles",
+      title: "Six decisions the platform is built on",
+      description:
+        "These questions get the same answer before any feature is written — so the behaviour stays the same too.",
+      items: [
+        {
+          title: "Bangladesh first, everything else after",
+          body: "bKash, Nagad, SSLCommerz and cash on delivery sit in the front row of checkout. Prices in BDT, times in Asia/Dhaka, and an interface in both Bangla and English.",
+        },
+        {
+          title: "One catalogue, many storefronts",
+          body: "Change the theme and the products, orders and customers stay exactly as they are. Every theme follows the same section contract, so a new theme is not a rebuild.",
+        },
+        {
+          title: "No hidden costs",
+          body: "Every plan includes a set number of fee-free orders; any commission beyond that appears on the invoice with the order reference. Cancelled and fully refunded orders have their fee reversed automatically.",
+        },
+        {
+          title: "A downgrade keeps your data",
+          body: "Shrinking the plan only blocks new records — existing products stay readable and editable, and export is always open. Data is held even through suspension.",
+        },
+        {
+          title: "Security is not a feature",
+          body: "Tenant boundaries are checked on the server for every request, payment webhooks are signed with HMAC, passwords are bcrypt-hashed and gateway credentials are encrypted.",
+        },
+        {
+          title: "Small shops and large, on one line",
+          body: "A 25-product home bakery and a 10,000-product brand on the same platform, with quotas, reports and API access that follow the plan.",
+        },
+      ],
+    },
+    audience: {
+      title: "Who it is for",
+      body: "Boutiques, home bakeries, grocery shops, gadget sellers and cosmetics brands — businesses without their own design, but with their own brand. The photography and the copy are yours; the look comes from the platform.",
+    },
+    difference: {
+      title: "How it is different",
+      body: "Reference platforms are either too bare or built around foreign gateways. ATLaS keeps local payments and COD in one flow, enforces plan entitlements on the server, and runs every theme on a shared contract — so setting up and scaling are both straightforward.",
+    },
+    promises: {
+      title: "Our promise",
+      items: [
+        "A 7-day trial without a card",
+        "A downgrade does not delete data",
+        "An order-level invoice every month",
+        "Support in Bangla, answered on working days",
+      ],
+    },
+    stats: {
+      eyebrow: "At a glance",
+      title: "What you can use today",
+      description: "No extra setup, app or integration — everything opens as soon as you sign up.",
+      items: [
+        {
+          label: "Themes",
+          value: `${THEME_CATALOG.length}`,
+          hint: THEME_CATALOG.map((theme) => theme.name).join(", "),
+        },
+        {
+          label: "Payments",
+          value: `${PAYMENT_PROVIDERS.length}`,
+          hint: "bKash, Nagad, SSLCommerz, COD",
+        },
+        {
+          label: "Plans",
+          value: `${PLAN_CODES.length}`,
+          hint: "Free, Basic, Standard, Pro",
+        },
+        {
+          label: "API",
+          value: "REST v1",
+          hint: "OpenAPI 3.1 + webhook signature",
+        },
+      ],
+    },
+  },
+} as const;
 
-const AFTER = [
-  "সব অর্ডার এক ড্যাশবোর্ডে, স্ট্যাটাসসহ",
-  "স্টক নিজে কমে, ইনভেন্টরি লেজার থাকে",
-  "কাস্টমার নিজেই অর্ডার ট্র্যাক করে",
-  "বিকাশ/নগদ/SSLCommerz + COD এক checkout-এ",
-];
-
-const PROMISES = [
-  "কার্ড ছাড়া ৭ দিনের ট্রায়াল",
-  "ডাউনগ্রেডে ডেটা মুছে না",
-  "প্রতি মাসে অর্ডার-লেভেল ইনভয়েস",
-  "বাংলায় সাপোর্ট, কর্মদিবসে উত্তর",
-];
-
-const MARQUEE_ITEMS = [
-  ...THEME_CATALOG.map((theme) => `${theme.name} থিম`),
-  "বিকাশ",
-  "নগদ",
-  "SSLCommerz",
-  "ক্যাশ অন ডেলিভারি",
-  "REST API v1",
-  "বাংলা + English",
-  "BDT · Asia/Dhaka",
-];
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return COPY[locale].meta;
+}
 
 type IconName =
   | "language"
@@ -202,39 +430,7 @@ function Icon({ name, className }: { name: IconName; className?: string }) {
 
 const PRINCIPLE_ICONS: IconName[] = ["language", "layers", "receipt", "arrow-down", "shield", "scale"];
 
-const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
-
-/** Latin digits → Bengali digits, so counts stay consistent with the copy. */
-function bn(value: number | string) {
-  return String(value).replace(/\d/g, (digit) => BN_DIGITS[Number(digit)]);
-}
-
-const STATS = [
-  {
-    label: "থিম",
-    value: `${bn(THEME_CATALOG.length)}টি`,
-    hint: THEME_CATALOG.map((theme) => theme.name).join(", "),
-    icon: "layers" as IconName,
-  },
-  {
-    label: "পেমেন্ট",
-    value: `${bn(PAYMENT_PROVIDERS.length)}টি`,
-    hint: "bKash, Nagad, SSLCommerz, COD",
-    icon: "wallet" as IconName,
-  },
-  {
-    label: "প্ল্যান",
-    value: `${bn(PLAN_CODES.length)}টি`,
-    hint: "Free, Basic, Standard, Pro",
-    icon: "chart" as IconName,
-  },
-  {
-    label: "API",
-    value: "REST v1",
-    hint: "OpenAPI 3.1 + webhook signature",
-    icon: "terminal" as IconName,
-  },
-];
+const STAT_ICONS: IconName[] = ["layers", "wallet", "chart", "terminal"];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -263,7 +459,11 @@ function SectionHeading({
   );
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const locale = await getLocale();
+  const t = COPY[locale];
+  const stats = t.stats.items.map((stat, index) => ({ ...stat, icon: STAT_ICONS[index] }));
+
   return (
     <div className="overflow-hidden bg-white">
       {/* Hero */}
@@ -279,9 +479,9 @@ export default function AboutPage() {
           <div>
 
             <h1 className="animate-fade-up mt-5 text-3xl leading-[1.25] font-bold tracking-tight text-ink-900 sm:text-[44px] sm:leading-[1.18]" style={{ animationDelay: "80ms" }}>
-              ছোট ব্যবসার জন্য বড় প্লাটফর্ম —{" "}
+              {t.hero.titleLead}{" "}
               <span className="relative inline-block bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 bg-clip-text text-transparent">
-                কোনো কোড ছাড়াই
+                {t.hero.titleAccent}
                 <svg
                   viewBox="0 0 300 18"
                   preserveAspectRatio="none"
@@ -300,30 +500,23 @@ export default function AboutPage() {
             </h1>
 
             <p className="animate-fade-up mt-7 max-w-xl text-sm leading-relaxed text-ink-600 sm:text-base" style={{ animationDelay: "160ms" }}>
-              বাংলাদেশে হাজারো উদ্যোক্তা প্রতিদিন Facebook পেজে অর্ডার নেন, মেসেজে কাস্টমারের ঠিকানা
-              লিখে রাখেন, আর Excel-এ স্টক মেলান। ATLaS সেই কাজটুকু এক জায়গায় আনে — দোকান, প্রোডাক্ট,
-              অর্ডার, পেমেন্ট আর ডেলিভারি, সব একটি অ্যাডমিনে।
+              {t.hero.body}
             </p>
             <p className="animate-fade-up mx-auto mt-3 max-w-xl text-sm leading-relaxed text-ink-600" style={{ animationDelay: "220ms" }}>
-              লক্ষ্য পরিষ্কার — একজন উদ্যোক্তা রাত ১০টায় মোবাইল থেকে নিজের প্রথম প্রোডাক্ট যোগ করবেন,
-              আর সকালে দোকানটা লাইভ থাকবে।
+              {t.hero.bodySecondary}
             </p>
 
             <div className="animate-fade-up mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: "300ms" }}>
               <ButtonLink href="/signup" size="lg">
-                ফ্রি অ্যাকাউন্ট খুলুন
+                {t.hero.primary}
               </ButtonLink>
               <ButtonLink href="/how-it-works" variant="outline" size="lg">
-                ছয় ধাপে শুরু করুন
+                {t.hero.secondary}
               </ButtonLink>
             </div>
 
             <div className="animate-fade-up mt-9 grid max-w-md grid-cols-3 gap-2.5" style={{ animationDelay: "380ms" }}>
-              {[
-                { value: bn(THEME_CATALOG.length), label: "তৈরি থিম" },
-                { value: bn(PAYMENT_PROVIDERS.length), label: "পেমেন্ট" },
-                { value: bn(PLAN_CODES.length), label: "প্ল্যান" },
-              ].map((item) => (
+              {t.hero.stats.map((item) => (
                 <div
                   key={item.label}
                   className="rounded-xl border border-white/70 bg-white/70 px-3 py-2.5 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-sm"
@@ -342,7 +535,7 @@ export default function AboutPage() {
             <div className="relative overflow-hidden rounded-3xl border border-white/80 bg-white/85 p-2 shadow-2xl shadow-brand-900/10 backdrop-blur">
               <img
                 src="/images/about/atlas_about_us.jpg"
-                alt="ATLaS — অ্যাডমিন, ডেলিভারি আর কাস্টমারের অর্ডার এক প্ল্যাটফর্মে"
+                alt={t.hero.imageAlt}
                 className="w-full rounded-2xl object-cover"
                 loading="eager"
               />
@@ -354,10 +547,10 @@ export default function AboutPage() {
       </section>
 
       {/* Capability marquee */}
-      <section aria-label="প্ল্যাটফর্মের মূল সক্ষমতা" className="border-b border-ink-100 bg-white py-4">
+      <section aria-label={t.marquee.label} className="border-b border-ink-100 bg-white py-4">
         <div className="marquee-mask pause-on-hover overflow-hidden">
           <div className="animate-marquee flex w-max items-center gap-2.5">
-            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, index) => (
+            {[...t.marquee.items, ...t.marquee.items].map((item, index) => (
               <span
                 key={`${item}-${index}`}
                 className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50/60 px-3 py-1.5 text-xs font-medium whitespace-nowrap text-ink-600"
@@ -374,21 +567,20 @@ export default function AboutPage() {
       <section className="relative mx-auto max-w-6xl px-4 py-16 sm:py-24">
         <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="reveal lg:sticky lg:top-24">
-            <span className="text-xs font-semibold tracking-wide text-brand-700 uppercase">কেন ATLaS</span>
+            <span className="text-xs font-semibold tracking-wide text-brand-700 uppercase">{t.why.eyebrow}</span>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-              একটা দোকান চালাতে <span className="text-brand-700">দশটা টুল</span> লাগা উচিত নয়
+              {t.why.titleLead}{" "}
+              <span className="text-brand-700">{t.why.titleAccent}</span>{" "}
+              {t.why.titleTail}
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-ink-600">
-              অর্ডার আসে ইনবক্সে, স্টক থাকে খাতায়, ডেলিভারি চার্জ মনে রাখতে হয়, আর মাস শেষে হিসাব
-              মেলাতে রাত জাগতে হয়। এই কাজগুলো একজন মানুষের একার সীমা — তাই ATLaS-এ সবকিছু এক জায়গায়
-              আনা হয়েছে। নিজে করতে হয় শুধু একটি ফর্ম পূরণ।
+              {t.why.body}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-ink-600">
-              দোকান সাজানো, প্রোডাক্ট তোলা, অর্ডার সামলানো আর রিপোর্ট দেখা — সব একই অ্যাডমিনে, একই
-              লগইনে, একই ভাষায়।
+              {t.why.bodySecondary}
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              {["এক ড্যাশবোর্ড", "এক লগইন", "এক ভাষা"].map((chip) => (
+              {t.why.chips.map((chip) => (
                 <span
                   key={chip}
                   className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50/70 px-3 py-1 text-[11px] font-medium text-brand-800 transition hover:border-brand-300 hover:bg-brand-100"
@@ -404,9 +596,9 @@ export default function AboutPage() {
             <div aria-hidden="true" className="pointer-events-none absolute -inset-3 rounded-[1.9rem] bg-gradient-to-br from-brand-200/45 via-transparent to-accent-400/15 blur-xl" />
             <div className="relative overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-sm transition duration-300 hover:shadow-xl hover:shadow-brand-900/10">
               <div className="flex items-center justify-between border-b border-ink-100 bg-ink-50/60 px-5 py-3">
-                <p className="text-xs font-semibold text-ink-700">আগে vs ATLaS-এ</p>
+                <p className="text-xs font-semibold text-ink-700">{t.why.compare.title}</p>
                 <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[10px] font-semibold text-brand-800">
-                  একই দোকান
+                  {t.why.compare.badge}
                 </span>
               </div>
 
@@ -416,10 +608,10 @@ export default function AboutPage() {
                     <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink-100 text-ink-500">
                       <Icon name="store" className="h-4 w-4" />
                     </span>
-                    <p className="text-xs font-semibold tracking-wide text-ink-500 uppercase">আগে</p>
+                    <p className="text-xs font-semibold tracking-wide text-ink-500 uppercase">{t.why.compare.beforeLabel}</p>
                   </div>
                   <ul className="mt-4 space-y-2">
-                    {BEFORE.map((item) => (
+                    {t.why.compare.before.map((item) => (
                       <li
                         key={item}
                         className="group flex items-start gap-2.5 rounded-lg p-1.5 text-xs leading-relaxed text-ink-500 transition hover:bg-ink-50 hover:text-ink-700"
@@ -448,10 +640,10 @@ export default function AboutPage() {
                     <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-white">
                       <Icon name="check" className="h-4 w-4" />
                     </span>
-                    <p className="text-xs font-semibold tracking-wide text-brand-700 uppercase">ATLaS-এ</p>
+                    <p className="text-xs font-semibold tracking-wide text-brand-700 uppercase">{t.why.compare.afterLabel}</p>
                   </div>
                   <ul className="mt-4 space-y-2">
-                    {AFTER.map((item) => (
+                    {t.why.compare.after.map((item) => (
                       <li
                         key={item}
                         className="group flex items-start gap-2.5 rounded-lg p-1.5 text-xs leading-relaxed text-ink-700 transition hover:bg-white hover:shadow-xs"
@@ -482,13 +674,13 @@ export default function AboutPage() {
         />
         <div className="relative mx-auto max-w-6xl px-4">
           <SectionHeading
-            eyebrow="আমাদের নীতি"
-            title="যে ছয়টি সিদ্ধান্তে প্ল্যাটফর্মটা দাঁড়িয়ে"
-            description="প্রতিটি ফিচার লেখার আগে এই প্রশ্নগুলোর উত্তর একই থাকে — তাই আচরণও একই থাকে।"
+            eyebrow={t.principles.eyebrow}
+            title={t.principles.title}
+            description={t.principles.description}
           />
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {PRINCIPLES.map((principle, index) => (
+            {t.principles.items.map((principle, index) => (
               <article
                 key={principle.title}
                 className="group hover-shine relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-900/10"
@@ -527,10 +719,9 @@ export default function AboutPage() {
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
               <Icon name="users" />
             </span>
-            <h2 className="mt-4 text-base font-semibold text-ink-900">কাদের জন্য</h2>
+            <h2 className="mt-4 text-base font-semibold text-ink-900">{t.audience.title}</h2>
             <p className="mt-2 text-xs leading-relaxed text-ink-600">
-              বুটিক, হোম বেকারি, মুদি দোকান, গ্যাজেট ও কসমেটিক্স — যাদের নিজের ডিজাইন নেই, কিন্তু
-              নিজের ব্র্যান্ড আছে। প্রোডাক্ট ফটোগ্রাফি ও বর্ণনা নিজের, চেহারাটা প্ল্যাটফর্মের।
+              {t.audience.body}
             </p>
           </div>
 
@@ -545,11 +736,9 @@ export default function AboutPage() {
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
               <Icon name="sparkles" />
             </span>
-            <h2 className="mt-4 text-base font-semibold text-ink-900">যেভাবে আলাদা</h2>
+            <h2 className="mt-4 text-base font-semibold text-ink-900">{t.difference.title}</h2>
             <p className="mt-2 text-xs leading-relaxed text-ink-600">
-              রেফারেন্স প্ল্যাটফর্মগুলো হয় খুব সাধারণ, নয়তো বিদেশি গেটওয়ে-কেন্দ্রিক। ATLaS-এ দেশীয়
-              পেমেন্ট ও COD একই স্রোতে, প্ল্যান-ভিত্তিক entitlement সার্ভারে enforce হয়, আর থিমগুলো
-              একটি শেয়ারড কনট্র্যাক্টে চলে — তাই দোকান সাজানো ও স্কেল করা দুটোই সহজ।
+              {t.difference.body}
             </p>
           </div>
 
@@ -564,9 +753,9 @@ export default function AboutPage() {
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
               <Icon name="handshake" />
             </span>
-            <h2 className="mt-4 text-base font-semibold text-ink-900">আমাদের প্রতিশ্রুতি</h2>
+            <h2 className="mt-4 text-base font-semibold text-ink-900">{t.promises.title}</h2>
             <ul className="mt-3 space-y-2">
-              {PROMISES.map((promise) => (
+              {t.promises.items.map((promise) => (
                 <li key={promise} className="flex items-start gap-2 text-xs text-ink-600">
                   <span className="mt-px grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700 transition group-hover:bg-brand-100">
                     <Icon name="check" className="h-2.5 w-2.5" />
@@ -588,13 +777,13 @@ export default function AboutPage() {
 
         <div className="relative mx-auto max-w-6xl px-4">
           <SectionHeading
-            eyebrow="এক নজরে"
-            title="আজই যা ব্যবহার করা যায়"
-            description="কোনো অতিরিক্ত সেটআপ, অ্যাপ বা ইন্টিগ্রেশন ছাড়াই — সাইনআপ করলেই সবগুলো খোলা।"
+            eyebrow={t.stats.eyebrow}
+            title={t.stats.title}
+            description={t.stats.description}
           />
 
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {STATS.map((stat, index) => (
+            {stats.map((stat, index) => (
               <div
                 key={stat.label}
                 className="reveal group relative overflow-hidden rounded-2xl border border-ink-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-xl hover:shadow-brand-900/10"

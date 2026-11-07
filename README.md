@@ -292,8 +292,10 @@ docs/              plan.md, TODO.md, notes-*.md, operations docs and audit repor
   manageable from `/admin/developers`.
 - **Analytics events** — append-only `AnalyticsEvent` table with a `trackEvent` emitter for the
   storefront funnel and platform milestones (signup, store created, trial, plan changes).
-- **Bangla/English UI toggle** — cookie-backed locale with a shared dictionary for marketing
-  chrome, auth, admin navigation and the contact page (`src/lib/i18n`). Long-form marketing and
-  legal prose remain Bangla and are translated incrementally.
+- **Bangla/English UI toggle** — cookie-backed locale with a shared dictionary for the app shell
+  (`src/lib/i18n`); the marketing pages (home, how it works, pricing, themes, about, help, contact,
+  developers) and the legal documents (terms, privacy, refund) carry their Bangla and English copy
+  side by side and pick it on the server, so the toggle switches whole pages rather than only the
+  chrome. Merchant-entered content is never translated.
 
 See `docs/TODO.md` for the full requirement status board.

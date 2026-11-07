@@ -3,44 +3,191 @@ import { ButtonLink } from "@/components/ui/button";
 import { Table, Td, Th } from "@/components/ui/shell";
 import { THEME_CATALOG, THEME_SECTION_KEYS } from "@/lib/theme-catalog";
 import { getAvailableDemoStoreSlugs } from "@/lib/demo-stores";
+import { getLocale } from "@/lib/i18n/server";
 
 /** Public theme gallery (PRD §7). */
 
-export const metadata = {
-  title: "থিম গ্যালারি",
-  description: "Nokshi, Bazar ও Studio — তিনটি তৈরি theme, একই সেকশন কাঠামো।",
-};
-
 export const dynamic = "force-dynamic";
 
-const SECTION_LABEL: Record<string, string> = {
-  Header: "হেডার",
-  Hero: "হিরো",
-  CategoryGrid: "ক্যাটাগরি",
-  ProductGrid: "প্রোডাক্ট গ্রিড",
-  PromoBanner: "প্রোমো ব্যানার",
-  Testimonials: "রিভিউ",
-  TrustBar: "ট্রাস্ট বার",
-  Footer: "ফুটার",
-};
-
-const SECTION_HELP: Record<string, string> = {
-  Header: "লোগো, নেভিগেশন, সার্চ ও ঘোষণা বার",
-  Hero: "বড় শিরোনাম, সাবটাইটেল ও একটি CTA বাটন",
-  CategoryGrid: "ক্যাটাগরি কার্ডের গ্রিড",
-  ProductGrid: "নির্বাচিত/সর্বশেষ প্রোডাক্ট",
-  PromoBanner: "অফার বা ঘোষণার ব্যানার",
-  Testimonials: "কাস্টমারের রিভিউ",
-  TrustBar: "রিটার্ন, COD, অরিজিনালিটির মতো প্রতিশ্রুতি",
-  Footer: "দোকান পরিচিতি, লিংক কলাম ও নোট",
-};
-
-const PLAN_LABEL: Record<string, string> = {
-  free: "Free",
-  basic: "Basic",
-  standard: "Standard",
-  pro: "Pro",
-};
+const COPY = {
+  bn: {
+    meta: {
+      title: "থিম গ্যালারি",
+      description: "Nokshi, Bazar ও Studio — তিনটি তৈরি theme, একই সেকশন কাঠামো।",
+    },
+    hero: {
+      titleLead: "আপনার ব্র্যান্ডের জন্য",
+      titleAccent: "সঠিক থিম",
+      body: "প্রতিটি থিমে একই সেকশন কাঠামো — রঙ, ফন্ট, হিরো আর সেকশনের ক্রম নিজের মতো সাজিয়ে নিন। থিম বদলালেও প্রোডাক্ট ও অর্ডার একই থাকে।",
+      primary: "ফ্রি শুরু করুন",
+      secondary: "ডেমো দোকান দেখুন",
+    },
+    badges: {
+      live: "লাইভ",
+      themes: "তৈরি থিম",
+      sections: "শেয়ারড সেকশন",
+      sameData: "একই ডেটা",
+    },
+    stats: {
+      plansValue: "সব",
+      plansLabel: "প্ল্যানে উপলব্ধ",
+    },
+    marquee: {
+      label: "থিম সিস্টেমের বৈশিষ্ট্য",
+      items: [
+        "{themes}টি তৈরি থিম",
+        "{sections}টি সেকশন",
+        "একই ডেটা কাঠামো",
+        "রঙ ও ফন্ট কাস্টমাইজ",
+        "সব প্ল্যানে উপলব্ধ",
+        "মোবাইল-ফার্স্ট ডিজাইন",
+      ],
+    },
+    collection: {
+      eyebrow: "কালেকশন",
+      title: "তিনটি থিম, তিন রকম প্রথম impression",
+      body: "প্রতিটি কার্ডের ভেতরে থিমের আসল ডিফল্ট কনফিগ — রঙ, হিরো ও CTA সহ। পছন্দের থিম বেছে নিন, বাকিটা ডিজাইন স্ক্রিন থেকেই বদলে নিতে পারবেন।",
+      viewDemo: "ডেমো দেখুন",
+      startTheme: "এই থিমে শুরু করুন",
+      bestFor: "উপযোগী:",
+      plans: "প্ল্যান:",
+    },
+    contract: {
+      eyebrow: "সেকশন কাঠামো",
+      title: "সব থিমে যে সেকশনগুলো আছে",
+      body: "প্রতিটি সেকশন চালু/বন্ধ করা যায়, আর ক্রম (order) বদলানো যায় ডিজাইন স্ক্রিন থেকে।",
+      cardTitle: "সেকশন রেফারেন্স",
+      cardSubtitle: "আটটি সেকশন — একই কনট্র্যাক্ট, তিনটি ভিন্ন চেহারা।",
+      count: "{count}টি সেকশন",
+      sectionColumn: "সেকশন",
+      showsColumn: "কী দেখায়",
+    },
+    sections: {
+      Header: "হেডার",
+      Hero: "হিরো",
+      CategoryGrid: "ক্যাটাগরি",
+      ProductGrid: "প্রোডাক্ট গ্রিড",
+      PromoBanner: "প্রোমো ব্যানার",
+      Testimonials: "রিভিউ",
+      TrustBar: "ট্রাস্ট বার",
+      Footer: "ফুটার",
+    },
+    sectionHelp: {
+      Header: "লোগো, নেভিগেশন, সার্চ ও ঘোষণা বার",
+      Hero: "বড় শিরোনাম, সাবটাইটেল ও একটি CTA বাটন",
+      CategoryGrid: "ক্যাটাগরি কার্ডের গ্রিড",
+      ProductGrid: "নির্বাচিত/সর্বশেষ প্রোডাক্ট",
+      PromoBanner: "অফার বা ঘোষণার ব্যানার",
+      Testimonials: "কাস্টমারের রিভিউ",
+      TrustBar: "রিটার্ন, COD, অরিজিনালিটির মতো প্রতিশ্রুতি",
+      Footer: "দোকান পরিচিতি, লিংক কলাম ও নোট",
+    },
+    cta: {
+      badge: "লাইভ ডেমো",
+      title: "ডেমো দোকান ঘুরে দেখুন",
+      body: "প্রতিটি থিম আসল প্রোডাক্ট ও অর্ডার দিয়ে চালু আছে।",
+      nokshi: "নকশি (editorial)",
+      bazar: "ঢাকা বাজার (dense)",
+      startStore: "নিজের দোকান শুরু করুন",
+      note: "পছন্দ হয়েছে? ফ্রি অ্যাকাউন্ট খুলে নিজের থিম বেছে নিন।",
+    },
+    planLabels: {
+      free: "Free",
+      basic: "Basic",
+      standard: "Standard",
+      pro: "Pro",
+    },
+  },
+  en: {
+    meta: {
+      title: "Theme gallery",
+      description:
+        "Nokshi, Bazar and Studio — three ready-made themes on one shared section contract.",
+    },
+    hero: {
+      titleLead: "A theme built around",
+      titleAccent: "your brand",
+      body: "Every theme shares the same section structure — arrange the colours, fonts, hero and section order to taste. Change the theme and your products and orders stay exactly where they are.",
+      primary: "Start free",
+      secondary: "See a demo store",
+    },
+    badges: {
+      live: "Live",
+      themes: "Ready-made themes",
+      sections: "Shared sections",
+      sameData: "Same data",
+    },
+    stats: {
+      plansValue: "All",
+      plansLabel: "plans",
+    },
+    marquee: {
+      label: "Theme system features",
+      items: [
+        "{themes} ready-made themes",
+        "{sections} sections",
+        "One shared data model",
+        "Custom colours and fonts",
+        "On every plan",
+        "Mobile-first design",
+      ],
+    },
+    collection: {
+      eyebrow: "Collection",
+      title: "Three themes, three first impressions",
+      body: "Each card previews the theme's real default config — colours, hero and CTA included. Pick the one you like; everything else can be changed from the design screen.",
+      viewDemo: "View demo",
+      startTheme: "Start with this theme",
+      bestFor: "Best for:",
+      plans: "Plans:",
+    },
+    contract: {
+      eyebrow: "Section structure",
+      title: "The sections every theme shares",
+      body: "Every section can be switched on or off, and reordered from the design screen.",
+      cardTitle: "Section reference",
+      cardSubtitle: "Eight sections, one contract, three different looks.",
+      count: "{count} sections",
+      sectionColumn: "Section",
+      showsColumn: "What it shows",
+    },
+    sections: {
+      Header: "Header",
+      Hero: "Hero",
+      CategoryGrid: "Category grid",
+      ProductGrid: "Product grid",
+      PromoBanner: "Promo banner",
+      Testimonials: "Reviews",
+      TrustBar: "Trust bar",
+      Footer: "Footer",
+    },
+    sectionHelp: {
+      Header: "Logo, navigation, search and the announcement bar",
+      Hero: "A large headline, a subtitle and one CTA button",
+      CategoryGrid: "A grid of category cards",
+      ProductGrid: "Featured and latest products",
+      PromoBanner: "An offer or announcement banner",
+      Testimonials: "Customer reviews",
+      TrustBar: "Promises like returns, COD and authenticity",
+      Footer: "Store details, link columns and a note",
+    },
+    cta: {
+      badge: "Live demo",
+      title: "Walk through a demo store",
+      body: "Every theme is running with real products and orders.",
+      nokshi: "Nokshi (editorial)",
+      bazar: "Dhaka Bazar (dense)",
+      startStore: "Start your own store",
+      note: "Like what you see? Open a free account and choose your theme.",
+    },
+    planLabels: {
+      free: "Free",
+      basic: "Basic",
+      standard: "Standard",
+      pro: "Pro",
+    },
+  },
+} as const;
 
 /** Seeded demo storefront for each theme (may be absent in a fresh install). */
 const DEMO_SLUGS: Record<string, string> = {
@@ -64,17 +211,22 @@ function radiusFor(style: "rounded" | "pill" | "square") {
 const HERO_THEME = THEME_CATALOG[0];
 const HERO_CONFIG = HERO_THEME.defaultConfig;
 
-const MARQUEE_ITEMS = [
-  `${bn(THEME_CATALOG.length)}টি তৈরি থিম`,
-  `${bn(THEME_SECTION_KEYS.length)}টি সেকশন`,
-  "একই ডেটা কাঠামো",
-  "রঙ ও ফন্ট কাস্টমাইজ",
-  "সব প্ল্যানে উপলব্ধ",
-  "মোবাইল-ফার্স্ট ডিজাইন",
-];
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return COPY[locale].meta;
+}
 
 export default async function ThemesPage() {
+  const locale = await getLocale();
+  const t = COPY[locale];
   const demoSlugs = await getAvailableDemoStoreSlugs();
+  const n = (value: number | string) => (locale === "bn" ? bn(value) : String(value));
+  const marqueeItems = t.marquee.items.map((item) =>
+    item
+      .replace("{themes}", n(THEME_CATALOG.length))
+      .replace("{sections}", n(THEME_SECTION_KEYS.length)),
+  );
+
   return (
     <div className="overflow-hidden bg-white">
       {/* Hero */}
@@ -90,9 +242,9 @@ export default async function ThemesPage() {
           <div>
 
             <h1 className="animate-fade-up mt-5 text-3xl leading-[1.25] font-bold tracking-tight text-ink-900 sm:text-[44px] sm:leading-[1.18]" style={{ animationDelay: "80ms" }}>
-              আপনার ব্র্যান্ডের জন্য{" "}
+              {t.hero.titleLead}{" "}
               <span className="relative inline-block bg-gradient-to-r from-brand-700 via-brand-600 to-brand-500 bg-clip-text text-transparent">
-                সঠিক থিম
+                {t.hero.titleAccent}
                 <svg
                   viewBox="0 0 300 18"
                   preserveAspectRatio="none"
@@ -111,26 +263,25 @@ export default async function ThemesPage() {
             </h1>
 
             <p className="animate-fade-up mt-7 max-w-xl text-sm leading-relaxed text-ink-600 sm:text-base" style={{ animationDelay: "160ms" }}>
-              প্রতিটি থিমে একই সেকশন কাঠামো — রঙ, ফন্ট, হিরো আর সেকশনের ক্রম নিজের মতো সাজিয়ে নিন।
-              থিম বদলালেও প্রোডাক্ট ও অর্ডার একই থাকে।
+              {t.hero.body}
             </p>
 
             <div className="animate-fade-up mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: "240ms" }}>
               <ButtonLink href="/signup" size="lg">
-                ফ্রি শুরু করুন
+                {t.hero.primary}
               </ButtonLink>
               {demoSlugs.has("nokshi-demo") ? (
                 <ButtonLink href="/store/nokshi-demo" variant="outline" size="lg">
-                  ডেমো দোকান দেখুন
+                  {t.hero.secondary}
                 </ButtonLink>
               ) : null}
             </div>
 
             <div className="animate-fade-up mt-9 grid max-w-md grid-cols-3 gap-2.5" style={{ animationDelay: "320ms" }}>
               {[
-                { value: bn(THEME_CATALOG.length), label: "তৈরি থিম" },
-                { value: bn(THEME_SECTION_KEYS.length), label: "শেয়ারড সেকশন" },
-                { value: "সব", label: "প্ল্যানে উপলব্ধ" },
+                { value: n(THEME_CATALOG.length), label: t.badges.themes },
+                { value: n(THEME_SECTION_KEYS.length), label: t.badges.sections },
+                { value: t.stats.plansValue, label: t.stats.plansLabel },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -158,7 +309,7 @@ export default async function ThemesPage() {
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[9px] font-medium text-brand-700">
                   <span className="animate-pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-brand-500" />
-                  লাইভ
+                  {t.badges.live}
                 </span>
               </div>
 
@@ -238,9 +389,9 @@ export default async function ThemesPage() {
 
             <div className="animate-float absolute top-14 -left-3 hidden items-center gap-2 rounded-xl border border-ink-200/80 bg-white/95 px-3 py-2 shadow-lg shadow-ink-900/5 backdrop-blur sm:flex">
               <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-50 text-brand-700">
-                <span className="text-[10px] font-bold">{bn(THEME_CATALOG.length)}</span>
+                <span className="text-[10px] font-bold">{n(THEME_CATALOG.length)}</span>
               </span>
-              <span className="text-[11px] font-semibold text-ink-800">তৈরি থিম</span>
+              <span className="text-[11px] font-semibold text-ink-800">{t.badges.themes}</span>
             </div>
 
             <div
@@ -248,9 +399,9 @@ export default async function ThemesPage() {
               style={{ animationDelay: "1.1s" }}
             >
               <span className="grid h-6 w-6 place-items-center rounded-lg bg-brand-600 text-[10px] font-bold text-white">
-                {bn(THEME_SECTION_KEYS.length)}
+                {n(THEME_SECTION_KEYS.length)}
               </span>
-              <span className="text-[11px] font-semibold text-ink-800">শেয়ারড সেকশন</span>
+              <span className="text-[11px] font-semibold text-ink-800">{t.badges.sections}</span>
             </div>
 
             <div
@@ -262,17 +413,17 @@ export default async function ThemesPage() {
                   <path d="m5 12 5 5L20 7" />
                 </svg>
               </span>
-              <span className="text-[11px] font-semibold text-ink-800">একই ডেটা</span>
+              <span className="text-[11px] font-semibold text-ink-800">{t.badges.sameData}</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Capability marquee */}
-      <section aria-label="থিম সিস্টেমের বৈশিষ্ট্য" className="border-b border-ink-100 bg-white py-4">
+      <section aria-label={t.marquee.label} className="border-b border-ink-100 bg-white py-4">
         <div className="marquee-mask pause-on-hover overflow-hidden">
           <div className="animate-marquee flex w-max items-center gap-2.5">
-            {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, index) => (
+            {[...marqueeItems, ...marqueeItems].map((item, index) => (
               <span
                 key={`${item}-${index}`}
                 className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-ink-50/60 px-3 py-1.5 text-xs font-medium whitespace-nowrap text-ink-600"
@@ -290,15 +441,12 @@ export default async function ThemesPage() {
         <div className="reveal mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3 py-1 text-[11px] font-semibold tracking-wide text-brand-800 shadow-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-            কালেকশন
+            {t.collection.eyebrow}
           </span>
           <h2 className="mt-4 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-            তিনটি থিম, তিন রকম প্রথম impression
+            {t.collection.title}
           </h2>
-          <p className="mt-3 text-sm leading-relaxed text-ink-600">
-            প্রতিটি কার্ডের ভেতরে থিমের আসল ডিফল্ট কনফিগ — রঙ, হিরো ও CTA সহ। পছন্দের থিম বেছে
-            নিন, বাকিটা ডিজাইন স্ক্রিন থেকেই বদলে নিতে পারবেন।
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-ink-600">{t.collection.body}</p>
         </div>
 
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
@@ -313,7 +461,7 @@ export default async function ThemesPage() {
               <Link
                 key={theme.code}
                 href={demoHref ?? "/signup"}
-                aria-label={`${theme.name} — ${demoHref ? "ডেমো দেখুন" : "এই থিমে শুরু করুন"}`}
+                aria-label={`${theme.name} — ${demoHref ? t.collection.viewDemo : t.collection.startTheme}`}
                 className="reveal group hover-shine relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-300 hover:shadow-2xl hover:shadow-brand-900/10"
                 style={{ animationDelay: `${index * 90}ms` }}
               >
@@ -414,21 +562,23 @@ export default async function ThemesPage() {
                     </div>
                   </div>
 
-                  <p className="mt-3 text-sm leading-relaxed text-ink-600">{theme.description}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-600">
+                    {locale === "en" ? theme.descriptionEn : theme.description}
+                  </p>
 
                   <dl className="mt-3 space-y-1.5 text-[11px] text-ink-500">
                     <div className="flex gap-1">
-                      <dt className="shrink-0 font-medium text-ink-700">উপযোগী:</dt>
+                      <dt className="shrink-0 font-medium text-ink-700">{t.collection.bestFor}</dt>
                       <dd>{theme.industry}</dd>
                     </div>
                     <div className="flex flex-wrap items-center gap-1">
-                      <dt className="font-medium text-ink-700">প্ল্যান:</dt>
+                      <dt className="font-medium text-ink-700">{t.collection.plans}</dt>
                       {theme.compatiblePlans.map((plan) => (
                         <dd
                           key={plan}
                           className="rounded-full border border-ink-200 bg-ink-50 px-1.5 py-px text-[10px] text-ink-600"
                         >
-                          {PLAN_LABEL[plan] ?? plan}
+                          {t.planLabels[plan]}
                         </dd>
                       ))}
                     </div>
@@ -437,7 +587,7 @@ export default async function ThemesPage() {
                   <div className="mt-auto flex items-center justify-between gap-2 border-t border-ink-100 pt-3.5">
                     <span className="font-mono text-[10px] text-ink-400">v{theme.version}</span>
                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 transition group-hover:gap-2 group-hover:text-brand-800">
-                      {demoHref ? "ডেমো দেখুন" : "এই থিমে শুরু করুন"}
+                      {demoHref ? t.collection.viewDemo : t.collection.startTheme}
                       <svg viewBox="0 0 24 24" aria-hidden="true" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M4 12h15M13 6l6 6-6 6" />
                       </svg>
@@ -460,13 +610,13 @@ export default async function ThemesPage() {
           <div className="reveal mx-auto max-w-2xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3 py-1 text-[11px] font-semibold tracking-wide text-brand-800 shadow-xs">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-              সেকশন কাঠামো
+              {t.contract.eyebrow}
             </span>
             <h2 className="mt-4 text-2xl font-bold tracking-tight text-ink-900 sm:text-3xl">
-              সব থিমে যে সেকশনগুলো আছে
+              {t.contract.title}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-ink-600">
-              প্রতিটি সেকশন চালু/বন্ধ করা যায়, আর ক্রম (order) বদলানো যায় ডিজাইন স্ক্রিন থেকে।
+              {t.contract.body}
             </p>
           </div>
 
@@ -475,9 +625,9 @@ export default async function ThemesPage() {
               <span key={key} className="flex items-center gap-1.5">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-white px-2.5 py-1 text-[11px] font-medium text-ink-600 transition duration-200 hover:-translate-y-0.5 hover:border-brand-300 hover:text-brand-800 hover:shadow-sm">
                   <span className="grid h-4 w-4 place-items-center rounded-full bg-brand-50 font-mono text-[8px] font-bold text-brand-700">
-                    {bn(index + 1)}
+                    {n(index + 1)}
                   </span>
-                  {SECTION_LABEL[key] ?? key}
+                  {t.sections[key]}
                 </span>
                 {index < THEME_SECTION_KEYS.length - 1 ? (
                   <span aria-hidden="true" className="text-ink-300">
@@ -491,18 +641,18 @@ export default async function ThemesPage() {
           <div className="reveal mt-8 overflow-hidden rounded-2xl border border-ink-200 bg-white shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink-100 px-5 py-4">
               <div>
-                <p className="text-sm font-semibold text-ink-900">সেকশন রেফারেন্স</p>
-                <p className="mt-0.5 text-xs text-ink-500">আটটি সেকশন — একই কনট্র্যাক্ট, তিনটি ভিন্ন চেহারা।</p>
+                <p className="text-sm font-semibold text-ink-900">{t.contract.cardTitle}</p>
+                <p className="mt-0.5 text-xs text-ink-500">{t.contract.cardSubtitle}</p>
               </div>
               <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-semibold text-brand-700">
-                {bn(THEME_SECTION_KEYS.length)}টি সেকশন
+                {t.contract.count.replace("{count}", n(THEME_SECTION_KEYS.length))}
               </span>
             </div>
             <Table>
               <thead>
                 <tr className="bg-ink-50/60">
-                  <Th>সেকশন</Th>
-                  <Th>কী দেখায়</Th>
+                  <Th>{t.contract.sectionColumn}</Th>
+                  <Th>{t.contract.showsColumn}</Th>
                 </tr>
               </thead>
               <tbody>
@@ -511,12 +661,12 @@ export default async function ThemesPage() {
                     <Td className="font-medium whitespace-nowrap text-ink-800">
                       <span className="flex items-center gap-2">
                         <span className="grid h-5 w-5 place-items-center rounded-md bg-ink-50 font-mono text-[9px] font-bold text-ink-400">
-                          {bn(index + 1)}
+                          {n(index + 1)}
                         </span>
-                        {SECTION_LABEL[key] ?? key}
+                        {t.sections[key]}
                       </span>
                     </Td>
-                    <Td className="text-xs text-ink-500">{SECTION_HELP[key] ?? ""}</Td>
+                    <Td className="text-xs text-ink-500">{t.sectionHelp[key]}</Td>
                   </tr>
                 ))}
               </tbody>
@@ -537,33 +687,33 @@ export default async function ThemesPage() {
           <div className="relative">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[11px] font-medium text-brand-50 backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-accent-400" />
-              লাইভ ডেমো
+              {t.cta.badge}
             </span>
             <h2 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-              ডেমো দোকান ঘুরে দেখুন
+              {t.cta.title}
             </h2>
             <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-brand-50">
-              প্রতিটি থিম আসল প্রোডাক্ট ও অর্ডার দিয়ে চালু আছে।
+              {t.cta.body}
             </p>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               {demoSlugs.has("nokshi-demo") ? (
                 <ButtonLink href="/store/nokshi-demo" variant="inverse" size="lg">
-                  নকশি (editorial)
+                  {t.cta.nokshi}
                 </ButtonLink>
               ) : null}
               {demoSlugs.has("dhaka-bazar") ? (
                 <ButtonLink href="/store/dhaka-bazar" variant="inverse-outline" size="lg">
-                  ঢাকা বাজার (dense)
+                  {t.cta.bazar}
                 </ButtonLink>
               ) : null}
               {demoSlugs.size === 0 ? (
                 <ButtonLink href="/signup" variant="inverse" size="lg">
-                  নিজের দোকান শুরু করুন
+                  {t.cta.startStore}
                 </ButtonLink>
               ) : null}
             </div>
             <p className="mt-4 text-[11px] text-brand-100">
-              পছন্দ হয়েছে? ফ্রি অ্যাকাউন্ট খুলে নিজের থিম বেছে নিন।
+              {t.cta.note}
             </p>
           </div>
         </div>

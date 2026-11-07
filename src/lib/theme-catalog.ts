@@ -111,6 +111,8 @@ export type ThemeCatalogEntry = {
   code: string;
   name: string;
   description: string;
+  /** English copy for the same description; marketing pages pick by locale. */
+  descriptionEn: string;
   industry: string;
   style: string;
   version: string;
@@ -127,6 +129,8 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
     code: "nokshi",
     name: "Nokshi",
     description: "ফ্যাশন, বুটিক আর লাইফস্টাইলের জন্য উষ্ণ রঙের theme — বড় product ছবি আর editorial hero।",
+    descriptionEn:
+      "A warm-toned theme for fashion, boutique and lifestyle stores — large product imagery and an editorial hero.",
     industry: "Fashion, boutique, lifestyle",
     style: "Warm editorial",
     version: "1.0.0",
@@ -222,6 +226,8 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
     code: "bazar",
     name: "Bazar",
     description: "মুদি, খাবার আর প্রতিদিনের পণ্যের জন্য ঘন catalog — ক্যাটাগরি-ফার্স্ট নেভিগেশন।",
+    descriptionEn:
+      "A dense catalogue for groceries, food and everyday goods — category-first navigation.",
     industry: "Grocery, food, everyday goods",
     style: "Dense catalogue",
     version: "1.0.0",
@@ -317,6 +323,8 @@ export const THEME_CATALOG: ThemeCatalogEntry[] = [
     code: "studio",
     name: "Studio",
     description: "গ্যাজেট, কসমেটিকস আর প্রিমিয়াম পণ্যের জন্য পরিষ্কার whitespace-ar design।",
+    descriptionEn:
+      "A clean, whitespace-led design for gadgets, cosmetics and premium products.",
     industry: "Gadgets, cosmetics, premium products",
     style: "Clean minimal",
     version: "1.0.0",

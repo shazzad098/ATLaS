@@ -752,7 +752,9 @@ export default async function LandingPage() {
                       {theme.style}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-600">{theme.description}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                    {locale === "en" ? theme.descriptionEn : theme.description}
+                  </p>
                   <p className="mt-2 text-xs text-ink-500">{theme.industry}</p>
                 </div>
               </div>
