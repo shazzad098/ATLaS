@@ -10,12 +10,12 @@
 # Migrations are a release step, not a container start step:
 #   npx prisma migrate deploy   (see docs/operations.md)
 
-FROM node:22-bookworm-slim AS deps
+FROM node:25-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-FROM node:22-bookworm-slim AS builder
+FROM node:25-bookworm-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
@@ -29,7 +29,7 @@ RUN DATABASE_URL="postgresql://build:build@127.0.0.1:5432/atlas_build" \
     npx prisma generate \
  && npm run build
 
-FROM node:22-bookworm-slim AS runner
+FROM node:25-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
