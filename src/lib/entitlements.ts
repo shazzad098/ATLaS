@@ -53,19 +53,19 @@ export function invalidateEntitlements(tenantId: string): void {
 export class EntitlementError extends Error {
   readonly code = "PLAN_LIMIT_REACHED";
   readonly status = 402;
-  constructor(
-    message: string,
-    readonly detail: {
-      feature?: string;
-      metric?: string;
-      limit?: number | null;
-      used?: number;
-      planCode?: PlanCode;
-      upgradeTo?: PlanCode;
-    } = {},
-  ) {
+  readonly detail: {
+    feature?: string;
+    metric?: string;
+    limit?: number | null;
+    used?: number;
+    planCode?: PlanCode;
+    upgradeTo?: PlanCode;
+  };
+
+  constructor(message: string, detail: EntitlementError["detail"] = {}) {
     super(message);
     this.name = "EntitlementError";
+    this.detail = detail;
   }
 }
 

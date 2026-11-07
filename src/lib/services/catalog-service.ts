@@ -222,11 +222,11 @@ export async function createProduct(
           productId: created.id,
           sku: variant.sku,
           optionValuesJson: variant.optionValues as never,
-          price: toDecimalString(variant.price) as never,
+          price: toDecimalString(variant.price),
           comparePrice: variant.comparePrice
-            ? (toDecimalString(variant.comparePrice) as never)
+            ? toDecimalString(variant.comparePrice)
             : null,
-          costPrice: variant.costPrice ? (toDecimalString(variant.costPrice) as never) : null,
+          costPrice: variant.costPrice ? toDecimalString(variant.costPrice) : null,
           stockQty: variant.stockQty,
           weightGrams: variant.weightGrams ?? null,
           status: variant.status,
@@ -349,11 +349,11 @@ export async function updateProduct(
           data: {
             sku: variant.sku,
             optionValuesJson: variant.optionValues as never,
-            price: toDecimalString(variant.price) as never,
+            price: toDecimalString(variant.price),
             comparePrice: variant.comparePrice
-              ? (toDecimalString(variant.comparePrice) as never)
+              ? toDecimalString(variant.comparePrice)
               : null,
-            costPrice: variant.costPrice ? (toDecimalString(variant.costPrice) as never) : null,
+            costPrice: variant.costPrice ? toDecimalString(variant.costPrice) : null,
             weightGrams: variant.weightGrams ?? null,
             status: variant.status,
           },
@@ -364,11 +364,11 @@ export async function updateProduct(
             productId,
             sku: variant.sku,
             optionValuesJson: variant.optionValues as never,
-            price: toDecimalString(variant.price) as never,
+            price: toDecimalString(variant.price),
             comparePrice: variant.comparePrice
-              ? (toDecimalString(variant.comparePrice) as never)
+              ? toDecimalString(variant.comparePrice)
               : null,
-            costPrice: variant.costPrice ? (toDecimalString(variant.costPrice) as never) : null,
+            costPrice: variant.costPrice ? toDecimalString(variant.costPrice) : null,
             stockQty: variant.stockQty,
             weightGrams: variant.weightGrams ?? null,
             status: variant.status,
@@ -494,8 +494,8 @@ export async function applyProductDiscount(
       return prisma.productVariant.update({
         where: { id: variant.id },
         data: {
-          price: toDecimalString(discounted) as never,
-          comparePrice: discounted >= base ? null : (toDecimalString(base) as never),
+          price: toDecimalString(discounted),
+          comparePrice: discounted >= base ? null : toDecimalString(base),
         },
       });
     }),
@@ -854,9 +854,9 @@ export async function importProductsCsv(
         await prisma.productVariant.update({
           where: { id: existingVariant.id },
           data: {
-            price: toDecimalString(price) as never,
+            price: toDecimalString(price),
             comparePrice: index.compare_price !== undefined && row[index.compare_price]
-              ? (toDecimalString(row[index.compare_price]) as never)
+              ? toDecimalString(row[index.compare_price])
               : null,
           },
         });

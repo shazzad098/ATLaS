@@ -69,13 +69,18 @@ export interface PaymentAdapter {
 }
 
 export class PaymentAdapterError extends Error {
+  readonly provider: PaymentProviderName;
+  readonly detail: Record<string, unknown>;
+
   constructor(
     message: string,
-    readonly provider: PaymentProviderName,
-    readonly detail: Record<string, unknown> = {},
+    provider: PaymentProviderName,
+    detail: Record<string, unknown> = {},
   ) {
     super(message);
     this.name = "PaymentAdapterError";
+    this.provider = provider;
+    this.detail = detail;
   }
 }
 

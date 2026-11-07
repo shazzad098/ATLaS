@@ -143,7 +143,7 @@ export async function createCourierShipment(
       trackingCode: created.trackingCode,
       status: created.status,
       isSandbox: created.sandbox,
-      codAmount: codAmount as never,
+      codAmount: codAmount,
       recipientName: recipient.name,
       recipientPhone: recipient.phone,
       recipientAddress: recipient.address,

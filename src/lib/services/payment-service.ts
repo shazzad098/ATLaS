@@ -578,7 +578,7 @@ export async function refundOrder(
           orderId,
           provider: order.paymentProvider,
           providerTxnId: refundTxnId,
-          amount: amount as never,
+          amount: amount,
           status: "PENDING",
           idempotencyKey: refundKey,
           rawReference: input.reason,

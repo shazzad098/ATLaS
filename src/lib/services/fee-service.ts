@@ -137,9 +137,9 @@ export async function applyOrderFees(orderId: string): Promise<OrderFeeOutcome> 
     await prisma.feeLedger.update({
       where: { id: existing.id },
       data: {
-        baseAmount: baseAmount as never,
-        rate: rate as never,
-        feeAmount: feeAmount as never,
+        baseAmount: baseAmount,
+        rate: rate,
+        feeAmount: feeAmount,
         status: existing.status === "INVOICED" ? "INVOICED" : "PENDING",
         reversedAt: null,
       },
@@ -153,9 +153,9 @@ export async function applyOrderFees(orderId: string): Promise<OrderFeeOutcome> 
       storeId: order.store.id,
       orderId,
       feeType: "PLATFORM_OVERAGE",
-      baseAmount: baseAmount as never,
-      rate: rate as never,
-      feeAmount: feeAmount as never,
+      baseAmount: baseAmount,
+      rate: rate,
+      feeAmount: feeAmount,
     },
   });
 
@@ -197,7 +197,7 @@ export async function applyCourierFee(orderId: string): Promise<OrderFeeOutcome>
   if (existing) {
     await prisma.feeLedger.update({
       where: { id: existing.id },
-      data: { baseAmount: baseAmount as never, feeAmount: feeAmount as never, reversedAt: null },
+      data: { baseAmount: baseAmount, feeAmount: feeAmount, reversedAt: null },
     });
   } else {
     await prisma.feeLedger.create({
@@ -206,9 +206,9 @@ export async function applyCourierFee(orderId: string): Promise<OrderFeeOutcome>
         storeId: order.store.id,
         orderId,
         feeType: "COURIER_THIRD_PARTY",
-        baseAmount: baseAmount as never,
-        rate: COURIER_FEE_RATE as never,
-        feeAmount: feeAmount as never,
+        baseAmount: baseAmount,
+        rate: COURIER_FEE_RATE,
+        feeAmount: feeAmount,
       },
     });
   }
