@@ -172,11 +172,11 @@ export async function proxy(request: NextRequest) {
   // Edge-level IP throttling before any routing work (PRD §13).
   const ip = requestIp(request);
   if (request.method === "POST" && AUTH_PATHS.has(pathname)) {
-    const authLimit = checkRateLimit(`auth:${ip}`, AUTH_LIMIT, AUTH_WINDOW_MS);
+    const authLimit = await checkRateLimit(`auth:${ip}`, AUTH_LIMIT, AUTH_WINDOW_MS);
     if (!authLimit.ok) return rateLimited(authLimit, false);
   }
   if (pathname.startsWith("/api/")) {
-    const apiLimit = checkRateLimit(`api:${ip}`, API_LIMIT, API_WINDOW_MS);
+    const apiLimit = await checkRateLimit(`api:${ip}`, API_LIMIT, API_WINDOW_MS);
     if (!apiLimit.ok) return rateLimited(apiLimit, true);
   }
 

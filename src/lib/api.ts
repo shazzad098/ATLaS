@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { AppError, isAppError, ValidationError } from "@/lib/errors";
 import { reportError } from "@/lib/logger";
+import { checkRateLimitLocal } from "@/lib/rate-limit";
 
 /**
  * REST envelope + pagination conventions (PRD §11 "API rules"):
@@ -154,23 +155,17 @@ export function clientIp(request: Request): string {
 }
 
 /**
- * In-memory fixed-window rate limiter. The MVP runs a single app instance with
- * Redis available later; the interface is the same either way.
+ * In-process burst limiter for individual handlers. The global per-IP gate in
+ * `src/proxy.ts` is the distributed one (`checkRateLimit`); inside a handler an
+ * extra network round trip would cost more than the protection it adds, so this
+ * stays local and explicit about it.
  */
-const buckets = new Map<string, { count: number; resetAt: number }>();
-
 export function rateLimit(key: string, perMinute: number): void {
-  const now = Date.now();
-  const bucket = buckets.get(key);
-  if (!bucket || bucket.resetAt < now) {
-    buckets.set(key, { count: 1, resetAt: now + 60_000 });
-    return;
-  }
-  bucket.count += 1;
-  if (bucket.count > perMinute) {
+  const result = checkRateLimitLocal(key, perMinute, 60_000);
+  if (!result.ok) {
     throw new AppError("RATE_LIMITED", "খুব বেশি request পাঠানো হয়েছে। এক মিনিট পরে চেষ্টা করুন।", 429, {
       limit: perMinute,
-      retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000),
+      retryAfterSeconds: result.retryAfterSeconds,
     });
   }
 }
