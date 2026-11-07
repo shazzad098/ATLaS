@@ -47,8 +47,11 @@ NFRs and the audit fix list.
   with a request id. Set `SENTRY_DSN` to forward exceptions to Sentry through its
   store endpoint (no SDK dependency).
 - `GET /api/v1/health` is public and returns database latency, process uptime,
-  RSS/heap and the deploy commit. Point uptime monitors at it; alert when
-  `database` is `down` or `databaseLatencyMs` exceeds 500ms for 5 minutes.
+  RSS/heap and the deploy commit. It answers **503 when the database is
+  unreachable** (200 only when the dependency check passes), so a readiness
+  probe, load balancer or uptime monitor can act on the status code alone; the
+  body still carries the metrics that explain why. The container HEALTHCHECK
+  uses the same endpoint.
 - Suggested alerts:
   - 5xx rate > 1% for 5 minutes.
   - Webhook `DEAD` deliveries > 10 in an hour.
