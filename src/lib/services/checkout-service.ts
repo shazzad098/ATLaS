@@ -1,4 +1,4 @@
-﻿import { z } from "zod";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { AppError, NotFoundError } from "@/lib/errors";
 import { buildOrderNo } from "@/lib/dates";
@@ -20,6 +20,7 @@ import { trackEvent } from "@/lib/services/analytics-service";
 import { signOrderAccessToken } from "@/lib/order-access";
 import { normalizePhone } from "@/lib/auth/phone";
 import { recordAudit } from "@/lib/audit";
+import { reportError } from "@/lib/logger";
 
 /**
  * Checkout (FR-05, US-05).
@@ -68,6 +69,69 @@ export class CheckoutError extends AppError {
   constructor(message: string, detail: Record<string, unknown> = {}) {
     super("VALIDATION_FAILED", message, 422, detail);
   }
+}
+
+const REPLAY_SELECT = {
+  id: true,
+  orderNo: true,
+  grandTotal: true,
+  status: true,
+  paymentProvider: true,
+} as const;
+
+async function findExistingOrder(storeId: string, scopedKey: string, rawKey: string) {
+  return prisma.order.findFirst({
+    where: { storeId, idempotencyKey: { in: [scopedKey, rawKey] } },
+    select: REPLAY_SELECT,
+  });
+}
+
+type ReplayableOrder = NonNullable<Awaited<ReturnType<typeof findExistingOrder>>>;
+
+/** A replayed checkout returns the original order; it never creates a new one. */
+function replayResult(storeId: string, existing: ReplayableOrder): CheckoutResult {
+  return {
+    orderId: existing.id,
+    orderNo: existing.orderNo,
+    grandTotal: fromPaisa(toPaisa(existing.grandTotal)),
+    status: existing.status,
+    accessToken: signOrderAccessToken({
+      storeId,
+      orderId: existing.id,
+      orderNo: existing.orderNo,
+    }),
+    payment: { provider: existing.paymentProvider, status: "REPLAYED" },
+  };
+}
+
+/** Prisma's unique-constraint violation code. */
+function isUniqueViolation(error: unknown): boolean {
+  return (error as { code?: unknown } | null)?.code === "P2002";
+}
+
+/** Prisma's write-conflict/deadlock code (the transaction must be retried). */
+function isWriteConflict(error: unknown): boolean {
+  const candidate = error as { code?: unknown; message?: unknown } | null;
+  if (candidate?.code === "P2034") return true;
+  // A deadlock inside a raw statement is surfaced as P2010 with the Postgres
+  // SQLSTATE in the message rather than as P2034.
+  if (candidate?.code === "P2010") {
+    const message = String(candidate.message ?? "").toLowerCase();
+    return (
+      message.includes("deadlock") ||
+      message.includes("40p01") ||
+      message.includes("could not serialize")
+    );
+  }
+  return false;
+}
+
+function isReplayableConflict(error: unknown): boolean {
+  return isUniqueViolation(error) || isWriteConflict(error);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function placeOrder(input: {
@@ -121,26 +185,9 @@ export async function placeOrder(input: {
   // composite key; the raw key is still accepted for orders created before
   // this change (always constrained by storeId here).
   const scopedIdempotencyKey = `${store.id}:${input.idempotencyKey}`;
-  const existing = await prisma.order.findFirst({
-    where: {
-      storeId: store.id,
-      idempotencyKey: { in: [scopedIdempotencyKey, input.idempotencyKey] },
-    },
-    select: { id: true, orderNo: true, grandTotal: true, status: true, paymentProvider: true },
-  });
+  const existing = await findExistingOrder(store.id, scopedIdempotencyKey, input.idempotencyKey);
   if (existing) {
-    return {
-      orderId: existing.id,
-      orderNo: existing.orderNo,
-      grandTotal: fromPaisa(toPaisa(existing.grandTotal)),
-      status: existing.status,
-      accessToken: signOrderAccessToken({
-        storeId: store.id,
-        orderId: existing.id,
-        orderNo: existing.orderNo,
-      }),
-      payment: { provider: existing.paymentProvider, status: "REPLAYED" },
-    };
+    return replayResult(store.id, existing);
   }
 
   const cart = await loadCart(store.id, input.sessionKey);
@@ -173,7 +220,7 @@ export async function placeOrder(input: {
     zone: pricing.zone?.name ?? null,
   };
 
-  const order = await prisma.$transaction(async (tx) => {
+  const persistOrder = () => prisma.$transaction(async (tx) => {
     // Atomic reservation. The conditional UPDATE guarantees that two concurrent
     // checkouts cannot both take the last unit.
     for (const line of pricing.lines) {
@@ -217,15 +264,15 @@ export async function placeOrder(input: {
         paymentProvider: input.payload.paymentProvider,
         paymentStatus: "PENDING",
         fulfillmentStatus: "UNFULFILLED",
-        subtotal: pricing.subtotal as never,
-        discountTotal: pricing.discountTotal as never,
-        shippingTotal: pricing.shippingTotal as never,
-        taxTotal: pricing.taxTotal as never,
+        subtotal: pricing.subtotal,
+        discountTotal: pricing.discountTotal,
+        shippingTotal: pricing.shippingTotal,
+        taxTotal: pricing.taxTotal,
         taxJson: {
           mode: pricing.taxMode,
           ratePercent: pricing.taxRatePercent,
         } as never,
-        grandTotal: pricing.grandTotal as never,
+        grandTotal: pricing.grandTotal,
         couponCode: pricing.coupon?.code ?? null,
         addressSnapshotJson: addressSnapshot as never,
         notes: input.payload.notes || null,
@@ -241,7 +288,7 @@ export async function placeOrder(input: {
         nameSnapshot: line.productName,
         skuSnapshot: line.sku,
         quantity: line.quantity,
-        unitPrice: line.unitPrice as never,
+        unitPrice: line.unitPrice,
         discountTotal:
           pricing.lines.length > 0
             ? fromPaisa(
@@ -249,7 +296,7 @@ export async function placeOrder(input: {
                   (toPaisa(pricing.subtotal) === 0n ? 1n : toPaisa(pricing.subtotal)),
               )
             : "0.00",
-        lineTotal: line.lineTotal as never,
+        lineTotal: line.lineTotal,
       })),
     });
 
@@ -267,7 +314,7 @@ export async function placeOrder(input: {
       data: {
         orderId: created.id,
         provider: input.payload.paymentProvider,
-        amount: pricing.grandTotal as never,
+        amount: pricing.grandTotal,
         status: "INITIATED",
         idempotencyKey: input.idempotencyKey,
       },
@@ -288,7 +335,47 @@ export async function placeOrder(input: {
     return created;
   }, { timeout: 15_000 });
 
-  // Post-commit side effects (each is independently safe to retry).
+  let order: Awaited<ReturnType<typeof persistOrder>>;
+  try {
+    order = await persistOrder();
+  } catch (error) {
+    // Two concurrent requests with the same Idempotency-Key can both pass the
+    // lookup above. PostgreSQL then decides: one commits and the other fails on
+    // the unique index (P2002) or is aborted by a write conflict on the variant
+    // row it also tried to reserve (P2034). Either way the loser must replay the
+    // winner's order instead of surfacing a 500 to the shopper.
+    if (isReplayableConflict(error)) {
+      const winner = await findExistingOrder(
+        store.id,
+        scopedIdempotencyKey,
+        input.idempotencyKey,
+      );
+      if (winner) return replayResult(store.id, winner);
+
+      // The winner may not have committed yet; one short retry resolves it.
+      await sleep(50);
+      const settled = await findExistingOrder(
+        store.id,
+        scopedIdempotencyKey,
+        input.idempotencyKey,
+      );
+      if (settled) return replayResult(store.id, settled);
+    }
+    throw error;
+  }
+
+  // The order is committed at this point; it is durable no matter what follows.
+  // Every remaining step is therefore best-effort: a notification, audit or
+  // gateway hiccup must never turn a placed order into a 500 for the shopper.
+  const guard = async <T>(label: string, run: () => Promise<T>): Promise<T | null> => {
+    try {
+      return await run();
+    } catch (error) {
+      reportError(error, { scope: "checkout.post_commit", step: label, orderId: order.id });
+      return null;
+    }
+  };
+
   const accessToken = signOrderAccessToken({
     storeId: store.id,
     orderId: order.id,
@@ -299,124 +386,152 @@ export async function placeOrder(input: {
   )}`;
   let redirectUrl: string | undefined;
   let paymentStatus = "PENDING";
+  let autoConfirmed = false;
 
   if (input.payload.paymentProvider === "COD") {
     if (codAutoConfirm) {
-      await applyTransition({
-        orderId: order.id,
-        from: "PENDING_PAYMENT",
-        to: "CONFIRMED",
-        actorType: "SYSTEM",
-        note: "COD order auto-confirmed",
-        items: pricing.lines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
-        storeId: store.id,
-      });
-      paymentStatus = "PENDING_COLLECTION";
+      const confirmed = await guard("cod-auto-confirm", () =>
+        applyTransition({
+          orderId: order.id,
+          from: "PENDING_PAYMENT",
+          to: "CONFIRMED",
+          actorType: "SYSTEM",
+          note: "COD order auto-confirmed",
+          items: pricing.lines.map((line) => ({
+            variantId: line.variantId,
+            quantity: line.quantity,
+          })),
+          storeId: store.id,
+        }),
+      );
+      autoConfirmed = confirmed !== null;
+      if (autoConfirmed) paymentStatus = "PENDING_COLLECTION";
     } else {
-      await applyAllOrderFees(order.id);
+      await guard("apply-fees", () => applyAllOrderFees(order.id));
     }
   } else {
     const adapter = getPaymentAdapter(input.payload.paymentProvider);
-    const initiation = await adapter.initiate({
-      orderId: order.id,
-      orderNo: order.orderNo,
-      amount: pricing.grandTotal,
-      currency: "BDT",
-      customerName: input.payload.customerName,
-      customerPhone,
-      callbackUrl: `${input.baseUrl}/api/v1/webhooks/payments/${input.payload.paymentProvider.toLowerCase()}`,
-      successUrl: orderPageUrl,
-      failureUrl: `${input.baseUrl}/store/${store.slug}/checkout?error=payment_failed`,
-    });
-
-    await prisma.payment.updateMany({
-      where: { orderId: order.id, status: "INITIATED" },
-      data: {
-        providerTxnId: initiation.providerTxnId,
-        rawReference: initiation.rawReference,
-        status: initiation.status === "SUCCEEDED" ? "SUCCEEDED" : "PENDING",
-      },
-    });
-
-    redirectUrl = initiation.redirectUrl;
-    paymentStatus = initiation.status;
-
-    if (initiation.status === "SUCCEEDED") {
-      await applyTransition({
+    const initiation = await guard("gateway-initiate", () =>
+      adapter.initiate({
         orderId: order.id,
-        from: "PENDING_PAYMENT",
-        to: "PAID",
-        actorType: "SYSTEM",
-        note: `Payment captured via ${input.payload.paymentProvider} (sandbox)`,
-        items: pricing.lines.map((line) => ({ variantId: line.variantId, quantity: line.quantity })),
-        storeId: store.id,
-      });
+        orderNo: order.orderNo,
+        amount: pricing.grandTotal,
+        currency: "BDT",
+        customerName: input.payload.customerName,
+        customerPhone,
+        callbackUrl: `${input.baseUrl}/api/v1/webhooks/payments/${input.payload.paymentProvider.toLowerCase()}`,
+        successUrl: orderPageUrl,
+        failureUrl: `${input.baseUrl}/store/${store.slug}/checkout?error=payment_failed`,
+      }),
+    );
+
+    if (initiation) {
+      await guard("record-payment-attempt", () =>
+        prisma.payment.updateMany({
+          where: { orderId: order.id, status: "INITIATED" },
+          data: {
+            providerTxnId: initiation.providerTxnId,
+            rawReference: initiation.rawReference,
+            status: initiation.status === "SUCCEEDED" ? "SUCCEEDED" : "PENDING",
+          },
+        }),
+      );
+
+      redirectUrl = initiation.redirectUrl;
+      paymentStatus = initiation.status;
+
+      if (initiation.status === "SUCCEEDED") {
+        await guard("mark-paid", () =>
+          applyTransition({
+            orderId: order.id,
+            from: "PENDING_PAYMENT",
+            to: "PAID",
+            actorType: "SYSTEM",
+            note: `Payment captured via ${input.payload.paymentProvider} (sandbox)`,
+            items: pricing.lines.map((line) => ({
+              variantId: line.variantId,
+              quantity: line.quantity,
+            })),
+            storeId: store.id,
+          }),
+        );
+      }
     }
   }
 
-  await notify({
-    userId: store.tenant.ownerUserId,
-    type: NOTIFICATION_TYPES.ORDER_CREATED,
-    title: `নতুন অর্ডার — ${order.orderNo}`,
-    body: `${input.payload.customerName} • ${pricing.grandTotal} BDT • ${input.payload.paymentProvider}`,
-    payload: { orderId: order.id, storeId: store.id },
-  });
+  await guard("notify-merchant", () =>
+    notify({
+      userId: store.tenant.ownerUserId,
+      type: NOTIFICATION_TYPES.ORDER_CREATED,
+      title: `নতুন অর্ডার — ${order.orderNo}`,
+      body: `${input.payload.customerName} • ${pricing.grandTotal} BDT • ${input.payload.paymentProvider}`,
+      payload: { orderId: order.id, storeId: store.id },
+    }),
+  );
 
   // Platform notification feed: a buyer-created order is not tied to a merchant
   // actor, but Super Admin still needs the store, amount and payment details.
-  await recordAudit({
-    action: "order.created",
-    tenantId: store.tenantId,
-    resourceType: "Order",
-    resourceId: order.id,
-    metadata: {
-      orderNo: order.orderNo,
-      storeId: store.id,
-      storeName: store.name,
-      total: pricing.grandTotal,
-      paymentProvider: input.payload.paymentProvider,
-      itemCount: pricing.itemCount,
-      customerName: input.payload.customerName,
-    },
-  });
+  await guard("audit", () =>
+    recordAudit({
+      action: "order.created",
+      tenantId: store.tenantId,
+      resourceType: "Order",
+      resourceId: order.id,
+      metadata: {
+        orderNo: order.orderNo,
+        storeId: store.id,
+        storeName: store.name,
+        total: pricing.grandTotal,
+        paymentProvider: input.payload.paymentProvider,
+        itemCount: pricing.itemCount,
+        customerName: input.payload.customerName,
+      },
+    }),
+  );
 
   const message = customerMessage("order.created", {
     storeName: store.name,
     orderNo: order.orderNo,
     amount: pricing.grandTotal,
   });
-  await notifyCustomer({
-    storeId: store.id,
-    orderId: order.id,
-    type: "order.created",
-    ...message,
-    email: input.payload.customerEmail || null,
-    phone: customerPhone,
-    payload: { orderNo: order.orderNo, provider: input.payload.paymentProvider },
-  });
+  await guard("notify-customer", () =>
+    notifyCustomer({
+      storeId: store.id,
+      orderId: order.id,
+      type: "order.created",
+      ...message,
+      email: input.payload.customerEmail || null,
+      phone: customerPhone,
+      payload: { orderNo: order.orderNo, provider: input.payload.paymentProvider },
+    }),
+  );
 
-  await emitWebhookEvent(store.tenantId, "order.created", {
-    orderId: order.id,
-    orderNo: order.orderNo,
-    status: order.status,
-    paymentProvider: input.payload.paymentProvider,
-    grandTotal: pricing.grandTotal,
-    currency: "BDT",
-    customerName: input.payload.customerName,
-    customerPhone,
-  });
-  await trackEvent({
-    tenantId: store.tenantId,
-    storeId: store.id,
-    name: "checkout.success",
-    metadata: { orderId: order.id, grandTotal: pricing.grandTotal },
-  });
+  await guard("webhook", () =>
+    emitWebhookEvent(store.tenantId, "order.created", {
+      orderId: order.id,
+      orderNo: order.orderNo,
+      status: order.status,
+      paymentProvider: input.payload.paymentProvider,
+      grandTotal: pricing.grandTotal,
+      currency: "BDT",
+      customerName: input.payload.customerName,
+      customerPhone,
+    }),
+  );
+  await guard("analytics", () =>
+    trackEvent({
+      tenantId: store.tenantId,
+      storeId: store.id,
+      name: "checkout.success",
+      metadata: { orderId: order.id, grandTotal: pricing.grandTotal },
+    }),
+  );
 
   return {
     orderId: order.id,
     orderNo: order.orderNo,
     grandTotal: pricing.grandTotal,
-    status: input.payload.paymentProvider === "COD" && codAutoConfirm ? "CONFIRMED" : order.status,
+    status: autoConfirmed ? "CONFIRMED" : order.status,
     accessToken,
     payment: {
       provider: input.payload.paymentProvider,
