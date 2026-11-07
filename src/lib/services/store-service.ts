@@ -11,6 +11,7 @@ import { recordAudit } from "@/lib/audit";
 import { encryptSecret, isEncryptedSecret } from "@/lib/crypto";
 import { ensureThemeCatalog, resolveStoreTheme, selectTheme } from "@/lib/services/theme-service";
 import { ensureSubdomain, subdomainHost } from "@/lib/services/domain-service";
+import { trackEvent } from "@/lib/services/analytics-service";
 
 /**
  * Store lifecycle + settings (FR-02, FR-04).
@@ -120,8 +121,8 @@ export async function createStore(actor: ActorContext, raw: unknown) {
           storeId: created.id,
           name: zone.name,
           areas: zone.areas as never,
-          charge: toDecimalString(zone.charge) as never,
-          freeAbove: zone.freeAbove ? (toDecimalString(zone.freeAbove) as never) : null,
+          charge: toDecimalString(zone.charge),
+          freeAbove: zone.freeAbove ? toDecimalString(zone.freeAbove) : null,
           isDefault: zone.isDefault,
           isActive: true,
         },
@@ -177,6 +178,13 @@ export async function createStore(actor: ActorContext, raw: unknown) {
     actorId: actor.userId,
     resourceType: "Store",
     resourceId: store.id,
+    metadata: { slug, themeCode: themeEntry },
+  });
+
+  await trackEvent({
+    tenantId: actor.tenantId,
+    storeId: store.id,
+    name: "store_created",
     metadata: { slug, themeCode: themeEntry },
   });
 
@@ -509,8 +517,8 @@ export async function createDeliveryZone(actor: ActorContext, storeId: string, r
         storeId,
         name: input.name,
         areas: input.areas as never,
-        charge: toDecimalString(input.charge) as never,
-        freeAbove: input.freeAbove ? (toDecimalString(input.freeAbove) as never) : null,
+        charge: toDecimalString(input.charge),
+        freeAbove: input.freeAbove ? toDecimalString(input.freeAbove) : null,
         isDefault: input.isDefault,
         isActive: input.isActive,
         sortOrder: input.sortOrder,
@@ -553,8 +561,8 @@ export async function updateDeliveryZone(
       data: {
         name: input.name,
         areas: input.areas as never,
-        charge: toDecimalString(input.charge) as never,
-        freeAbove: input.freeAbove ? (toDecimalString(input.freeAbove) as never) : null,
+        charge: toDecimalString(input.charge),
+        freeAbove: input.freeAbove ? toDecimalString(input.freeAbove) : null,
         isDefault: input.isDefault,
         isActive: input.isActive,
         sortOrder: input.sortOrder,

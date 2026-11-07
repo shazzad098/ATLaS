@@ -7,6 +7,7 @@ import { invalidateEntitlements, loadEntitlementSnapshot, overageCount } from "@
 import { notify, NOTIFICATION_TYPES } from "@/lib/notifications";
 import { recordAudit } from "@/lib/audit";
 import { attachPendingFeesToInvoice, feeSummary } from "@/lib/services/fee-service";
+import { trackEvent } from "@/lib/services/analytics-service";
 import type { ActorContext } from "@/lib/rbac";
 
 type BillingPeriodValue = "MONTHLY" | "YEARLY";
@@ -79,10 +80,10 @@ export async function adminUpdatePlan(
     where: { id: plan.id },
     data: {
       ...(patch.price !== undefined
-        ? { price: toDecimalString(patch.price ?? 0) as never }
+        ? { price: toDecimalString(patch.price ?? 0) }
         : {}),
       ...(patch.yearlyPrice !== undefined
-        ? { yearlyPrice: patch.yearlyPrice === null ? null : (toDecimalString(patch.yearlyPrice) as never) }
+        ? { yearlyPrice: patch.yearlyPrice === null ? null : toDecimalString(patch.yearlyPrice) }
         : {}),
       ...(patch.trialDays !== undefined ? { trialDays: patch.trialDays } : {}),
       limitsJson: limits as never,
@@ -251,6 +252,12 @@ export async function startTrial(
     metadata: { planCode, billingPeriod, trialEnd: trialEnd.toISOString() },
   });
 
+  await trackEvent({
+    tenantId: actor.tenantId,
+    name: "trial_started",
+    metadata: { planCode, billingPeriod, trialEnd: trialEnd.toISOString() },
+  });
+
   return subscription;
 }
 
@@ -290,8 +297,8 @@ async function createPlanInvoice(input: {
       currency: "BDT",
       status: "OPEN",
       dueAt: addDays(new Date(), 7),
-      subtotal: fromPaisa(toPaisa(amount)) as never,
-      total: fromPaisa(toPaisa(amount)) as never,
+      subtotal: fromPaisa(toPaisa(amount)),
+      total: fromPaisa(toPaisa(amount)),
       linesJson: lines as never,
     },
   });
@@ -342,6 +349,13 @@ export async function changePlan(
       resourceId: subscription.id,
       metadata: { from: current.plan.code, to: planCode, billingPeriod, immediate: true },
     });
+    if (current.plan.code !== planCode) {
+      await trackEvent({
+        tenantId: actor.tenantId,
+        name: "plan_downgraded",
+        metadata: { from: current.plan.code, to: planCode, billingPeriod },
+      });
+    }
     return { subscription, invoice: null, pending: false as const };
   }
 
@@ -389,6 +403,10 @@ export async function changePlan(
   });
 
   invalidateEntitlements(actor.tenantId);
+  const downgrade =
+    PLAN_CODES.indexOf(planCode) <
+    PLAN_CODES.indexOf((current.plan.code ?? "free") as PlanCode);
+
   await recordAudit({
     action: "subscription.plan_change_requested",
     tenantId: actor.tenantId,
@@ -400,10 +418,14 @@ export async function changePlan(
       to: planCode,
       billingPeriod,
       invoiceNumber: invoice.number,
-      downgrade:
-        PLAN_CODES.indexOf(planCode) <
-        PLAN_CODES.indexOf((current.plan.code ?? "free") as PlanCode),
+      downgrade,
     },
+  });
+
+  await trackEvent({
+    tenantId: actor.tenantId,
+    name: "plan_change_requested",
+    metadata: { from: current.plan.code, to: planCode, billingPeriod, downgrade },
   });
 
   return { subscription, invoice, pending: true as const };
@@ -480,8 +502,8 @@ export async function generateInvoice(
         currency: "BDT",
         status: "OPEN",
         dueAt: addDays(new Date(), 7),
-        subtotal: fromPaisa(toPaisa(planAmount)) as never,
-        total: fromPaisa(toPaisa(planAmount)) as never,
+        subtotal: fromPaisa(toPaisa(planAmount)),
+        total: fromPaisa(toPaisa(planAmount)),
         linesJson: lines as never,
       },
     });
@@ -503,8 +525,8 @@ export async function generateInvoice(
         await tx.invoice.update({
           where: { id: created.id },
           data: {
-            subtotal: total as never,
-            total: total as never,
+            subtotal: total,
+            total: total,
             linesJson: lines as never,
           },
         });
@@ -579,6 +601,21 @@ async function settleInvoice(invoiceId: string, meta: { actorId?: string; reason
       billingPeriod,
     },
   });
+
+  if (pendingPlan) {
+    const fromRank = PLAN_CODES.indexOf(subscription.plan.code as PlanCode);
+    const toRank = PLAN_CODES.indexOf(pendingPlan.code as PlanCode);
+    await trackEvent({
+      tenantId: invoice.tenantId,
+      name: toRank >= fromRank ? "plan_upgraded" : "plan_downgraded",
+      metadata: {
+        from: subscription.plan.code,
+        to: pendingPlan.code,
+        billingPeriod,
+        invoiceNumber: invoice.number,
+      },
+    });
+  }
 
   return paid;
 }

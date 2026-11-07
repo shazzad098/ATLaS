@@ -9,6 +9,7 @@ import { addDays } from "@/lib/dates";
  * these rows directly; `DailyStoreMetric` (reports) is the heavier rollup.
  */
 
+/** Storefront funnel events (FR-09). */
 export const ANALYTICS_EVENTS = [
   "store.view",
   "product.view",
@@ -18,7 +19,27 @@ export const ANALYTICS_EVENTS = [
   "order.paid",
 ] as const;
 
-export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number] | string;
+/**
+ * Platform lifecycle events. These have a tenant but no store, so they are
+ * written with `storeId: null` and read by platform-wide reporting rather than
+ * the per-store developer dashboard.
+ */
+export const PLATFORM_ANALYTICS_EVENTS = [
+  "signup_completed",
+  "store_created",
+  "trial_started",
+  "plan_change_requested",
+  "plan_upgraded",
+  "plan_downgraded",
+] as const;
+
+export const ALL_ANALYTICS_EVENTS = [
+  ...ANALYTICS_EVENTS,
+  ...PLATFORM_ANALYTICS_EVENTS,
+] as const;
+
+/** The known names are documented here; custom names are still accepted. */
+export type AnalyticsEventName = (typeof ALL_ANALYTICS_EVENTS)[number] | string;
 
 export async function trackEvent(input: {
   tenantId?: string | null;
@@ -65,6 +86,41 @@ export async function analyticsSummary(storeId: string, days = 30) {
       orderBy: { occurredAt: "desc" },
       take: 20,
       select: { id: true, name: true, path: true, occurredAt: true },
+    }),
+  ]);
+
+  return {
+    total,
+    byName: byName.map((row) => ({ name: row.name, count: row._count._all })),
+    recent,
+  };
+}
+
+/**
+ * Platform lifecycle rollup (signups, stores, plan changes). Storefront funnel
+ * events are excluded by name so a store-level `store.view` never skews the
+ * platform counts.
+ */
+export async function platformAnalyticsSummary(days = 30) {
+  const from = addDays(new Date(), -days);
+  const where = {
+    occurredAt: { gte: from },
+    name: { in: [...PLATFORM_ANALYTICS_EVENTS] },
+  };
+
+  const [byName, total, recent] = await Promise.all([
+    prisma.analyticsEvent.groupBy({
+      by: ["name"],
+      where,
+      _count: { _all: true },
+      orderBy: { _count: { name: "desc" } },
+    }),
+    prisma.analyticsEvent.count({ where }),
+    prisma.analyticsEvent.findMany({
+      where,
+      orderBy: { occurredAt: "desc" },
+      take: 20,
+      select: { id: true, name: true, tenantId: true, occurredAt: true },
     }),
   ]);
 
